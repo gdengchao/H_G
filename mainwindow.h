@@ -15,6 +15,19 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_pheFileToolButton_clicked();
+
+    void on_genoFileToolButton_clicked();
+
+    void on_mapFileToolButton_clicked();
+
+    void on_covarFileToolButton_clicked();
+
+    void on_kinFileToolButton_clicked();
+
+    void on_browButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
