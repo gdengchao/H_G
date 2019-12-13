@@ -18,12 +18,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     filereader.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    workdirectory.cpp
 
 HEADERS += \
     enum.h \
     filereader.h \
-    mainwindow.h
+    mainwindow.h \
+    workdirectory.h
 
 FORMS += \
     mainwindow.ui

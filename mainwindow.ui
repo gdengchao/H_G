@@ -91,6 +91,9 @@
         <height>41</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <property name="text">
        <string>Run</string>
       </property>
@@ -300,7 +303,7 @@ border-radius:5px;//这个是改变成圆角边框;
          <item row="1" column="0">
           <widget class="QLabel" name="label_6">
            <property name="text">
-            <string>Tool and setting</string>
+            <string>Tool and model</string>
            </property>
           </widget>
          </item>
@@ -371,7 +374,7 @@ border-radius:5px;//这个是改变成圆角边框;
            <item>
             <widget class="QLabel" name="toolStatusLabel">
              <property name="text">
-              <string> </string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -604,7 +607,7 @@ border-radius:5px;//这个是改变成圆角边框;
       <x>30</x>
       <y>30</y>
       <width>141</width>
-      <height>481</height>
+      <height>505</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
@@ -954,7 +957,7 @@ border-radius:5px;//这个是改变成圆角边框;
      <x>0</x>
      <y>0</y>
      <width>805</width>
-     <height>20</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

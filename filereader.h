@@ -9,18 +9,17 @@ class FileReader
 {
 public:
     FileReader();
-    void setPhenotypeFile(QString dir);
+    void setPhenotypeFile(QString const dir);
     QString getPhenotypeFile(void);
-    void setGenotypeFile(QString dir);
+    void setGenotypeFile(QString const dir);
     QString getGenotypeFile(void);
     void setMapFile(QString dir);
     QString getMapFile(void);
-    void setCovariateFile(QString dir);
+    void setCovariateFile(QString const dir);
     QString getCovariateFile(void);
-    void setKinshipFile(QString dir);
+    void setKinshipFile(QString const dir);
     QString getKinshipFile(void);
 
-    static QString lastDirectory;
 private:
     QString phenotypeFile;
     QString genotypeFile;

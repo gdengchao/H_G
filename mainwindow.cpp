@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QDebug>
-#include "filereader.h"
+#include "workdirectory.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -15,11 +15,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mapFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->covarFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->kinFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
+
+    fileReader = new FileReader;
+    workDirectory = new WorkDirectory;
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete fileReader;
+    delete workDirectory;
 }
 
 
@@ -41,8 +46,7 @@ void MainWindow::on_pheFileToolButton_clicked()
     }
     ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
 
-    FileReader fileReader;
-    fileReader.setPhenotypeFile(fileNames[0]);
+    this->fileReader->setPhenotypeFile(fileNames[0]);
 
     QStringList  fileDirList = fileNames[0].split("/");
     QString fileName = fileDirList[fileDirList.length()-1];
@@ -67,8 +71,7 @@ void MainWindow::on_genoFileToolButton_clicked()
     }
     ui->genoFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
 
-    FileReader fileReader;
-    fileReader.setGenotypeFile(fileNames[0]);
+    this->fileReader->setGenotypeFile(fileNames[0]);
 
     QStringList  fileDirList = fileNames[0].split("/");
     QString fileName = fileDirList[fileDirList.length()-1];
@@ -93,8 +96,7 @@ void MainWindow::on_mapFileToolButton_clicked()
     }
     ui->mapFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
 
-    FileReader fileReader;
-    fileReader.setMapFile(fileNames[0]);
+    this->fileReader->setMapFile(fileNames[0]);
 
     QStringList  fileDirList = fileNames[0].split("/");
     QString fileName = fileDirList[fileDirList.length()-1];
@@ -119,8 +121,7 @@ void MainWindow::on_covarFileToolButton_clicked()
     }
     ui->covarFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
 
-    FileReader fileReader;
-    fileReader.setCovariateFile(fileNames[0]);
+    this->fileReader->setCovariateFile(fileNames[0]);
 
     QStringList  fileDirList = fileNames[0].split("/");
     QString fileName = fileDirList[fileDirList.length()-1];
@@ -145,8 +146,7 @@ void MainWindow::on_kinFileToolButton_clicked()
     }
     ui->kinFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
 
-    FileReader fileReader;
-    fileReader.setKinshipFile(fileNames[0]);
+    this->fileReader->setKinshipFile(fileNames[0]);
 
     QStringList  fileDirList = fileNames[0].split("/");
     QString fileName = fileDirList[fileDirList.length()-1];
@@ -155,6 +155,19 @@ void MainWindow::on_kinFileToolButton_clicked()
 
 void MainWindow::on_browButton_clicked()
 {
-    QString outDirectory = QFileDialog::getExistingDirectory(this, "Choose directory");
-    ui->  outdirLineEdit->setText(outDirectory);
+    QString dir = QFileDialog::getExistingDirectory(this, "Choose directory");
+    if (!dir.isEmpty())
+    {
+        this->workDirectory->setOutputDirectory(dir);
+        ui->outdirLineEdit->setText(dir+"/"+this->workDirectory->getModuleName());
+    }
+}
+
+void MainWindow::on_modulenameLineEdit_textChanged(const QString &text)
+{
+    this->workDirectory->setModuleName(text);
+    if (!ui->outdirLineEdit->text().isEmpty())
+    {
+        ui->outdirLineEdit->setText(this->workDirectory->getOutputDirectory()+"/"+text);
+    }
 }
