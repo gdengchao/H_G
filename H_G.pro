@@ -19,12 +19,14 @@ SOURCES += \
     filereader.cpp \
     main.cpp \
     mainwindow.cpp \
+    phenoselector.cpp \
     workdirectory.cpp
 
 HEADERS += \
     enum.h \
     filereader.h \
     mainwindow.h \
+    phenoselector.h \
     workdirectory.h
 
 FORMS += \

@@ -7,7 +7,10 @@ FileReader::FileReader()
 
 void FileReader::setPhenotypeFile(QString const dir)
 {
-    this->phenotypeFile = dir;
+    if (dir.isEmpty())
+    {
+        this->phenotypeFile = dir;
+    }
 }
 
 QString FileReader::getPhenotypeFile(void)
@@ -17,7 +20,10 @@ QString FileReader::getPhenotypeFile(void)
 
 void FileReader::setGenotypeFile(QString const dir)
 {
-    this->genotypeFile = dir;
+    if (dir.isEmpty())
+    {
+        this->genotypeFile = dir;
+    }
 }
 
 QString FileReader::getGenotypeFile(void)
@@ -27,7 +33,10 @@ QString FileReader::getGenotypeFile(void)
 
 void FileReader::setMapFile(QString const dir)
 {
-    this->mapFile = dir;
+    if (dir.isEmpty())
+    {
+        this->mapFile = dir;
+    }
 }
 
 QString FileReader::getMapFile(void)
@@ -37,7 +46,10 @@ QString FileReader::getMapFile(void)
 
 void FileReader::setCovariateFile(QString const dir)
 {
-    this->covariateFile = dir;
+    if (dir.isEmpty())
+    {
+        this->covariateFile = dir;
+    }
 }
 
 QString FileReader::getCovariateFile(void)
@@ -47,7 +59,10 @@ QString FileReader::getCovariateFile(void)
 
 void FileReader::setKinshipFile(QString const dir)
 {
-    this->kinshipFile = dir;
+    if (dir.isEmpty())
+    {
+        this->kinshipFile = dir;
+    }
 }
 
 QString FileReader::getKinshipFile(void)

@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QDebug>
+#include <QList>
 #include "workdirectory.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -30,11 +31,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pheFileToolButton_clicked()
 {
+    // Basic display
     QFileDialog *fileDialog = new QFileDialog(this);
     fileDialog->setWindowTitle("Open phenotype file");
     fileDialog->setViewMode(QFileDialog::Detail);
 
-    QStringList fileNames;
+    QStringList fileNames;  // Absolute directory of file.
     if (fileDialog->exec())
     {
         fileNames = fileDialog->selectedFiles();
@@ -49,8 +51,16 @@ void MainWindow::on_pheFileToolButton_clicked()
     this->fileReader->setPhenotypeFile(fileNames[0]);
 
     QStringList  fileDirList = fileNames[0].split("/");
-    QString fileName = fileDirList[fileDirList.length()-1];
+    QString fileName = fileDirList[fileDirList.length()-1]; // Get the file name from a path.
     ui->pheFileLabel->setText(fileName);
+
+    // Get types of phenotype, and write to list widget.
+    QFile fptr(fileNames[0]);
+    fptr.open(QIODevice::ReadOnly|QIODevice::Text);
+    QString phenoFirstLine = fptr.readLine();
+    QStringList phenoList = phenoFirstLine.split("\t");
+    phenoList.removeFirst();
+    ui->selectedPhenoListWidget->insertItems(0, phenoList);
 }
 
 void MainWindow::on_genoFileToolButton_clicked()
