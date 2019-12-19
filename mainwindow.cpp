@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
+#include <QAbstractItemView>
 #include <QDebug>
 #include <QList>
 #include "workdirectory.h"
@@ -17,8 +18,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->covarFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->kinFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
 
+    ui->selectedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection); // Press Ctrl to select more.
+    ui->excludedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
     fileReader = new FileReader;
     workDirectory = new WorkDirectory;
+    phenoSelector = new PhenoSelector;
 }
 
 MainWindow::~MainWindow()
@@ -26,6 +31,7 @@ MainWindow::~MainWindow()
     delete ui;
     delete fileReader;
     delete workDirectory;
+    delete phenoSelector;
 }
 
 
@@ -58,9 +64,13 @@ void MainWindow::on_pheFileToolButton_clicked()
     QFile fptr(fileNames[0]);
     fptr.open(QIODevice::ReadOnly|QIODevice::Text);
     QString phenoFirstLine = fptr.readLine();
+    phenoFirstLine.replace("\r\n", "");         // Strip "\n"
+    phenoFirstLine.replace("\n", "");
     QStringList phenoList = phenoFirstLine.split("\t");
     phenoList.removeFirst();
-    ui->selectedPhenoListWidget->insertItems(0, phenoList);
+    phenoSelector->setSelectedPheno(phenoList);
+
+    ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
 }
 
 void MainWindow::on_genoFileToolButton_clicked()
@@ -180,4 +190,22 @@ void MainWindow::on_modulenameLineEdit_textChanged(const QString &text)
     {
         ui->outdirLineEdit->setText(this->workDirectory->getOutputDirectory()+"/"+text);
     }
+}
+
+void MainWindow::on_excludeAllPhenoButton_clicked()
+{
+    phenoSelector->excludeAllPheno();
+    ui->selectedPhenoListWidget->clear();
+    ui->excludedPhenoListWidget->clear();
+    ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
+    ui->excludedPhenoListWidget->insertItems(0, phenoSelector->getExcludedPheno());
+}
+
+void MainWindow::on_selectAllPhenoButton_clicked()
+{
+    phenoSelector->selectAllPheno();
+    ui->selectedPhenoListWidget->clear();
+    ui->excludedPhenoListWidget->clear();
+    ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
+    ui->excludedPhenoListWidget->insertItems(0, phenoSelector->getExcludedPheno());
 }

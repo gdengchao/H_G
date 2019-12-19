@@ -7,7 +7,7 @@ WorkDirectory::WorkDirectory()
 
 void WorkDirectory::setModuleName(QString const name)
 {
-    if (name.isEmpty())
+    if (!name.isEmpty())
     {
         this->moduleName = name;
     }
@@ -20,7 +20,7 @@ QString WorkDirectory::getModuleName(void)
 
 void WorkDirectory::setOutputDirectory(QString const dir)
 {
-    if (dir.isEmpty())
+    if (!dir.isEmpty())
     {
         this->outputDirectory = dir;
     }

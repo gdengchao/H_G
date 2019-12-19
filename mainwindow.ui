@@ -475,14 +475,14 @@ border-radius:5px;//这个是改变成圆角边框;
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="exAllPhenoButton">
+            <widget class="QPushButton" name="selectAllPhenoButton">
              <property name="text">
               <string>Select All</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_4">
+            <widget class="QPushButton" name="excludeAllPhenoButton">
              <property name="text">
               <string>Exclude All</string>
              </property>

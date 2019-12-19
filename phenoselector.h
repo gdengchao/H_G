@@ -12,9 +12,15 @@ public:
     QStringList getSelectedPheno(void);
     void setExcludedPheno(QStringList const list);
     QStringList getExcludedPheno(void);
+
+    void selectPheno(QStringList pheno);
+    void excludePheno(QStringList pheno);
+    void selectAllPheno(void);
+    void excludeAllPheno(void);
+
 private:
-    QStringList selectedPheno;
-    QStringList excludedPheno;
+    QStringList selectedPhenoList;
+    QStringList excludedPhenoList;
 };
 
 #endif // PHENOSELECTOR_H
