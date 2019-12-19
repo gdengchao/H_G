@@ -1,9 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QFileDialog>
-#include <QAbstractItemView>
-#include <QDebug>
-#include <QList>
 #include "workdirectory.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -195,15 +191,33 @@ void MainWindow::on_modulenameLineEdit_textChanged(const QString &text)
 void MainWindow::on_excludeAllPhenoButton_clicked()
 {
     phenoSelector->excludeAllPheno();
-    ui->selectedPhenoListWidget->clear();
+    ui->selectedPhenoListWidget->clear();   // Clear the list widget.
     ui->excludedPhenoListWidget->clear();
-    ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
+    ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno()); // Display
     ui->excludedPhenoListWidget->insertItems(0, phenoSelector->getExcludedPheno());
 }
 
 void MainWindow::on_selectAllPhenoButton_clicked()
 {
     phenoSelector->selectAllPheno();
+    ui->selectedPhenoListWidget->clear();
+    ui->excludedPhenoListWidget->clear();
+    ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
+    ui->excludedPhenoListWidget->insertItems(0, phenoSelector->getExcludedPheno());
+}
+
+void MainWindow::on_selectPhenoButton_clicked()
+{
+    phenoSelector->selectPheno(ui->excludedPhenoListWidget->selectedItems());
+    ui->selectedPhenoListWidget->clear();
+    ui->excludedPhenoListWidget->clear();
+    ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
+    ui->excludedPhenoListWidget->insertItems(0, phenoSelector->getExcludedPheno());
+}
+
+void MainWindow::on_excludePhenoButton_clicked()
+{
+    phenoSelector->excludePheno(ui->selectedPhenoListWidget->selectedItems());
     ui->selectedPhenoListWidget->clear();
     ui->excludedPhenoListWidget->clear();
     ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());

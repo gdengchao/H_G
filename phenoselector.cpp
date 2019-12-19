@@ -44,26 +44,26 @@ QStringList PhenoSelector::getExcludedPheno(void)
     return this->excludedPhenoList;
 }
 
-void PhenoSelector::selectPheno(QStringList pheno)
+void PhenoSelector::selectPheno(QList<QListWidgetItem *> phenoItems)
 {
-    if (!pheno.isEmpty())
+    if (!phenoItems.isEmpty())
     {
-        for (auto item : pheno)
+        for (auto item : phenoItems)
         {
-            this->selectedPhenoList.append(item);
-            this->excludedPhenoList.removeOne(item);
+            this->selectedPhenoList.append(item->text());
+            this->excludedPhenoList.removeOne(item->text());
         }
     }
 }
 
-void PhenoSelector::excludePheno(QStringList pheno)
+void PhenoSelector::excludePheno(QList<QListWidgetItem *> phenoItems)
 {
-    if (!pheno.isEmpty())
+    if (!phenoItems.isEmpty())
     {
-        for (auto item : pheno)
+        for (auto item : phenoItems)
         {
-            this->selectedPhenoList.removeOne(item);
-            this->excludedPhenoList.append(item);
+            this->selectedPhenoList.removeOne(item->text());
+            this->excludedPhenoList.append(item->text());
         }
     }
 }

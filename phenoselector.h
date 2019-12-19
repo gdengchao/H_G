@@ -1,7 +1,9 @@
 #ifndef PHENOSELECTOR_H
 #define PHENOSELECTOR_H
 
+#include <QList>
 #include <QStringList>
+#include <QListWidgetItem>
 
 class PhenoSelector
 {
@@ -13,8 +15,8 @@ public:
     void setExcludedPheno(QStringList const list);
     QStringList getExcludedPheno(void);
 
-    void selectPheno(QStringList pheno);
-    void excludePheno(QStringList pheno);
+    void selectPheno(QList<QListWidgetItem *> phenoItems);
+    void excludePheno(QList<QListWidgetItem *> phenoItems);
     void selectAllPheno(void);
     void excludeAllPheno(void);
 
