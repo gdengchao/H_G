@@ -17,17 +17,34 @@ MainWindow::MainWindow(QWidget *parent)
     ui->selectedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection); // Press Ctrl to select more.
     ui->excludedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
+    // Initiate variables.
     fileReader = new FileReader;
     workDirectory = new WorkDirectory;
     phenoSelector = new PhenoSelector;
+    runningMsgWidget = new RunningMsgWidget;
+    cmd = new QProcess;
+
+    connect(cmd, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
+    connect(cmd, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
 }
 
 MainWindow::~MainWindow()
 {
+    // Free pointer.
     delete ui;
     delete fileReader;
     delete workDirectory;
     delete phenoSelector;
+
+    runningMsgWidget->close();
+    delete runningMsgWidget;
+
+    if (cmd)
+    {
+        cmd->terminate();
+        cmd->waitForFinished();
+    }
+    delete cmd;
 }
 
 
@@ -222,4 +239,76 @@ void MainWindow::on_excludePhenoButton_clicked()
     ui->excludedPhenoListWidget->clear();
     ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
     ui->excludedPhenoListWidget->insertItems(0, phenoSelector->getExcludedPheno());
+}
+
+void MainWindow::on_rungwasButton_clicked()
+{
+    //QString toolpath = "/tools/";
+    QString toolpath = "F:/Code/Qt/H_G/tools/";  // For Debug, start from debug/a.exe fold.
+    QString tool = ui->toolComboBox->currentText();
+
+    QString phenotype = fileReader->getPhenotypeFile();
+    QString genotype = fileReader->getGenotypeFile();
+    QString map = fileReader->getMapFile();
+    QString covar = fileReader->getCovariateFile();
+    QString kinship = fileReader->getKinshipFile();
+    QString out = workDirectory->getOutputDirectory();  // Include module name.
+    QString name = workDirectory->getModuleName();
+//    if (out.isNull() || name.isNull())
+//    {
+//        QMessageBox::information(nullptr, "Error", "Plese select a work directory!  ");
+//        return;
+//    }
+
+    QString model = ui->modelComboBox->currentText();
+    QString missingRate = ui->msDoubleSpinBox->text();
+    QString maf = ui->mafDoubleSpinBox->text();
+    UserOS *userOS = new UserOS;
+
+    ui->rungwasButton->setText("Running");
+    ui->rungwasButton->setDisabled(true);
+
+    if (userOS->currentOS() == "winnt")
+    {
+        if (tool == "plink")
+        {
+            //cmd->start(toolpath+tool, QStringList()<<"-h"<<"--noweb");
+//            cmd->start("cmd");
+//            cmd->waitForStarted();
+
+//            // QString transform to char *.
+//            QString cmdline = toolpath+tool+".exe"+" -h --noweb\n";
+//            QByteArray cmdArray;
+//            cmdArray.append(cmdline);
+//            cmd->write(cmdArray.data());
+
+            runningMsgWidget->setTitle(name+" is running...");
+            runningMsgWidget->show();
+            Plink plink;
+            if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
+                          out,model, missingRate, maf))
+            {
+                cmd->start(toolpath+tool, plink.getParamList());
+            }
+        }
+    }
+
+    if (cmd)
+    {
+        cmd->terminate();
+        cmd->waitForFinished();
+    }
+    ui->rungwasButton->setText("Run");
+    ui->rungwasButton->setEnabled(true);
+}
+
+void MainWindow::on_readoutput()
+{
+    runningMsgWidget->appendText(QString::fromLocal8Bit(cmd->readAllStandardOutput().data()));
+}
+
+void MainWindow::on_readerror()
+{
+    QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(cmd->readAllStandardError().data()));
+    runningMsgWidget->close();
 }

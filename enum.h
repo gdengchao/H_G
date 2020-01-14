@@ -1,30 +1,25 @@
 #ifndef ENUM_H
 #define ENUM_H
 
-enum EFileType
+enum enum_tool
 {
-    phenotype = 0,
-    genotype = 1,
-    map = 2,
-    covariate = 3,
-    kinship = 4,
+    plink = 0,
+    gemmax = 1,
+    emmax = 2,
 };
 
-enum ETools
+enum enum_model
 {
-    plink,
-    emmax,
-    gemma,
-    gapit,
+    glm = 0,
+    mlm = 1,
+    linear_regression = 2,
 };
 
-enum EModel
+enum enum_user_OS
 {
-    glm,
-    mlm,
-    lr,
+    windows = 0,
+    linux = 1,
 };
-
 
 
 #endif // ENUM_H

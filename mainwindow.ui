@@ -46,6 +46,7 @@
     <property name="font">
      <font>
       <family>Arial Rounded MT Bold</family>
+      <pointsize>9</pointsize>
      </font>
     </property>
     <property name="tabPosition">
@@ -85,14 +86,26 @@
      <widget class="QPushButton" name="rungwasButton">
       <property name="geometry">
        <rect>
-        <x>190</x>
+        <x>220</x>
         <y>420</y>
         <width>131</width>
         <height>41</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <family>Arial Rounded MT Bold</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="acceptDrops">
+       <bool>true</bool>
+      </property>
       <property name="styleSheet">
-       <string notr="true"/>
+       <string notr="true">background-color: rgb(225, 225, 225);border:1px groove gray;border-radius:4px;padding:1px 4px;border-style: outset;
+
+pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);
+}</string>
       </property>
       <property name="text">
        <string>Run</string>
@@ -317,20 +330,26 @@ border-radius:5px;//这个是改变成圆角边框;
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox_3">
+            <widget class="QComboBox" name="modelComboBox">
+             <property name="minimumSize">
+              <size>
+               <width>143</width>
+               <height>0</height>
+              </size>
+             </property>
              <item>
               <property name="text">
-               <string>GLM</string>
+               <string/>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>MLM</string>
+               <string/>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>Logistic Regression</string>
+               <string/>
               </property>
              </item>
             </widget>
@@ -353,7 +372,7 @@ border-radius:5px;//这个是改变成圆角边框;
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox">
+            <widget class="QComboBox" name="toolComboBox">
              <item>
               <property name="text">
                <string>plink</string>

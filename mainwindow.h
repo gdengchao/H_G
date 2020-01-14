@@ -4,11 +4,15 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QAbstractItemView>
+#include <QProcess>
 #include <QDebug>
 #include <QList>
 #include "filereader.h"
 #include "workdirectory.h"
 #include "phenoselector.h"
+#include "useros.h"
+#include "plink.h"
+#include "runningmsgwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -36,13 +40,21 @@ private slots:
     void on_excludeAllPhenoButton_clicked();
     void on_selectAllPhenoButton_clicked();
     void on_selectPhenoButton_clicked();
-
     void on_excludePhenoButton_clicked();
+    // for run pushButton
+    void on_rungwasButton_clicked();
+    // for running MessageBox
+    void on_readoutput();
+    void on_readerror();
 
 private:
     Ui::MainWindow *ui;
     FileReader *fileReader;             // Read file, and save the directory.
     WorkDirectory *workDirectory;       // Set and save the module name and the output directory.
     PhenoSelector *phenoSelector;       // Select objective phenotype to analysis.
+
+    // for display running information.
+    RunningMsgWidget *runningMsgWidget;
+    QProcess *cmd;
 };
 #endif // MAINWINDOW_H

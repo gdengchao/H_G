@@ -20,6 +20,10 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     phenoselector.cpp \
+    plink.cpp \
+    runningmsgwidget.cpp \
+    toolselector.cpp \
+    useros.cpp \
     workdirectory.cpp
 
 HEADERS += \
@@ -27,10 +31,15 @@ HEADERS += \
     filereader.h \
     mainwindow.h \
     phenoselector.h \
+    plink.h \
+    runningmsgwidget.h \
+    toolselector.h \
+    useros.h \
     workdirectory.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    runningmsgwidget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
