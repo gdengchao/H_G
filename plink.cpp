@@ -35,7 +35,7 @@ bool Plink::transformFile(QString srcFileType, QString dstFileType)
 
 bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
                     QString covariate, QString kinship, QString model,
-                    QString out, QString ms, QString maf)
+                    QString ms, QString maf, QString out)
 {
     if (!phenotype.isNull() && !genotype.isNull() && !map.isNull())
     {
@@ -43,10 +43,10 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
         {
             this->paramlist.append("--ped " + genotype);
             this->paramlist.append("--map " + map);
+            this->paramlist.append("--assco");
             this->paramlist.append("--pheno " + phenotype);
             //this->paramlist.append("--maf " + maf);
             this->paramlist.append("--out " + out);
-            this->paramlist.append("--assco");
             this->paramlist.append("--noweb");
         }
     }

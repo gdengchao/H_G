@@ -14,7 +14,7 @@ public:
     bool transformFile(QString srcFileType, QString dstFileType);
     bool runGWAS(QString phenotype, QString genotype, QString map,
                  QString covariate, QString kinship, QString model,
-                 QString out, QString ms, QString maf);
+                 QString ms, QString maf, QString out);
     QStringList getParamList(void);
     QString getParamString(void);
 

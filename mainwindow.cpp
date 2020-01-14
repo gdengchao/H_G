@@ -254,11 +254,11 @@ void MainWindow::on_rungwasButton_clicked()
     QString kinship = fileReader->getKinshipFile();
     QString out = workDirectory->getOutputDirectory();  // Include module name.
     QString name = workDirectory->getModuleName();
-//    if (out.isNull() || name.isNull())
-//    {
-//        QMessageBox::information(nullptr, "Error", "Plese select a work directory!  ");
-//        return;
-//    }
+    if (out.isNull() || name.isNull())
+    {
+        QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
+        return;
+    }
 
     QString model = ui->modelComboBox->currentText();
     QString missingRate = ui->msDoubleSpinBox->text();
@@ -286,7 +286,7 @@ void MainWindow::on_rungwasButton_clicked()
             runningMsgWidget->show();
             Plink plink;
             if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
-                          out,model, missingRate, maf))
+                          model, missingRate, maf, out))
             {
                 cmd->start(toolpath+tool, plink.getParamList());
             }
