@@ -41,13 +41,15 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
     {
         if (genotype.split('.')[genotype.split('.').length()-1] == "ped")
         {
-            this->paramlist.append("--ped " + genotype);
-            this->paramlist.append("--map " + map);
-            this->paramlist.append("--assco");
-            this->paramlist.append("--pheno " + phenotype);
-            //this->paramlist.append("--maf " + maf);
-            this->paramlist.append("--out " + out);
-            this->paramlist.append("--noweb");
+            this->paramlist.append("--ped");
+            this->paramlist.append(genotype);
+            this->paramlist.append("--map");
+            this->paramlist.append(map);
+//            this->paramlist.append("--assoc ");
+//            this->paramlist.append("--pheno " + phenotype);
+//            //this->paramlist.append("--maf " + maf);
+//            this->paramlist.append("--out " + out);
+//            this->paramlist.append("--noweb");
         }
     }
     else

@@ -244,7 +244,7 @@ void MainWindow::on_excludePhenoButton_clicked()
 void MainWindow::on_rungwasButton_clicked()
 {
     //QString toolpath = "/tools/";
-    QString toolpath = "F:/Code/Qt/H_G/tools/";  // For Debug, start from debug/a.exe fold.
+    QString toolpath = "F://Code//Qt/H_G//tools//";  // For Debug, start from debug/a.exe fold.
     QString tool = ui->toolComboBox->currentText();
 
     QString phenotype = fileReader->getPhenotypeFile();
@@ -277,18 +277,20 @@ void MainWindow::on_rungwasButton_clicked()
 //            cmd->waitForStarted();
 
 //            // QString transform to char *.
-//            QString cmdline = toolpath+tool+".exe"+" -h --noweb\n";
+//            QString cmdline = toolpath+tool+" "+"-h"/*plink.getParamString()*/;
 //            QByteArray cmdArray;
 //            cmdArray.append(cmdline);
 //            cmd->write(cmdArray.data());
 
-            runningMsgWidget->setTitle(name+" is running...");
-            runningMsgWidget->show();
             Plink plink;
             if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
                           model, missingRate, maf, out))
             {
                 cmd->start(toolpath+tool, plink.getParamList());
+                cmd->waitForStarted();
+                runningMsgWidget->setTitle(name+" is running...");
+                runningMsgWidget->show();
+                cmd->waitForFinished();
             }
         }
     }
