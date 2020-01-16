@@ -250,10 +250,16 @@ border-radius:5px;//这个是改变成圆角边框;
              <property name="singleStep">
               <double>0.020000000000000</double>
              </property>
+             <property name="stepType">
+              <enum>QAbstractSpinBox::DefaultStepType</enum>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QSlider" name="msSlider">
+             <property name="maximum">
+              <number>100</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -276,20 +282,23 @@ border-radius:5px;//这个是改变成圆角边框;
            <item>
             <widget class="QDoubleSpinBox" name="mafDoubleSpinBox">
              <property name="maximum">
-              <double>0.200000000000000</double>
+              <double>1.000000000000000</double>
              </property>
              <property name="singleStep">
               <double>0.010000000000000</double>
+             </property>
+             <property name="stepType">
+              <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QSlider" name="mafSlider">
+             <property name="maximum">
+              <number>100</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="invertedAppearance">
-              <bool>false</bool>
              </property>
             </widget>
            </item>

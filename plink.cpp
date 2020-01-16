@@ -45,12 +45,43 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
             this->paramlist.append(genotype);
             this->paramlist.append("--map");
             this->paramlist.append(map);
-//            this->paramlist.append("--assoc ");
-//            this->paramlist.append("--pheno " + phenotype);
-//            //this->paramlist.append("--maf " + maf);
-//            this->paramlist.append("--out " + out);
-//            this->paramlist.append("--noweb");
+            this->paramlist.append("--assoc");
+            this->paramlist.append("--pheno");
+            this->paramlist.append(phenotype);
         }
+        if (!covariate.isNull())
+        {
+            this->paramlist.append("--covar");
+            this->paramlist.append(covariate);
+        }
+        if (!kinship.isNull())
+        {   //
+
+        }
+        if (model.isNull())
+        {
+            if (model == "glm")
+            {
+                this->paramlist.append("--linear");
+            }
+            if (model == "logistic regression")
+            {
+                this->paramlist.append("--logistic");
+            }
+        }
+        if (!ms.isNull())
+        {
+            this->paramlist.append("--geno");
+            this->paramlist.append(ms);
+        }
+        if (!maf.isNull())
+        {
+            this->paramlist.append("--maf");
+            this->paramlist.append(maf);
+        }
+        this->paramlist.append("--out");
+        this->paramlist.append(out);
+        this->paramlist.append("--noweb");
     }
     else
     {

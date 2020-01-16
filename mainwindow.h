@@ -7,6 +7,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <QList>
+#include <synchapi.h>
 #include "filereader.h"
 #include "workdirectory.h"
 #include "phenoselector.h"
@@ -46,6 +47,14 @@ private slots:
     // for running MessageBox
     void on_readoutput();
     void on_readerror();
+
+    void on_mafSlider_valueChanged(int value);
+
+    void on_mafDoubleSpinBox_valueChanged(double arg1);
+
+    void on_msDoubleSpinBox_valueChanged(double arg1);
+
+    void on_msSlider_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;

@@ -261,8 +261,8 @@ void MainWindow::on_rungwasButton_clicked()
     }
 
     QString model = ui->modelComboBox->currentText();
-    QString missingRate = ui->msDoubleSpinBox->text();
-    QString maf = ui->mafDoubleSpinBox->text();
+    QString ms = ui->msRadioButton->isChecked()? ui->msDoubleSpinBox->text():nullptr;
+    QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     UserOS *userOS = new UserOS;
 
     ui->rungwasButton->setText("Running");
@@ -284,13 +284,15 @@ void MainWindow::on_rungwasButton_clicked()
 
             Plink plink;
             if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
-                          model, missingRate, maf, out))
+                          model, ms, maf, out+"/"+name))
             {
                 cmd->start(toolpath+tool, plink.getParamList());
                 cmd->waitForStarted();
+                runningMsgWidget->clearText();
                 runningMsgWidget->setTitle(name+" is running...");
                 runningMsgWidget->show();
                 cmd->waitForFinished();
+                runningMsgWidget->setTitle(name+" is finished");
             }
         }
     }
@@ -307,10 +309,31 @@ void MainWindow::on_rungwasButton_clicked()
 void MainWindow::on_readoutput()
 {
     runningMsgWidget->appendText(QString::fromLocal8Bit(cmd->readAllStandardOutput().data()));
+    runningMsgWidget->repaint();
 }
 
 void MainWindow::on_readerror()
 {
     QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(cmd->readAllStandardError().data()));
     runningMsgWidget->close();
+}
+
+void MainWindow::on_mafSlider_valueChanged(int value)
+{
+    ui->mafDoubleSpinBox->setValue(value/100.0);
+}
+
+void MainWindow::on_mafDoubleSpinBox_valueChanged(double value)
+{
+    ui->mafSlider->setValue(int(value*100));
+}
+
+void MainWindow::on_msDoubleSpinBox_valueChanged(double value)
+{
+    ui->msSlider->setValue(int(value*100));
+}
+
+void MainWindow::on_msSlider_valueChanged(int value)
+{
+    ui->msDoubleSpinBox->setValue(value/100.0);
 }
