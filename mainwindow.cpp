@@ -8,13 +8,15 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // Intiate Icon.(cross icon)
     ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->genoFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->mapFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->covarFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->kinFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
 
-    ui->selectedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection); // Press Ctrl to select more.
+    // Press Ctrl to select more.
+    ui->selectedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->excludedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     // Initiate variables.
@@ -24,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     runningMsgWidget = new RunningMsgWidget;
     cmd = new QProcess;
 
+    // connect QProcess->start(tool) and runningMsgWidget.
     connect(cmd, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
     connect(cmd, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
 }
@@ -39,7 +42,7 @@ MainWindow::~MainWindow()
     runningMsgWidget->close();
     delete runningMsgWidget;
 
-    if (cmd)
+    if (cmd)    // QProcess
     {
         cmd->terminate();
         cmd->waitForFinished();
@@ -65,7 +68,7 @@ void MainWindow::on_pheFileToolButton_clicked()
     {
         return;
     }
-    ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
+    ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));    // Set file Icon.
 
     this->fileReader->setPhenotypeFile(fileNames[0]);
 
@@ -73,7 +76,7 @@ void MainWindow::on_pheFileToolButton_clicked()
     QString fileName = fileDirList[fileDirList.length()-1]; // Get the file name from a path.
     ui->pheFileLabel->setText(fileName);
 
-    // Get types of phenotype, and write to list widget.
+    // Get types of phenotype, and write to list widget. ------- Just every coloumn(second begin) is phenotype is OK.
     QFile fptr(fileNames[0]);
     fptr.open(QIODevice::ReadOnly|QIODevice::Text);
     QString phenoFirstLine = fptr.readLine();
@@ -200,7 +203,7 @@ void MainWindow::on_modulenameLineEdit_textChanged(const QString &text)
 {
     this->workDirectory->setModuleName(text);
     if (!ui->outdirLineEdit->text().isEmpty())
-    {
+    {   // If a out directory is selected, display the out directory + the module name.
         ui->outdirLineEdit->setText(this->workDirectory->getOutputDirectory()+"/"+text);
     }
 }
