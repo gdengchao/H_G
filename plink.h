@@ -11,11 +11,11 @@ class Plink
 {
 public:
     Plink();
-    bool transformFile(QString srcFileType, QString dstFileType);
+    bool transformFile(QString srcFileType, QString srcFile, QString dstFileType, QString dstFile);
     bool runGWAS(QString phenotype, QString genotype, QString map,
                  QString covariate, QString kinship, QString model,
                  QString ms, QString maf, QString out);
-    QStringList getParamList(void);
+     QStringList getParamList(void);    // Every param can't have any space.
     QString getParamString(void);
 
 private:

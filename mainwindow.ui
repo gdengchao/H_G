@@ -117,7 +117,7 @@ pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #
         <x>10</x>
         <y>30</y>
         <width>421</width>
-        <height>84</height>
+        <height>87</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
@@ -384,12 +384,12 @@ border-radius:5px;//这个是改变成圆角边框;
             <widget class="QComboBox" name="toolComboBox">
              <item>
               <property name="text">
-               <string>plink</string>
+               <string>gemmax</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>gemmax</string>
+               <string>plink</string>
               </property>
              </item>
              <item>
@@ -603,7 +603,7 @@ border-radius:5px;//这个是改变成圆角边框;
       <x>30</x>
       <y>30</y>
       <width>141</width>
-      <height>505</height>
+      <height>520</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
@@ -953,7 +953,7 @@ border-radius:5px;//这个是改变成圆角边框;
      <x>0</x>
      <y>0</y>
      <width>805</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

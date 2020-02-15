@@ -2,6 +2,7 @@
 #define FILECONVERTER_H
 
 #include <QString>
+#include "plink.h"
 
 class FileConverter
 {

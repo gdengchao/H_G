@@ -24,12 +24,24 @@ QString Plink::getParamString(void)
  * FileType: vcf plink binary trsanform
  *
  */
-bool Plink::transformFile(QString srcFileType, QString dstFileType)
+bool Plink::transformFile(QString srcFileType, QString srcFile, QString dstFileType, QString dstFile)
 {
-    if (srcFileType == "plink" && dstFileType == "transform")
+    if (srcFile.isNull() || dstFile.isNull())
     {
-
+        return false;
     }
+
+    this->paramlist.clear();            // Clear paramlist before set parameter.
+    if (srcFileType == "vcf" && dstFileType == "plink")
+    {
+        this->paramlist.append("--vcf");
+        this->paramlist.append(srcFile);
+        this->paramlist.append("--recode");
+        this->paramlist.append("--out");
+        this->paramlist.append(dstFile);
+    }
+
+
     return true;
 }
 
@@ -37,6 +49,7 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
                     QString covariate, QString kinship, QString model,
                     QString ms, QString maf, QString out)
 {
+    this->paramlist.clear();            // Clear paramlist before set parameter.
     if (!phenotype.isNull() && !genotype.isNull() && !map.isNull())
     {
         if (genotype.split('.')[genotype.split('.').length()-1] == "ped")

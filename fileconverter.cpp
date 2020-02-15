@@ -23,6 +23,9 @@ bool FileConverter::vcf2plink(QString srcFile, QString dstFile)
     {
         return false;
     }
+    Plink plink;
+
+    
 
     return true;
 }

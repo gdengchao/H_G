@@ -271,39 +271,52 @@ void MainWindow::on_rungwasButton_clicked()
     ui->rungwasButton->setText("Running");
     ui->rungwasButton->setDisabled(true);
 
+    // Genotype file info.
+    QString genoFileName, genoFileSuffix,genoFileAbPath;
+    QFileInfo genoFileInfo;
+    genoFileInfo = QFileInfo(genotype);
+    genoFileName = genoFileInfo.baseName();
+    genoFileSuffix = genoFileInfo.suffix();
+    genoFileAbPath = genoFileInfo.absolutePath();
+
     if (userOS->currentOS() == "winnt")
     {
-        if (tool == "plink")
+        if (genoFileSuffix == "vcf" && tool=="gemmax")/*genotype.split(".")[genotype.split(".").length()-1]*/
         {
-            //cmd->start(toolpath+tool, QStringList()<<"-h"<<"--noweb");
-//            cmd->start("cmd");
-//            cmd->waitForStarted();
+            Plink plink;
+            if(plink.transformFile("vcf", genotype, "plink", out+"/"+genoFileName))
+            {
+                this->cmd->start("C:\\Users\\deng chao\\Desktop\\testHG\\plink_v1.9\\plink", plink.getParamList());
+                //this->cmd->waitForStarted();
+                this->runningMsgWidget->clearText();
+                this->runningMsgWidget->setTitle("Making " + genoFileName +".ped and" + genoFileName + ".map");//            this->runningMsgWidget->show();
+                this->runningMsgWidget->show();
+                this->cmd->waitForFinished();
+                this->runningMsgWidget->setTitle(genoFileName +".ped and " + genoFileName + ".map is made");
 
-//            // QString transform to char *.
-//            QString cmdline = toolpath+tool+" "+"-h"/*plink.getParamString()*/;
-//            QByteArray cmdArray;
-//            cmdArray.append(cmdline);
-//            cmd->write(cmdArray.data());
-
+            };
+        }
+        if (tool == "plink")  // plink GWAS
+        {
             Plink plink;
             if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
                           model, ms, maf, out+"/"+name))
             {
-                cmd->start(toolpath+tool, plink.getParamList());
-                cmd->waitForStarted();
-                runningMsgWidget->clearText();
-                runningMsgWidget->setTitle(name+" is running...");
-                runningMsgWidget->show();
-                cmd->waitForFinished();
-                runningMsgWidget->setTitle(name+" is finished");
+                this->cmd->start(toolpath+tool, plink.getParamList());
+                this->cmd->waitForStarted();
+                this->runningMsgWidget->clearText();
+                this->runningMsgWidget->setTitle(name+" is running...");
+                this->runningMsgWidget->show();
+                this->cmd->waitForFinished();
+                this->runningMsgWidget->setTitle(name+" is finished");
             }
         }
     }
 
-    if (cmd)
+    if (this->cmd)
     {
-        cmd->terminate();
-        cmd->waitForFinished();
+        this->cmd->terminate();
+        this->cmd->waitForFinished();
     }
     ui->rungwasButton->setText("Run");
     ui->rungwasButton->setEnabled(true);
@@ -311,14 +324,14 @@ void MainWindow::on_rungwasButton_clicked()
 
 void MainWindow::on_readoutput()
 {
-    runningMsgWidget->appendText(QString::fromLocal8Bit(cmd->readAllStandardOutput().data()));
-    runningMsgWidget->repaint();
+    this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->cmd->readAllStandardOutput().data()));
+    this->runningMsgWidget->repaint();
 }
 
 void MainWindow::on_readerror()
 {
-    QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(cmd->readAllStandardError().data()));
-    runningMsgWidget->close();
+    QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->cmd->readAllStandardError().data()));
+    this->runningMsgWidget->close();
 }
 
 void MainWindow::on_mafSlider_valueChanged(int value)
