@@ -247,7 +247,8 @@ void MainWindow::on_excludePhenoButton_clicked()
 void MainWindow::on_rungwasButton_clicked()
 {
     //QString toolpath = "/tools/";
-    QString toolpath = "F://Code//Qt/H_G//tools//";  // For Debug, start from debug/a.exe fold.
+    //QString toolpath = "F://Code//Qt/H_G//tools//";  // Lab418. For Debug, start from debug/a.exe fold.
+    QString toolpath = "G:\\GitHub\\H_G\\tools\\";  // Laptop
     QString tool = ui->toolComboBox->currentText();
 
     QString phenotype = fileReader->getPhenotypeFile();
@@ -286,8 +287,8 @@ void MainWindow::on_rungwasButton_clicked()
             Plink plink;
             if(plink.transformFile("vcf", genotype, "plink", out+"/"+genoFileName))
             {
-                this->cmd->start("C:\\Users\\deng chao\\Desktop\\testHG\\plink_v1.9\\plink", plink.getParamList());
-                //this->cmd->waitForStarted();
+                this->cmd->start(toolpath+"plink", plink.getParamList());
+                this->cmd->waitForStarted();
                 this->runningMsgWidget->clearText();
                 this->runningMsgWidget->setTitle("Making " + genoFileName +".ped and" + genoFileName + ".map");//            this->runningMsgWidget->show();
                 this->runningMsgWidget->show();
@@ -303,7 +304,7 @@ void MainWindow::on_rungwasButton_clicked()
                           model, ms, maf, out+"/"+name))
             {
                 this->cmd->start(toolpath+tool, plink.getParamList());
-                this->cmd->waitForStarted();
+                //this->cmd->waitForStarted();
                 this->runningMsgWidget->clearText();
                 this->runningMsgWidget->setTitle(name+" is running...");
                 this->runningMsgWidget->show();
