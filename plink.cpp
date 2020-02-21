@@ -21,7 +21,7 @@ QString Plink::getParamString(void)
 }
 
 /*
- * FileType: vcf plink binary trsanform
+ * FileType: vcf plink binary transpose
  *
  */
 bool Plink::transformFile(QString srcFileType, QString srcFile, QString dstFileType, QString dstFile)
@@ -32,11 +32,13 @@ bool Plink::transformFile(QString srcFileType, QString srcFile, QString dstFileT
     }
 
     this->paramlist.clear();            // Clear paramlist before set parameter.
-    if (srcFileType == "vcf" && dstFileType == "plink")
+    if (srcFileType == "vcf" && dstFileType == "transpose")
     {
         this->paramlist.append("--vcf");
         this->paramlist.append(srcFile);
+        this->paramlist.append("--r2");
         this->paramlist.append("--recode");
+        this->paramlist.append("--transpose");
         this->paramlist.append("--out");
         this->paramlist.append(dstFile);
     }

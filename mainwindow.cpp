@@ -24,11 +24,11 @@ MainWindow::MainWindow(QWidget *parent)
     workDirectory = new WorkDirectory;
     phenoSelector = new PhenoSelector;
     runningMsgWidget = new RunningMsgWidget;
-    cmd = new QProcess;
+    process = new QProcess;
 
     // connect QProcess->start(tool) and runningMsgWidget.
-    connect(cmd, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
-    connect(cmd, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
+    connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
+    connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
 }
 
 MainWindow::~MainWindow()
@@ -42,12 +42,12 @@ MainWindow::~MainWindow()
     runningMsgWidget->close();
     delete runningMsgWidget;
 
-    if (cmd)    // QProcess
+    if (process)    // QProcess
     {
-        cmd->terminate();
-        cmd->waitForFinished();
+        process->terminate();
+        process->waitForFinished();
     }
-    delete cmd;
+    delete process;
 }
 
 
@@ -248,7 +248,8 @@ void MainWindow::on_rungwasButton_clicked()
 {
     //QString toolpath = "/tools/";
     //QString toolpath = "F://Code//Qt/H_G//tools//";  // Lab418. For Debug, start from debug/a.exe fold.
-    QString toolpath = "G:\\GitHub\\H_G\\tools\\";  // Laptop
+    //QString toolpath = "G:\\GitHub\\H_G\\tools\\";  // Laptop Win10
+    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux
     QString tool = ui->toolComboBox->currentText();
 
     QString phenotype = fileReader->getPhenotypeFile();
@@ -272,52 +273,56 @@ void MainWindow::on_rungwasButton_clicked()
     ui->rungwasButton->setText("Running");
     ui->rungwasButton->setDisabled(true);
 
-    // Genotype file info.
-    QString genoFileName, genoFileSuffix,genoFileAbPath;
-    QFileInfo genoFileInfo;
-    genoFileInfo = QFileInfo(genotype);
-    genoFileName = genoFileInfo.baseName();
-    genoFileSuffix = genoFileInfo.suffix();
-    genoFileAbPath = genoFileInfo.absolutePath();
+    // Genotype file info. 
+    QFileInfo genoFileInfo = QFileInfo(genotype);
+    QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
+    QString genoFileBaseName = genoFileInfo.baseName();     // geno
+    QString genoFileSuffix = genoFileInfo.suffix();         //
+    QString genoFileAbPath = genoFileInfo.absolutePath();
 
-    if (userOS->currentOS() == "winnt")
+    if (userOS->currentOS() == "linux") {}
+
+    if (isVcfFile(genotype) && (tool=="gemma" || tool == "emmax"))/*genotype.split(".")[genotype.split(".").length()-1]*/
+    {   // Transform "vcf" to "transpose"
+        Plink plink;
+        if(plink.transformFile("vcf", genotype, "transpose", out+"/"+genoFileBaseName))
+        {
+            this->process->start(toolpath+"plink", plink.getParamList());
+            this->process->waitForStarted();
+            this->runningMsgWidget->clearText();
+            this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped and" + genoFileBaseName + ".tfam");//            this->runningMsgWidget->show();
+            this->runningMsgWidget->show();
+            this->process->waitForFinished();
+            this->runningMsgWidget->setTitle(genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made");
+        };
+    }
+
+    if (tool == "gemma")
     {
-        if (genoFileSuffix == "vcf" && tool=="gemmax")/*genotype.split(".")[genotype.split(".").length()-1]*/
-        {
-            Plink plink;
-            if(plink.transformFile("vcf", genotype, "plink", out+"/"+genoFileName))
-            {
-                this->cmd->start(toolpath+"plink", plink.getParamList());
-                this->cmd->waitForStarted();
-                this->runningMsgWidget->clearText();
-                this->runningMsgWidget->setTitle("Making " + genoFileName +".ped and" + genoFileName + ".map");//            this->runningMsgWidget->show();
-                this->runningMsgWidget->show();
-                this->cmd->waitForFinished();
-                this->runningMsgWidget->setTitle(genoFileName +".ped and " + genoFileName + ".map is made");
 
-            };
-        }
-        if (tool == "plink")  // plink GWAS
+    }
+
+    if (tool == "plink")  // plink GWAS
+    {
+        Plink plink;
+        if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
+                      model, ms, maf, out+"/"+name))
         {
-            Plink plink;
-            if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
-                          model, ms, maf, out+"/"+name))
-            {
-                this->cmd->start(toolpath+tool, plink.getParamList());
-                //this->cmd->waitForStarted();
-                this->runningMsgWidget->clearText();
-                this->runningMsgWidget->setTitle(name+" is running...");
-                this->runningMsgWidget->show();
-                this->cmd->waitForFinished();
-                this->runningMsgWidget->setTitle(name+" is finished");
-            }
+            this->process->start(toolpath+tool, plink.getParamList());
+            //this->cmd->waitForStarted();
+            this->runningMsgWidget->clearText();
+            this->runningMsgWidget->setTitle(name+" is running...");
+            this->runningMsgWidget->show();
+            this->process->waitForFinished();
+            this->runningMsgWidget->setTitle(name+" is finished");
         }
     }
 
-    if (this->cmd)
+
+    if (this->process)
     {
-        this->cmd->terminate();
-        this->cmd->waitForFinished();
+        this->process->terminate();
+        this->process->waitForFinished();
     }
     ui->rungwasButton->setText("Run");
     ui->rungwasButton->setEnabled(true);
@@ -325,13 +330,13 @@ void MainWindow::on_rungwasButton_clicked()
 
 void MainWindow::on_readoutput()
 {
-    this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->cmd->readAllStandardOutput().data()));
+    this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardOutput().data()));
     this->runningMsgWidget->repaint();
 }
 
 void MainWindow::on_readerror()
 {
-    QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->cmd->readAllStandardError().data()));
+    QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
     this->runningMsgWidget->close();
 }
 
@@ -353,4 +358,25 @@ void MainWindow::on_msDoubleSpinBox_valueChanged(double value)
 void MainWindow::on_msSlider_valueChanged(int value)
 {
     ui->msDoubleSpinBox->setValue(value/100.0);
+}
+
+bool MainWindow::isVcfFile(QString file) // Just consider filename.
+{
+    if (file.isNull() || file.isEmpty())
+    {
+        return false;
+    }
+
+    QFileInfo fileInfo = QFileInfo(file);
+    QStringList fileNameList = fileInfo.fileName().split(".");         // demo.vcf.gz
+
+    for (QString item : fileNameList)
+    {
+        if (item == "vcf")
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

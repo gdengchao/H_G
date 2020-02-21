@@ -18,7 +18,7 @@ enum enum_model
 enum enum_user_OS
 {
     windows = 0,
-    linux = 1,
+    linuxos = 1,
 };
 
 
