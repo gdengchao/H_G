@@ -282,24 +282,46 @@ void MainWindow::on_rungwasButton_clicked()
 
     if (userOS->currentOS() == "linux") {}
 
-    if (isVcfFile(genotype) && (tool=="gemma" || tool == "emmax"))/*genotype.split(".")[genotype.split(".").length()-1]*/
-    {   // Transform "vcf" to "transpose"
-        Plink plink;
-        if(plink.transformFile("vcf", genotype, "transpose", out+"/"+genoFileBaseName))
-        {
-            this->process->start(toolpath+"plink", plink.getParamList());
-            this->process->waitForStarted();
-            this->runningMsgWidget->clearText();
-            this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped and" + genoFileBaseName + ".tfam");//            this->runningMsgWidget->show();
-            this->runningMsgWidget->show();
-            this->process->waitForFinished();
-            this->runningMsgWidget->setTitle(genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made");
-        };
-    }
-
-    if (tool == "gemma")
+    if (tool=="gemma" || tool == "emmax")/*genotype.split(".")[genotype.split(".").length()-1]*/
     {
 
+        Plink plink;
+        if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+        {
+            if(!plink.vcf2transpose(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+            {
+                return;
+            }
+        }
+        if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
+                && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
+        {
+            if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+            {
+                return;
+            }
+        }
+        this->process->start(toolpath+"plink", plink.getParamList());
+        this->process->waitForStarted();
+        this->runningMsgWidget->clearText();
+        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped and " + genoFileBaseName + ".tfam");//            this->runningMsgWidget->show();
+        this->runningMsgWidget->show();
+        this->process->waitForFinished();
+        this->runningMsgWidget->setTitle(genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made");
+    }
+
+    if (tool == "emmax")
+    {
+        Emmax emmax;
+        if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name))
+        {
+            this->process->start(toolpath+tool, emmax.getParamList());
+            this->process->waitForStarted();
+            this->runningMsgWidget->setTitle(name+" is running...");
+            this->runningMsgWidget->show();
+            this->process->waitForFinished();
+            this->runningMsgWidget->setTitle(name+" is finished");
+        }
     }
 
     if (tool == "plink")  // plink GWAS
@@ -309,7 +331,7 @@ void MainWindow::on_rungwasButton_clicked()
                       model, ms, maf, out+"/"+name))
         {
             this->process->start(toolpath+tool, plink.getParamList());
-            //this->cmd->waitForStarted();
+            this->process->waitForStarted();
             this->runningMsgWidget->clearText();
             this->runningMsgWidget->setTitle(name+" is running...");
             this->runningMsgWidget->show();

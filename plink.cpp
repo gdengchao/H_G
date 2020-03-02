@@ -1,6 +1,6 @@
 #include "plink.h"
 
-Plink::Plink(): toolpath("/tool/plink/"), model({"glm", "mlm", "linear_regression"})
+Plink::Plink(): toolpath("/tool/plink"), model({"glm", "mlm", "linear_regression"})
 {
     this->paramlist.clear();
 }
@@ -20,31 +20,67 @@ QString Plink::getParamString(void)
     return ret;
 }
 
-/*
- * FileType: vcf plink binary transpose
- *
- */
-bool Plink::transformFile(QString srcFileType, QString srcFile, QString dstFileType, QString dstFile)
+bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString ms)
 {
-    if (srcFile.isNull() || dstFile.isNull())
+    if (vcfFile.isNull() || out.isNull())
     {
         return false;
     }
 
     this->paramlist.clear();            // Clear paramlist before set parameter.
-    if (srcFileType == "vcf" && dstFileType == "transpose")
+    this->paramlist.append("--vcf");
+    this->paramlist.append(vcfFile);
+
+    if (!maf.isNull())
     {
-        this->paramlist.append("--vcf");
-        this->paramlist.append(srcFile);
-        this->paramlist.append("--r2");
-        this->paramlist.append("--recode");
-        this->paramlist.append("--transpose");
-        this->paramlist.append("--out");
-        this->paramlist.append(dstFile);
+        this->paramlist.append("--maf");
+        this->paramlist.append(maf);
+    }
+    if (!ms.isNull())
+    {
+        this->paramlist.append("--geno");
+        this->paramlist.append(ms);
     }
 
+    this->paramlist.append("--recode");
+    this->paramlist.append("--transpose");
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
 
     return true;
+}
+
+bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QString maf, QString ms)
+{
+    if (pedFile.isNull() || mapFile.isNull() || out.isNull())
+    {
+        return false;
+    }
+
+    this->paramlist.clear();            // Clear paramlist before set parameter.
+    this->paramlist.append("--ped");
+    this->paramlist.append(pedFile);
+    this->paramlist.append("--map");
+    this->paramlist.append(mapFile);
+
+    if (!maf.isNull())
+    {
+        this->paramlist.append("--maf");
+        this->paramlist.append(maf);
+    }
+    if (!ms.isNull())
+    {
+        this->paramlist.append("--geno");
+        this->paramlist.append(ms);
+    }
+
+    this->paramlist.append("--recode");
+    this->paramlist.append("--transpose");
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+
+    return true;
+
 }
 
 bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
@@ -86,7 +122,7 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
         }
         if (!ms.isNull())
         {
-            this->paramlist.append("--geno");
+            this->paramlist.append("--mind");
             this->paramlist.append(ms);
         }
         if (!maf.isNull())

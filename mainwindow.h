@@ -13,6 +13,7 @@
 #include "useros.h"
 #include "plink.h"
 #include "runningmsgwidget.h"
+#include "emmax.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
