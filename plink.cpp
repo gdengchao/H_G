@@ -42,10 +42,13 @@ bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString ms)
         this->paramlist.append(ms);
     }
 
-    this->paramlist.append("--recode");
+    this->paramlist.append("--recode12");
+    this->paramlist.append("--output-missing-genotype");
+    this->paramlist.append("0");
     this->paramlist.append("--transpose");
     this->paramlist.append("--out");
     this->paramlist.append(out);
+    this->paramlist.append("--noweb");
 
     return true;
 }
@@ -74,13 +77,15 @@ bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QStri
         this->paramlist.append(ms);
     }
 
-    this->paramlist.append("--recode");
+    this->paramlist.append("--recode12");
+    this->paramlist.append("--output-missing-genotype");
+    this->paramlist.append("0");
     this->paramlist.append("--transpose");
     this->paramlist.append("--out");
     this->paramlist.append(out);
+    this->paramlist.append("--noweb");
 
     return true;
-
 }
 
 bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
@@ -88,53 +93,7 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
                     QString ms, QString maf, QString out)
 {
     this->paramlist.clear();            // Clear paramlist before set parameter.
-    if (!phenotype.isNull() && !genotype.isNull() && !map.isNull())
-    {
-        if (genotype.split('.')[genotype.split('.').length()-1] == "ped")
-        {
-            this->paramlist.append("--ped");
-            this->paramlist.append(genotype);
-            this->paramlist.append("--map");
-            this->paramlist.append(map);
-            this->paramlist.append("--assoc");
-            this->paramlist.append("--pheno");
-            this->paramlist.append(phenotype);
-        }
-        if (!covariate.isNull())
-        {
-            this->paramlist.append("--covar");
-            this->paramlist.append(covariate);
-        }
-        if (!kinship.isNull())
-        {   //
-
-        }
-        if (model.isNull())
-        {
-            if (model == "glm")
-            {
-                this->paramlist.append("--linear");
-            }
-            if (model == "logistic regression")
-            {
-                this->paramlist.append("--logistic");
-            }
-        }
-        if (!ms.isNull())
-        {
-            this->paramlist.append("--mind");
-            this->paramlist.append(ms);
-        }
-        if (!maf.isNull())
-        {
-            this->paramlist.append("--maf");
-            this->paramlist.append(maf);
-        }
-        this->paramlist.append("--out");
-        this->paramlist.append(out);
-        this->paramlist.append("--noweb");
-    }
-    else
+    if (!phenotype.isNull() || !genotype.isNull())
     {
         if (phenotype.isNull())
         {
@@ -146,6 +105,51 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
         }
         return false;
     }
+
+    if (genotype.split('.')[genotype.split('.').length()-1] == "ped")
+    {
+        this->paramlist.append("--ped");
+        this->paramlist.append(genotype);
+        this->paramlist.append("--map");
+        this->paramlist.append(map);
+        this->paramlist.append("--assoc");
+        this->paramlist.append("--pheno");
+        this->paramlist.append(phenotype);
+    }
+    if (!covariate.isNull())
+    {
+        this->paramlist.append("--covar");
+        this->paramlist.append(covariate);
+    }
+    if (!kinship.isNull())
+    {   //
+
+    }
+    if (model.isNull())
+    {
+        if (model == "glm")
+        {
+            this->paramlist.append("--linear");
+        }
+        if (model == "logistic regression")
+        {
+            this->paramlist.append("--logistic");
+        }
+    }
+    if (!ms.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(ms);
+    }
+    if (!maf.isNull())
+    {
+        this->paramlist.append("--maf");
+        this->paramlist.append(maf);
+    }
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+    this->paramlist.append("--noweb");
+
     return true;
 }
 

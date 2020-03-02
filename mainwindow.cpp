@@ -310,17 +310,37 @@ void MainWindow::on_rungwasButton_clicked()
         this->runningMsgWidget->setTitle(genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made");
     }
 
-    if (tool == "emmax")
+    if (tool == "emmax")    // emmax gwas
     {
         Emmax emmax;
+//        if (emmax.makeKinship(genotype))
+//        {
+//            this->process->start(toolpath+"emmax-kin", emmax.getParamList());
+//        }
+//        else
+//        {
+//            return;
+//        }
+
         if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name))
         {
             this->process->start(toolpath+tool, emmax.getParamList());
-            this->process->waitForStarted();
-            this->runningMsgWidget->setTitle(name+" is running...");
-            this->runningMsgWidget->show();
-            this->process->waitForFinished();
-            this->runningMsgWidget->setTitle(name+" is finished");
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    if (tool == "gemma")
+    {
+        if (false)
+        {
+
+        }
+        else
+        {
+            return;
         }
     }
 
@@ -331,15 +351,19 @@ void MainWindow::on_rungwasButton_clicked()
                       model, ms, maf, out+"/"+name))
         {
             this->process->start(toolpath+tool, plink.getParamList());
-            this->process->waitForStarted();
-            this->runningMsgWidget->clearText();
-            this->runningMsgWidget->setTitle(name+" is running...");
-            this->runningMsgWidget->show();
-            this->process->waitForFinished();
-            this->runningMsgWidget->setTitle(name+" is finished");
+        }
+        else
+        {
+            return;
         }
     }
 
+    // Running message to display message.
+    this->process->waitForStarted();
+    this->runningMsgWidget->setTitle(name+" is running...");
+    this->runningMsgWidget->show();
+    this->process->waitForFinished();
+    this->runningMsgWidget->setTitle(name+" is finished");
 
     if (this->process)
     {
@@ -353,7 +377,7 @@ void MainWindow::on_rungwasButton_clicked()
 void MainWindow::on_readoutput()
 {
     this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardOutput().data()));
-    this->runningMsgWidget->repaint();
+    this->runningMsgWidget->update();
 }
 
 void MainWindow::on_readerror()
