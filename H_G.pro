@@ -30,7 +30,6 @@ SOURCES += \
 
 HEADERS += \
     emmax.h \
-    enum.h \
     fileconverter.h \
     filereader.h \
     mainwindow.h \
