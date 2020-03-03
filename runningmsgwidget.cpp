@@ -32,3 +32,8 @@ void RunningMsgWidget::setTitle(QString title)
 {
     this->setWindowTitle(title);
 }
+
+QString RunningMsgWidget::getText(void)
+{
+    return ui->textBrowser->toPlainText();
+}

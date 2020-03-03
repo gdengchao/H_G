@@ -48,9 +48,9 @@ private slots:
     void on_readoutput();
     void on_readerror();
     void on_mafSlider_valueChanged(int value);
-    void on_mafDoubleSpinBox_valueChanged(double arg1);
-    void on_msDoubleSpinBox_valueChanged(double arg1);
     void on_msSlider_valueChanged(int value);
+    void on_msDoubleSpinBox_editingFinished();
+    void on_mafDoubleSpinBox_editingFinished();
 
 private:
     Ui::MainWindow *ui;

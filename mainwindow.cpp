@@ -246,6 +246,13 @@ void MainWindow::on_excludePhenoButton_clicked()
 
 void MainWindow::on_rungwasButton_clicked()
 {
+    ui->rungwasButton->setText("Running");
+    ui->rungwasButton->setDisabled(true);
+    this->runningMsgWidget->setTitle("Ready...");
+    this->runningMsgWidget->show();
+
+    qDebug() << ui->rungwasButton->text();
+
     //QString toolpath = "/tools/";
     //QString toolpath = "F://Code//Qt/H_G//tools//";  // Lab418. For Debug, start from debug/a.exe fold.
     //QString toolpath = "G:\\GitHub\\H_G\\tools\\";  // Laptop Win10
@@ -270,9 +277,6 @@ void MainWindow::on_rungwasButton_clicked()
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     UserOS *userOS = new UserOS;
 
-    ui->rungwasButton->setText("Running");
-    ui->rungwasButton->setDisabled(true);
-
     // Genotype file info. 
     QFileInfo genoFileInfo = QFileInfo(genotype);
     QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
@@ -282,9 +286,8 @@ void MainWindow::on_rungwasButton_clicked()
 
     if (userOS->currentOS() == "linux") {}
 
-    if (tool=="gemma" || tool == "emmax")/*genotype.split(".")[genotype.split(".").length()-1]*/
-    {
-
+    if (tool=="gemma" || tool == "emmax")   //genotype.split(".")[genotype.split(".").length()-1]
+    {   // Need tped/fam files.
         Plink plink;
         if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
         {
@@ -302,25 +305,31 @@ void MainWindow::on_rungwasButton_clicked()
             }
         }
         this->process->start(toolpath+"plink", plink.getParamList());
-        this->process->waitForStarted();
+        this->process->waitForStarted(-1);
         this->runningMsgWidget->clearText();
-        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped and " + genoFileBaseName + ".tfam");//            this->runningMsgWidget->show();
-        this->runningMsgWidget->show();
-        this->process->waitForFinished();
+        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped and " + genoFileBaseName + ".tfam");
+        this->process->waitForFinished(-1);
         this->runningMsgWidget->setTitle(genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made");
+
+        qDebug() << genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made";
     }
 
     if (tool == "emmax")    // emmax gwas
     {
         Emmax emmax;
-//        if (emmax.makeKinship(genotype))
-//        {
-//            this->process->start(toolpath+"emmax-kin", emmax.getParamList());
-//        }
-//        else
-//        {
-//            return;
-//        }
+        if (kinship.isNull())
+        {
+             if (!emmax.makeKinship(genoFileAbPath+"/"+genoFileBaseName)) return;  // Make kinship failed.
+             this->process->start(toolpath+"emmax-kin", emmax.getParamList());
+             this->process->waitForStarted();
+             this->runningMsgWidget->clearText();
+             this->runningMsgWidget->setTitle("Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf");
+             this->process->waitForFinished(-1);
+             this->runningMsgWidget->setTitle(genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made");
+             kinship = genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf";
+
+             qDebug() << genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made";
+        }
 
         if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name))
         {
@@ -330,6 +339,17 @@ void MainWindow::on_rungwasButton_clicked()
         {
             return;
         }
+        // Running message to display message.
+        this->process->waitForStarted();
+        this->runningMsgWidget->clearText();
+        this->runningMsgWidget->setTitle("Emmax: " + name+" is running...");
+
+        qDebug() << "Emmax: " + name+" is running...";
+
+        this->process->waitForFinished(-1);
+        this->runningMsgWidget->setTitle("Emmax: " + name+" is finished");
+
+        qDebug() << "Emmax: " + name+" is finished";
     }
 
     if (tool == "gemma")
@@ -356,14 +376,11 @@ void MainWindow::on_rungwasButton_clicked()
         {
             return;
         }
+        // Running message to display message.
+        this->process->waitForStarted();
+        this->process->waitForFinished();
     }
 
-    // Running message to display message.
-    this->process->waitForStarted();
-    this->runningMsgWidget->setTitle(name+" is running...");
-    this->runningMsgWidget->show();
-    this->process->waitForFinished();
-    this->runningMsgWidget->setTitle(name+" is finished");
 
     if (this->process)
     {
@@ -376,14 +393,14 @@ void MainWindow::on_rungwasButton_clicked()
 
 void MainWindow::on_readoutput()
 {
+    //QString curText = this->runningMsgWidget->getText();
     this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardOutput().data()));
-    this->runningMsgWidget->update();
 }
 
 void MainWindow::on_readerror()
 {
-    QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-    this->runningMsgWidget->close();
+    //QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
+    //this->runningMsgWidget->close();
 }
 
 void MainWindow::on_mafSlider_valueChanged(int value)
@@ -391,14 +408,14 @@ void MainWindow::on_mafSlider_valueChanged(int value)
     ui->mafDoubleSpinBox->setValue(value/100.0);
 }
 
-void MainWindow::on_mafDoubleSpinBox_valueChanged(double value)
+void MainWindow::on_mafDoubleSpinBox_editingFinished()
 {
-    ui->mafSlider->setValue(int(value*100));
+    ui->mafSlider->setValue(int(ui->mafDoubleSpinBox->value() * 100));
 }
 
-void MainWindow::on_msDoubleSpinBox_valueChanged(double value)
+void MainWindow::on_msDoubleSpinBox_editingFinished()
 {
-    ui->msSlider->setValue(int(value*100));
+    ui->msSlider->setValue(int(ui->msDoubleSpinBox->value() * 100));
 }
 
 void MainWindow::on_msSlider_valueChanged(int value)

@@ -18,7 +18,7 @@ public:
     void appendText(QString text);
     void clearText(void);
     void setTitle(QString title);
-
+    QString getText(void);
 private:
     Ui::RunningMsgWidget *ui;
 };

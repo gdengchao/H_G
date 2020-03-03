@@ -2,7 +2,6 @@
 #define FILEREADER_H
 
 #include <QString>
-#include "enum.h"
 #include <QDebug>
 
 class FileReader
