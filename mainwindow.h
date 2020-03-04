@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QApplication>
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QAbstractItemView>
@@ -34,23 +35,30 @@ private slots:
     void on_mapFileToolButton_clicked();
     void on_covarFileToolButton_clicked();
     void on_kinFileToolButton_clicked();
+
     // for WorkDirectory
     void on_browButton_clicked();
     void on_modulenameLineEdit_textChanged(const QString &text);
+
     // for PhenoSelector
     void on_excludeAllPhenoButton_clicked();
     void on_selectAllPhenoButton_clicked();
     void on_selectPhenoButton_clicked();
     void on_excludePhenoButton_clicked();
+
     // for run pushButton
     void on_rungwasButton_clicked();
-    // for running MessageBox
-    void on_readoutput();
-    void on_readerror();
+
+    // for maf and ms
     void on_mafSlider_valueChanged(int value);
     void on_msSlider_valueChanged(int value);
     void on_msDoubleSpinBox_editingFinished();
     void on_mafDoubleSpinBox_editingFinished();
+
+    // for running MessageBox
+    void on_readoutput();
+    void on_readerror();
+    void on_closerunningWidget();
 
 private:
     Ui::MainWindow *ui;
@@ -64,5 +72,6 @@ private:
 
     // Usual
     bool isVcfFile(QString file);
+    void resetWindow(void);
 };
 #endif // MAINWINDOW_H

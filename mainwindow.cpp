@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     // connect QProcess->start(tool) and runningMsgWidget.
     connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
     connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
+    connect(runningMsgWidget, SIGNAL(close()), this->process, SLOT(on_closerunningWidget()));
 }
 
 MainWindow::~MainWindow()
@@ -246,11 +247,6 @@ void MainWindow::on_excludePhenoButton_clicked()
 
 void MainWindow::on_rungwasButton_clicked()
 {
-    ui->rungwasButton->setText("Running");
-    ui->rungwasButton->setDisabled(true);
-    this->runningMsgWidget->setTitle("Ready...");
-    this->runningMsgWidget->show();
-
     qDebug() << ui->rungwasButton->text();
 
     //QString toolpath = "/tools/";
@@ -286,6 +282,12 @@ void MainWindow::on_rungwasButton_clicked()
 
     if (userOS->currentOS() == "linux") {}
 
+    ui->rungwasButton->setText("Running");
+    ui->rungwasButton->setDisabled(true);
+    this->runningMsgWidget->setTitle("Ready...");
+    this->runningMsgWidget->show();
+    qApp->processEvents();
+
     if (tool=="gemma" || tool == "emmax")   //genotype.split(".")[genotype.split(".").length()-1]
     {   // Need tped/fam files.
         Plink plink;
@@ -293,6 +295,7 @@ void MainWindow::on_rungwasButton_clicked()
         {
             if(!plink.vcf2transpose(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
             {
+                this->resetWindow();
                 return;
             }
         }
@@ -301,14 +304,15 @@ void MainWindow::on_rungwasButton_clicked()
         {
             if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
             {
+                this->resetWindow();
                 return;
             }
         }
         this->process->start(toolpath+"plink", plink.getParamList());
-        this->process->waitForStarted(-1);
+        this->process->waitForStarted();
         this->runningMsgWidget->clearText();
         this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped and " + genoFileBaseName + ".tfam");
-        this->process->waitForFinished(-1);
+        this->process->waitForFinished();
         this->runningMsgWidget->setTitle(genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made");
 
         qDebug() << genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made";
@@ -324,7 +328,7 @@ void MainWindow::on_rungwasButton_clicked()
              this->process->waitForStarted();
              this->runningMsgWidget->clearText();
              this->runningMsgWidget->setTitle("Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf");
-             this->process->waitForFinished(-1);
+             this->process->waitForFinished();
              this->runningMsgWidget->setTitle(genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made");
              kinship = genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf";
 
@@ -337,19 +341,15 @@ void MainWindow::on_rungwasButton_clicked()
         }
         else
         {
+            this->resetWindow();
             return;
         }
         // Running message to display message.
         this->process->waitForStarted();
         this->runningMsgWidget->clearText();
         this->runningMsgWidget->setTitle("Emmax: " + name+" is running...");
-
-        qDebug() << "Emmax: " + name+" is running...";
-
-        this->process->waitForFinished(-1);
+        this->process->waitForFinished();
         this->runningMsgWidget->setTitle("Emmax: " + name+" is finished");
-
-        qDebug() << "Emmax: " + name+" is finished";
     }
 
     if (tool == "gemma")
@@ -360,6 +360,7 @@ void MainWindow::on_rungwasButton_clicked()
         }
         else
         {
+            this->resetWindow();
             return;
         }
     }
@@ -381,14 +382,7 @@ void MainWindow::on_rungwasButton_clicked()
         this->process->waitForFinished();
     }
 
-
-    if (this->process)
-    {
-        this->process->terminate();
-        this->process->waitForFinished();
-    }
-    ui->rungwasButton->setText("Run");
-    ui->rungwasButton->setEnabled(true);
+    this->resetWindow();
 }
 
 void MainWindow::on_readoutput()
@@ -401,6 +395,18 @@ void MainWindow::on_readerror()
 {
     //QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
     //this->runningMsgWidget->close();
+}
+
+void MainWindow::on_closerunningWidget()
+{
+    if (this->process)
+    {
+        this->process->terminate();
+        this->process->waitForFinished();
+    }
+    ui->rungwasButton->setText("Run");
+    ui->rungwasButton->setEnabled(true);
+    qApp->processEvents();
 }
 
 void MainWindow::on_mafSlider_valueChanged(int value)
@@ -442,4 +448,15 @@ bool MainWindow::isVcfFile(QString file) // Just consider filename.
     }
 
     return false;
+}
+
+void MainWindow::resetWindow()
+{
+    if (this->process)
+    {
+        this->process->terminate();
+        this->process->waitForFinished();
+    }
+    ui->rungwasButton->setText("Run");
+    ui->rungwasButton->setEnabled(true);
 }

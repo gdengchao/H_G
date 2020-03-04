@@ -17,7 +17,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     emmax.cpp \
-    fileconverter.cpp \
     filereader.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -30,7 +29,6 @@ SOURCES += \
 
 HEADERS += \
     emmax.h \
-    fileconverter.h \
     filereader.h \
     mainwindow.h \
     phenoselector.h \
