@@ -13,8 +13,9 @@
 #include "phenoselector.h"
 #include "useros.h"
 #include "plink.h"
-#include "runningmsgwidget.h"
 #include "emmax.h"
+#include "gemma.h"
+#include "runningmsgwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

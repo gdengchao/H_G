@@ -273,7 +273,7 @@ void MainWindow::on_rungwasButton_clicked()
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     UserOS *userOS = new UserOS;
 
-    // Genotype file info. 
+    // Genotype file info.
     QFileInfo genoFileInfo = QFileInfo(genotype);
     QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
     QString genoFileBaseName = genoFileInfo.baseName();     // geno
@@ -288,7 +288,7 @@ void MainWindow::on_rungwasButton_clicked()
     this->runningMsgWidget->show();
     qApp->processEvents();
 
-    if (tool=="gemma" || tool == "emmax")   //genotype.split(".")[genotype.split(".").length()-1]
+    if (tool == "emmax")
     {   // Need tped/fam files.
         Plink plink;
         if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
@@ -311,15 +311,10 @@ void MainWindow::on_rungwasButton_clicked()
         this->process->start(toolpath+"plink", plink.getParamList());
         this->process->waitForStarted();
         this->runningMsgWidget->clearText();
-        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped and " + genoFileBaseName + ".tfam");
+        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped/tfam");
         this->process->waitForFinished();
-        this->runningMsgWidget->setTitle(genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made");
+        this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
 
-        qDebug() << genoFileBaseName +".tped and " + genoFileBaseName + ".tfam is made";
-    }
-
-    if (tool == "emmax")    // emmax gwas
-    {
         Emmax emmax;
         if (kinship.isNull())
         {
@@ -354,7 +349,45 @@ void MainWindow::on_rungwasButton_clicked()
 
     if (tool == "gemma")
     {
-        if (false)
+        // Need binary files.
+        Plink plink;
+        if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+        {
+            if(!plink.vcf2binary(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+            {
+                this->resetWindow();
+                return;
+            }
+        }
+        if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
+                && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
+        {
+            if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName))
+            {
+                this->resetWindow();
+                return;
+            }
+        }
+        this->process->start(toolpath+"gemma", gemma.getParamList());
+        this->process->waitForStarted();
+        this->runningMsgWidget->clearText();
+        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
+        this->process->waitForFinished();
+        this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
+
+        Gemma gemma;
+        if (kinship.isNull())
+        {
+             if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName, genoFileAbPath+"/"+genoFileBaseName)) return;  // Make kinship failed.
+             this->process->start(toolpath + tool, gemma.getParamList());
+             this->process->waitForStarted();
+             this->runningMsgWidget->clearText();
+             this->runningMsgWidget->setTitle("Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf");
+             this->process->waitForFinished();
+             this->runningMsgWidget->setTitle(genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made");
+             kinship = genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf";
+        }
+        if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name))
         {
 
         }

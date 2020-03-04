@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     emmax.cpp \
     filereader.cpp \
+    gemma.cpp \
     main.cpp \
     mainwindow.cpp \
     phenoselector.cpp \
@@ -30,6 +31,7 @@ SOURCES += \
 HEADERS += \
     emmax.h \
     filereader.h \
+    gemma.h \
     mainwindow.h \
     phenoselector.h \
     plink.h \
