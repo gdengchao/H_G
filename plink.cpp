@@ -123,7 +123,7 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
                     QString ms, QString maf, QString out)
 {
     this->paramlist.clear();            // Clear paramlist before set parameter.
-    if (!phenotype.isNull() || !genotype.isNull())
+    if (phenotype.isNull() || genotype.isNull())
     {
         if (phenotype.isNull())
         {

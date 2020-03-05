@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     // connect QProcess->start(tool) and runningMsgWidget.
     connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
     connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
-    connect(runningMsgWidget, SIGNAL(close()), this->process, SLOT(on_closerunningWidget()));
+    connect(runningMsgWidget, SIGNAL(close()), this->process, SLOT(on_closeRunningWidget()));
 }
 
 MainWindow::~MainWindow()
@@ -46,7 +46,7 @@ MainWindow::~MainWindow()
     if (process)    // QProcess
     {
         process->terminate();
-        process->waitForFinished();
+        process->waitForFinished(-1);
     }
     delete process;
 }
@@ -247,151 +247,30 @@ void MainWindow::on_excludePhenoButton_clicked()
 
 void MainWindow::on_rungwasButton_clicked()
 {
-    qDebug() << ui->rungwasButton->text();
-
     //QString toolpath = "/tools/";
     //QString toolpath = "F://Code//Qt/H_G//tools//";  // Lab418. For Debug, start from debug/a.exe fold.
     //QString toolpath = "G:\\GitHub\\H_G\\tools\\";  // Laptop Win10
-    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux
+    // if (userOS->currentOS() == "linux") {}
+
     QString tool = ui->toolComboBox->currentText();
-
-    QString phenotype = fileReader->getPhenotypeFile();
-    QString genotype = fileReader->getGenotypeFile();
-    QString map = fileReader->getMapFile();
-    QString covar = fileReader->getCovariateFile();
-    QString kinship = fileReader->getKinshipFile();
-    QString out = workDirectory->getOutputDirectory();  // Include module name.
-    QString name = workDirectory->getModuleName();
-    if (out.isNull() || name.isNull())
-    {
-        QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
-        return;
-    }
-
-    QString model = ui->modelComboBox->currentText();
-    QString ms = ui->msRadioButton->isChecked()? ui->msDoubleSpinBox->text():nullptr;
-    QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
-    UserOS *userOS = new UserOS;
-
-    // Genotype file info.
-    QFileInfo genoFileInfo = QFileInfo(genotype);
-    QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
-    QString genoFileBaseName = genoFileInfo.baseName();     // geno
-    QString genoFileSuffix = genoFileInfo.suffix();         //
-    QString genoFileAbPath = genoFileInfo.absolutePath();
-
-    if (userOS->currentOS() == "linux") {}
-
     ui->rungwasButton->setText("Running");
     ui->rungwasButton->setDisabled(true);
     this->runningMsgWidget->setTitle("Ready...");
+    this->runningMsgWidget->clearText();
     this->runningMsgWidget->show();
-    qApp->processEvents();
 
     if (tool == "emmax")
-    {   // Need tped/fam files.
-        Plink plink;
-        if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
-        {
-            if(!plink.vcf2transpose(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
-            {
-                this->resetWindow();
-                return;
-            }
-        }
-        if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
-                && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
-        {
-            if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
-            {
-                this->resetWindow();
-                return;
-            }
-        }
-        this->process->start(toolpath+"plink", plink.getParamList());
-        this->process->waitForStarted();
-        this->runningMsgWidget->clearText();
-        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped/tfam");
-        this->process->waitForFinished();
-        this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
-
-        Emmax emmax;
-        if (kinship.isNull())
-        {
-             if (!emmax.makeKinship(genoFileAbPath+"/"+genoFileBaseName)) return;  // Make kinship failed.
-             this->process->start(toolpath+"emmax-kin", emmax.getParamList());
-             this->process->waitForStarted();
-             this->runningMsgWidget->clearText();
-             this->runningMsgWidget->setTitle("Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf");
-             this->process->waitForFinished();
-             this->runningMsgWidget->setTitle(genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made");
-             kinship = genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf";
-
-             qDebug() << genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made";
-        }
-
-        if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name))
-        {
-            this->process->start(toolpath+tool, emmax.getParamList());
-        }
-        else
+    {
+        if (!this->callEmmaxGwas())
         {
             this->resetWindow();
             return;
         }
-        // Running message to display message.
-        this->process->waitForStarted();
-        this->runningMsgWidget->clearText();
-        this->runningMsgWidget->setTitle("Emmax: " + name+" is running...");
-        this->process->waitForFinished();
-        this->runningMsgWidget->setTitle("Emmax: " + name+" is finished");
     }
 
     if (tool == "gemma")
     {
-        // Need binary files.
-        Plink plink;
-        if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
-        {
-            if(!plink.vcf2binary(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
-            {
-                this->resetWindow();
-                return;
-            }
-        }
-        if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
-                && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
-        {
-            if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName))
-            {
-                this->resetWindow();
-                return;
-            }
-        }
-        this->process->start(toolpath+"gemma", gemma.getParamList());
-        this->process->waitForStarted();
-        this->runningMsgWidget->clearText();
-        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
-        this->process->waitForFinished();
-        this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
-
-        Gemma gemma;
-        if (kinship.isNull())
-        {
-             if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName, genoFileAbPath+"/"+genoFileBaseName)) return;  // Make kinship failed.
-             this->process->start(toolpath + tool, gemma.getParamList());
-             this->process->waitForStarted();
-             this->runningMsgWidget->clearText();
-             this->runningMsgWidget->setTitle("Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf");
-             this->process->waitForFinished();
-             this->runningMsgWidget->setTitle(genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made");
-             kinship = genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf";
-        }
-        if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name))
-        {
-
-        }
-        else
+        if (!this->callGemmaGwas())
         {
             this->resetWindow();
             return;
@@ -400,42 +279,268 @@ void MainWindow::on_rungwasButton_clicked()
 
     if (tool == "plink")  // plink GWAS
     {
-        Plink plink;
-        if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
-                      model, ms, maf, out+"/"+name))
+        if (!this->callPlinkGwas())
         {
-            this->process->start(toolpath+tool, plink.getParamList());
-        }
-        else
-        {
+            this->resetWindow();
+            this->runningMsgWidget->close();
             return;
         }
-        // Running message to display message.
-        this->process->waitForStarted();
-        this->process->waitForFinished();
     }
 
     this->resetWindow();
+}
+
+bool MainWindow::callEmmaxGwas(void)
+{
+    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux
+    QString tool = ui->toolComboBox->currentText();
+
+    QString phenotype = this->fileReader->getPhenotypeFile();
+    QString genotype = this->fileReader->getGenotypeFile();
+    QString map = this->fileReader->getMapFile();
+    QString covar = this->fileReader->getCovariateFile();
+    QString kinship = this->fileReader->getKinshipFile();
+    QString out = this->workDirectory->getOutputDirectory();  // Include module name.
+    QString name = this->workDirectory->getModuleName();
+    if (out.isNull() || name.isNull())
+    {
+        QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
+        return false;
+    }
+
+    QString model = ui->modelComboBox->currentText();
+    QString ms = ui->msRadioButton->isChecked()? ui->msDoubleSpinBox->text():nullptr;
+    QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
+    //UserOS *userOS = new UserOS;
+
+    // Genotype file info.
+    QFileInfo genoFileInfo = QFileInfo(genotype);
+    QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
+    QString genoFileBaseName = genoFileInfo.baseName();     // geno
+    QString genoFileSuffix = genoFileInfo.suffix();         //
+    QString genoFileAbPath = genoFileInfo.absolutePath();
+    // Need tped/fam files.
+    Plink plink;
+    if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+    {
+        if(!plink.vcf2transpose(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        {
+            return false;
+        }
+    }
+    if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
+            && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
+    {
+        if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        {
+            return false;
+        }
+    }
+    this->process->start(toolpath+"plink", plink.getParamList());
+    this->process->waitForStarted();
+    this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped/tfam");
+    this->process->waitForFinished(-1);
+    this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
+
+    Emmax emmax;
+    if (kinship.isNull())
+    {
+         if (!emmax.makeKinship(genoFileAbPath+"/"+genoFileBaseName))
+         {
+             return false;  // Make kinship failed.
+         }
+         this->process->start(toolpath+"emmax-kin", emmax.getParamList());
+         this->process->waitForStarted();
+         this->runningMsgWidget->setTitle("Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf");
+         this->process->waitForFinished(-1);
+         this->runningMsgWidget->setTitle(genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made");
+         kinship = genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf";
+    }
+    else
+    {
+        QMessageBox::information(nullptr, "Error", "Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf ERROR!   ");
+        return false;
+    }
+    if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name))
+    {
+        this->process->start(toolpath+"emmax", emmax.getParamList());
+        // Running message to display message.
+        this->process->waitForStarted();
+        this->runningMsgWidget->setTitle("Emmax: " + name+" is running...");
+        this->process->waitForFinished(-1);
+        this->runningMsgWidget->setTitle("Emmax: " + name+" is finished");
+    }
+    else
+    {
+
+        return false;
+    }
+
+    return true;
+}
+
+bool MainWindow::callGemmaGwas(void)
+{
+    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux
+    QString tool = ui->toolComboBox->currentText();
+
+    QString phenotype = this->fileReader->getPhenotypeFile();
+    QString genotype = this->fileReader->getGenotypeFile();
+    QString map = this->fileReader->getMapFile();
+    QString covar = this->fileReader->getCovariateFile();
+    QString kinship = this->fileReader->getKinshipFile();
+    QString out = this->workDirectory->getOutputDirectory();  // Include module name.
+    QString name = this->workDirectory->getModuleName();
+    if (out.isNull() || name.isNull())
+    {
+        QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
+        return false;
+    }
+
+    QString model = ui->modelComboBox->currentText();
+    QString ms = ui->msRadioButton->isChecked()? ui->msDoubleSpinBox->text():nullptr;
+    QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
+    //UserOS *userOS = new UserOS;
+
+    // Genotype file info.
+    QFileInfo genoFileInfo = QFileInfo(genotype);
+    QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
+    QString genoFileBaseName = genoFileInfo.baseName();     // geno
+    QString genoFileSuffix = genoFileInfo.suffix();         //
+    QString genoFileAbPath = genoFileInfo.absolutePath();
+
+    // Need binary files.
+    Plink plink;
+    if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+    {
+        if(!plink.vcf2binary(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        {
+            this->resetWindow();
+            return false;
+        }
+    }
+    if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
+            && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
+    {
+        if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName))
+        {
+            this->resetWindow();
+            return false;
+        }
+    }
+    this->process->start(toolpath+"gemma", plink.getParamList());
+    this->process->waitForStarted();
+    this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
+    this->process->waitForFinished(-1);
+    this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
+
+    Gemma gemma;
+    if (kinship.isNull())
+    {
+         if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName, genoFileBaseName))
+         {
+             return false;  // Make kinship failed.
+         }
+         this->process->start(toolpath + tool, gemma.getParamList());
+         this->process->waitForStarted();
+         this->runningMsgWidget->setTitle("Making " + genoFileBaseName + "cXX.txt");
+         this->process->waitForFinished(-1);
+         this->runningMsgWidget->setTitle(genoFileBaseName + ".cXX.txt is made");
+         kinship = genoFileAbPath + "/output/" + genoFileBaseName + "cXX.txt";
+    }
+    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name))
+    {
+
+    }
+    else
+    {
+        this->resetWindow();
+        return false;
+    }
+
+    return true;
+}
+
+bool MainWindow::callPlinkGwas(void)
+{
+    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux
+    QString tool = ui->toolComboBox->currentText();
+
+    QString phenotype = this->fileReader->getPhenotypeFile();
+    QString genotype = this->fileReader->getGenotypeFile();
+    QString map = this->fileReader->getMapFile();
+    QString covar = this->fileReader->getCovariateFile();
+    QString kinship = this->fileReader->getKinshipFile();
+    QString out = this->workDirectory->getOutputDirectory();  // Include module name.
+    QString name = this->workDirectory->getModuleName();
+    if (out.isNull() || name.isNull())
+    {
+        QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
+        return false;
+    }
+
+    QString model = ui->modelComboBox->currentText();
+    QString ms = ui->msRadioButton->isChecked()? ui->msDoubleSpinBox->text():nullptr;
+    QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
+    // UserOS *userOS = new UserOS;
+
+    // Genotype file info.
+    QFileInfo genoFileInfo = QFileInfo(genotype);
+    QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
+    QString genoFileBaseName = genoFileInfo.baseName();     // geno
+    QString genoFileSuffix = genoFileInfo.suffix();         //
+    QString genoFileAbPath = genoFileInfo.absolutePath();
+
+
+    // Run GWAS
+    Plink plink;
+    if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
+                  model, ms, maf, out+"/"+name))
+    {
+        this->process->start(toolpath+"plink", plink.getParamList());
+        this->process->waitForStarted();
+        this->runningMsgWidget->setTitle("Plink: " + name+" is running...");
+        this->process->waitForFinished(-1);
+        this->runningMsgWidget->setTitle("Plink: " + name+" is finished");
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void MainWindow::on_readoutput()
 {
     //QString curText = this->runningMsgWidget->getText();
     this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardOutput().data()));
+    this->runningMsgWidget->repaint();
+    qApp->processEvents();
 }
 
 void MainWindow::on_readerror()
 {
-    //QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-    //this->runningMsgWidget->close();
+    QString tool = ui->toolComboBox->currentText();
+    if (tool == "emmax")
+    {   // Emmax let messages print to stand error.
+        this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
+        this->runningMsgWidget->repaint();
+        qApp->processEvents();
+    }
+    else
+    {
+        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
+        this->runningMsgWidget->close();
+    }
 }
 
-void MainWindow::on_closerunningWidget()
+void MainWindow::on_closeRunningWidget()
 {
     if (this->process)
     {
         this->process->terminate();
-        this->process->waitForFinished();
+        this->process->waitForFinished(-1);
     }
     ui->rungwasButton->setText("Run");
     ui->rungwasButton->setEnabled(true);
@@ -488,7 +593,7 @@ void MainWindow::resetWindow()
     if (this->process)
     {
         this->process->terminate();
-        this->process->waitForFinished();
+        this->process->waitForFinished(-1);
     }
     ui->rungwasButton->setText("Run");
     ui->rungwasButton->setEnabled(true);

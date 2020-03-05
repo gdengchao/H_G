@@ -59,7 +59,7 @@ private slots:
     // for running MessageBox
     void on_readoutput();
     void on_readerror();
-    void on_closerunningWidget();
+    void on_closeRunningWidget();
 
 private:
     Ui::MainWindow *ui;
@@ -74,5 +74,8 @@ private:
     // Usual
     bool isVcfFile(QString file);
     void resetWindow(void);
+    bool callPlinkGwas(void);
+    bool callEmmaxGwas(void);
+    bool callGemmaGwas(void);
 };
 #endif // MAINWINDOW_H

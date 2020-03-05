@@ -59,11 +59,12 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
     // gemma -bfile 222_filter1 -k 222_filter1.cXX.txt -lmm 1 -n 2 -o 222_filter1
     this->paramlist.append("-bfile");
     this->paramlist.append(genotype);
-    this->paramlist.append("10");
-    this->paramlist.append("-t");
-    this->paramlist.append(genotype);
-    this->paramlist.append("-p");
-    this->paramlist.append(phenotype);
+    this->paramlist.append("-k");
+    this->paramlist.append(kinship);
+    this->paramlist.append("-lmm");
+    this->paramlist.append("1");
+    this->paramlist.append("-n");
+    this->paramlist.append("2");
 
     if (!covariate.isNull())
     {

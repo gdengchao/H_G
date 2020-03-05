@@ -41,7 +41,6 @@ bool Emmax:: makeKinship(QString genotype)
 // genotype must be the prefix of tped/fam file.
 bool Emmax::runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship, QString out)
 {
-    this->paramlist.clear();            // Clear paramlist before set parameter.
     if (genotype.isNull() || phenotype.isNull())
     {
         if (phenotype.isNull())
@@ -55,6 +54,7 @@ bool Emmax::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
         return false;
     }
     // emmax -v -d 10 -t 222_filter1_rec12 -p phe1_fall_time -k 222_filter1_rec12.hBN.kinf -o 222_filter1_phe1_BN
+    this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("-v");
     this->paramlist.append("-d");
     this->paramlist.append("10");
