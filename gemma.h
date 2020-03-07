@@ -3,6 +3,9 @@
 
 #include <QMessageBox>
 #include <QStringList>
+#include <QFileInfo>
+#include <QFile>
+#include <QTextStream>
 
 class Gemma
 {
@@ -12,11 +15,13 @@ public:
     bool makeKinship(QString genotype, QString out);
     QStringList getParamList(void);    // Every param can't have any space.
     QString getParamString(void);
+    bool phenoPreparation(QString phe, QString fam);
 
 private:
     const QString toolpath;
     const QStringList model;
     QStringList paramlist;
+
 };
 
 #endif // GEMMA_H

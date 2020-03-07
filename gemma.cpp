@@ -59,6 +59,8 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
     // gemma -bfile 222_filter1 -k 222_filter1.cXX.txt -lmm 1 -n 2 -o 222_filter1
     this->paramlist.append("-bfile");
     this->paramlist.append(genotype);
+    this->paramlist.append("-p");
+    this->paramlist.append(phenotype);
     this->paramlist.append("-k");
     this->paramlist.append(kinship);
     this->paramlist.append("-lmm");
@@ -79,6 +81,54 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
 
     this->paramlist.append("-o");
     this->paramlist.append(out);
+
+    return true;
+}
+
+bool Gemma::phenoPreparation(QString phe, QString fam)
+{   // Replace "NA" to "-9", then complete .fam
+    // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
+    if (phe.isNull() || fam.isNull())
+    {
+        return false;
+    }
+
+//    QFileInfo pheFileInfo(phe), famFileInfo(fam);
+//    QString pheFileBaseName = pheFileInfo.baseName();
+//    QString pheFileAbPath = pheFileInfo.absolutePath();
+//    QString famFileBaseName = famFileInfo.baseName();
+//    QString famFileAbPath = famFileInfo.absolutePath();
+
+    QByteArray fileLineData;
+    QFile pheFile(phe);
+    QFile famFile(fam);
+
+    QFile out(fam+"_test");
+    out.open(QIODevice::ReadWrite);
+
+    if (!pheFile.open(QIODevice::ReadOnly) || !famFile.open(QIODevice::ReadWrite|QIODevice::Append))
+    {
+        return false;
+    }
+    QTextStream pheStream(&pheFile);
+    QTextStream famStream(&famFile);
+    while (!pheStream.atEnd() && !famStream.atEnd())
+    {
+        QString famCurLine = famStream.readLine();
+        // Replace "NA" to "-9"
+        QStringList pheCurLineList = pheStream.readLine().replace("NA", "-9").split("\t");
+        QStringList famCurLineList = famStream.readLine().split("\t");
+        famCurLineList.removeLast();
+        // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
+        famStream << famCurLineList.join("\t") << "1\t" << pheCurLineList[pheCurLineList.length()-1] << "\n";
+    }
+
+    if (!pheStream.atEnd() || !famStream.atEnd())
+    {
+        return false;
+    }
+    pheFile.close();
+    famFile.close();
 
     return true;
 }

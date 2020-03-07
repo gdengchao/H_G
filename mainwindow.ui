@@ -384,22 +384,17 @@ border-radius:5px;//这个是改变成圆角边框;
             <widget class="QComboBox" name="toolComboBox">
              <item>
               <property name="text">
+               <string>plink</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
                <string>gemma</string>
               </property>
              </item>
              <item>
               <property name="text">
                <string>emmax</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>plink</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>GAPIT</string>
               </property>
              </item>
             </widget>
