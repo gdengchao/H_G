@@ -274,10 +274,6 @@ void MainWindow::on_rungwasButton_clicked()
             this->resetWindow();
             return;
         }
-
-//        Gemma gemma;
-
-//        gemma.phe_fam_Preparation("/home/chao/Desktop/h_g_test/phe2_mor_pc2", "/home/chao/Desktop/h_g_test/222_filter1.fam");
     }
 
     if (tool == "plink")  // plink GWAS
@@ -295,7 +291,7 @@ void MainWindow::on_rungwasButton_clicked()
 
 bool MainWindow::callGemmaGwas(void)
 {
-    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux
+    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux. Attention
     QString tool = ui->toolComboBox->currentText();
 
     QString phenotype = this->fileReader->getPhenotypeFile();
@@ -379,15 +375,19 @@ bool MainWindow::callGemmaGwas(void)
              this->resetWindow();
              return false;
          }
-         this->runningMsgWidget->setTitle("Making " + genoFileAbPath+ "/output/" +genoFileBaseName + "cXX.txt");
+         this->runningMsgWidget->setTitle("Making " + genoFileBaseName + "cXX.txt");
          if (!this->process->waitForFinished(-1))
          {
              this->resetWindow();
              QMessageBox::information(nullptr, "Error", "Exit gemma with error when  make kinship!   ");
              return false;
          }
-         this->runningMsgWidget->setTitle(genoFileAbPath+ "/output/" + genoFileBaseName + ".cXX.txt is made");
-         kinship = genoFileAbPath + "/output/" + genoFileBaseName + "cXX.txt";
+         this->runningMsgWidget->setTitle(genoFileBaseName + ".cXX.txt is made");
+         //kinship = genoFileAbPath + "/output/" + genoFileBaseName + "cXX.txt";    // Attention
+         kinship = QDir::currentPath() + "/output/" + genoFileBaseName + "cXX.txt";
+
+         QFile testKinship(kinship);
+         qDebug() << testKinship.exists() << "\t" << QDir::currentPath();
     }
 
     if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name))
@@ -419,7 +419,7 @@ bool MainWindow::callGemmaGwas(void)
 
 bool MainWindow::callEmmaxGwas(void)
 {
-    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux
+    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux. Attention
     QString tool = ui->toolComboBox->currentText();
 
     QString phenotype = this->fileReader->getPhenotypeFile();
@@ -535,7 +535,7 @@ bool MainWindow::callEmmaxGwas(void)
 
 bool MainWindow::callPlinkGwas(void)
 {
-    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux
+    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux. Attention
     QString tool = ui->toolComboBox->currentText();
 
     QString phenotype = this->fileReader->getPhenotypeFile();
