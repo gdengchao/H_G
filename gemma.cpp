@@ -85,7 +85,7 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
     return true;
 }
 
-bool Gemma::phenoPreparation(QString phe, QString fam)
+bool Gemma::phe_fam_Preparation(QString phe, QString fam)
 {   // Replace "NA" to "-9", then complete .fam
     // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
     if (phe.isNull() || fam.isNull())
@@ -93,34 +93,35 @@ bool Gemma::phenoPreparation(QString phe, QString fam)
         return false;
     }
 
-//    QFileInfo pheFileInfo(phe), famFileInfo(fam);
-//    QString pheFileBaseName = pheFileInfo.baseName();
-//    QString pheFileAbPath = pheFileInfo.absolutePath();
-//    QString famFileBaseName = famFileInfo.baseName();
-//    QString famFileAbPath = famFileInfo.absolutePath();
-
-    QByteArray fileLineData;
     QFile pheFile(phe);
     QFile famFile(fam);
+    QFile tmpFamFile(fam+".tmp");  // A temp file to save the final data of fam file.
 
-    QFile out(fam+"_test");
-    out.open(QIODevice::ReadWrite);
+    tmpFamFile.open(QIODevice::ReadWrite);
 
-    if (!pheFile.open(QIODevice::ReadOnly) || !famFile.open(QIODevice::ReadWrite|QIODevice::Append))
+    QFileInfo famFileInfo(fam), tmpFamFileInfo(tmpFamFile);
+    QString famFileName = famFileInfo.fileName();
+    QString famFileAbPath = famFileInfo.absolutePath();
+    QString tmpFamFileAbFilePaht = tmpFamFileInfo.absoluteFilePath();
+
+    QTextStream tmpFamStream(&tmpFamFile);
+    QTextStream pheStream(&pheFile);
+    QTextStream famStream(&famFile);
+
+    if (!pheFile.open(QIODevice::ReadOnly) || !famFile.open(QIODevice::ReadOnly))
     {
         return false;
     }
-    QTextStream pheStream(&pheFile);
-    QTextStream famStream(&famFile);
     while (!pheStream.atEnd() && !famStream.atEnd())
     {
         QString famCurLine = famStream.readLine();
+        QString pheCurLine = pheStream.readLine();
         // Replace "NA" to "-9"
-        QStringList pheCurLineList = pheStream.readLine().replace("NA", "-9").split("\t");
-        QStringList famCurLineList = famStream.readLine().split("\t");
+        QStringList pheCurLineList = pheCurLine.replace("NA", "-9").split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        QStringList famCurLineList = famCurLine.split(QRegExp("\\s+"), QString::SkipEmptyParts);
         famCurLineList.removeLast();
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
-        famStream << famCurLineList.join("\t") << "1\t" << pheCurLineList[pheCurLineList.length()-1] << "\n";
+        tmpFamStream << famCurLineList.join("\t") << "\t1\t" << pheCurLineList[pheCurLineList.length()-1] << "\n";
     }
 
     if (!pheStream.atEnd() || !famStream.atEnd())
@@ -129,6 +130,10 @@ bool Gemma::phenoPreparation(QString phe, QString fam)
     }
     pheFile.close();
     famFile.close();
+    tmpFamFile.close();
+
+    famFile.remove();
+    tmpFamFile.rename(tmpFamFileAbFilePaht, famFileAbPath+"/"+famFileName);
 
     return true;
 }

@@ -7,6 +7,9 @@
 #include <QFile>
 #include <QTextStream>
 
+#include <QDebug>
+
+
 class Gemma
 {
 public:
@@ -15,7 +18,7 @@ public:
     bool makeKinship(QString genotype, QString out);
     QStringList getParamList(void);    // Every param can't have any space.
     QString getParamString(void);
-    bool phenoPreparation(QString phe, QString fam);
+    bool phe_fam_Preparation(QString phe, QString fam);
 
 private:
     const QString toolpath;

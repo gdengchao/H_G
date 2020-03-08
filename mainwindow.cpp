@@ -255,9 +255,8 @@ void MainWindow::on_rungwasButton_clicked()
     QString tool = ui->toolComboBox->currentText();
     ui->rungwasButton->setText("Running");
     ui->rungwasButton->setDisabled(true);
-    this->runningMsgWidget->setTitle("Ready...");
     this->runningMsgWidget->clearText();
-    this->runningMsgWidget->show();
+//    this->runningMsgWidget->show();
 
     if (tool == "emmax")
     {
@@ -277,7 +276,7 @@ void MainWindow::on_rungwasButton_clicked()
 //        }
 
         Gemma gemma;
-        gemma.phenoPreparation("/home/chao/Desktop/h_g_test/gemma_phe", "/home/chao/Desktop/h_g_test/gemma_fam");
+        gemma.phe_fam_Preparation("/home/chao/Desktop/h_g_test/gemma_phe", "/home/chao/Desktop/h_g_test/gemma_fam");
     }
 
     if (tool == "plink")  // plink GWAS

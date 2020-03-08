@@ -6,6 +6,7 @@ RunningMsgWidget::RunningMsgWidget(QWidget *parent) :
     ui(new Ui::RunningMsgWidget)
 {
     ui->setupUi(this);
+    this->setTitle("Running Messages");
 }
 
 RunningMsgWidget::~RunningMsgWidget()
