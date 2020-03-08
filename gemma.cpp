@@ -43,7 +43,7 @@ bool Gemma:: makeKinship(QString genotype, QString out)
 bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship, QString out)
 {
     this->paramlist.clear();            // Clear paramlist before set parameter.
-    if (genotype.isNull() || phenotype.isNull())
+    if (genotype.isNull() || phenotype.isNull() || kinship.isNull())
     {
         if (phenotype.isNull())
         {
@@ -59,8 +59,6 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
     // gemma -bfile 222_filter1 -k 222_filter1.cXX.txt -lmm 1 -n 2 -o 222_filter1
     this->paramlist.append("-bfile");
     this->paramlist.append(genotype);
-    this->paramlist.append("-p");
-    this->paramlist.append(phenotype);
     this->paramlist.append("-k");
     this->paramlist.append(kinship);
     this->paramlist.append("-lmm");
@@ -72,11 +70,6 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
     {
         this->paramlist.append("-c");
         this->paramlist.append(covariate);
-    }
-    if (!kinship.isNull())
-    {   //
-        this->paramlist.append("-k");
-        this->paramlist.append(kinship);
     }
 
     this->paramlist.append("-o");
@@ -102,7 +95,7 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
     QFileInfo famFileInfo(fam), tmpFamFileInfo(tmpFamFile);
     QString famFileName = famFileInfo.fileName();
     QString famFileAbPath = famFileInfo.absolutePath();
-    QString tmpFamFileAbFilePaht = tmpFamFileInfo.absoluteFilePath();
+    QString tmpFamFileAbFilePaht = tmpFamFileInfo.absoluteFilePath();   // /path/basename.suffix
 
     QTextStream tmpFamStream(&tmpFamFile);
     QTextStream pheStream(&pheFile);

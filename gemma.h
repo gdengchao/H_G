@@ -8,7 +8,7 @@
 #include <QTextStream>
 
 #include <QDebug>
-
+#include <QMessageBox>
 
 class Gemma
 {

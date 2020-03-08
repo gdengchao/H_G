@@ -256,7 +256,7 @@ void MainWindow::on_rungwasButton_clicked()
     ui->rungwasButton->setText("Running");
     ui->rungwasButton->setDisabled(true);
     this->runningMsgWidget->clearText();
-//    this->runningMsgWidget->show();
+    this->runningMsgWidget->show();
 
     if (tool == "emmax")
     {
@@ -269,14 +269,15 @@ void MainWindow::on_rungwasButton_clicked()
 
     if (tool == "gemma")
     {
-//        if (!this->callGemmaGwas())
-//        {
-//            this->resetWindow();
-//            return;
-//        }
+        if (!this->callGemmaGwas())
+        {
+            this->resetWindow();
+            return;
+        }
 
-        Gemma gemma;
-        gemma.phe_fam_Preparation("/home/chao/Desktop/h_g_test/gemma_phe", "/home/chao/Desktop/h_g_test/gemma_fam");
+//        Gemma gemma;
+
+//        gemma.phe_fam_Preparation("/home/chao/Desktop/h_g_test/phe2_mor_pc2", "/home/chao/Desktop/h_g_test/222_filter1.fam");
     }
 
     if (tool == "plink")  // plink GWAS
@@ -342,32 +343,69 @@ bool MainWindow::callGemmaGwas(void)
         }
     }
     this->process->start(toolpath+"plink", plink.getParamList());
-    this->process->waitForStarted();
+    if (!this->process->waitForStarted())
+    {
+        this->resetWindow();
+        return false;
+    }
     this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
-    this->process->waitForFinished(-1);
+    if (!this->process->waitForFinished(-1))
+    {
+        this->resetWindow();
+        QMessageBox::information(nullptr, "Error", "Exit plink with error when make binary in callGemmaGwas!  ");
+        return false;
+    }
     this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
 
     Gemma gemma;
+
+    if (!gemma.phe_fam_Preparation(phenotype, genoFileAbPath+"/"+genoFileBaseName+".fam"))
+    {   // Replace "NA" to "-9", then complete .fam
+        // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
+        this->resetWindow();
+        return false;
+    }
+
     if (kinship.isNull())
     {
          if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName, genoFileBaseName))
          {
+             this->resetWindow();
              return false;  // Make kinship failed.
          }
-         this->process->start(toolpath + tool, gemma.getParamList());
-         this->process->waitForStarted();
-         this->runningMsgWidget->setTitle("Making " + genoFileBaseName + "cXX.txt");
-         this->process->waitForFinished(-1);
-         this->runningMsgWidget->setTitle(genoFileBaseName + ".cXX.txt is made");
+         this->process->start(toolpath + "gemma", gemma.getParamList());
+         if (!this->process->waitForStarted())
+         {
+             this->resetWindow();
+             return false;
+         }
+         this->runningMsgWidget->setTitle("Making " + genoFileAbPath+ "/output/" +genoFileBaseName + "cXX.txt");
+         if (!this->process->waitForFinished(-1))
+         {
+             this->resetWindow();
+             QMessageBox::information(nullptr, "Error", "Exit gemma with error when  make kinship!   ");
+             return false;
+         }
+         this->runningMsgWidget->setTitle(genoFileAbPath+ "/output/" + genoFileBaseName + ".cXX.txt is made");
          kinship = genoFileAbPath + "/output/" + genoFileBaseName + "cXX.txt";
     }
+
     if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name))
     {
-        this->process->start(toolpath+"tool", gemma.getParamList());
+        this->process->start(toolpath+"gemma", gemma.getParamList());
         // Running message to display message.
-        this->process->waitForStarted();
+        if (!this->process->waitForStarted())
+        {
+            this->resetWindow();
+            return false;
+        }
         this->runningMsgWidget->setTitle("Gemma: " + name+" is running...");
-        this->process->waitForFinished(-1);
+        if (!this->process->waitForFinished(-1))
+        {
+            this->resetWindow();
+            QMessageBox::information(nullptr, "Error", "Exit gemma with error when run GWAS! ");
+            return false;
+        }
         this->runningMsgWidget->setTitle("Gemma: " + name+" is finished");
     }
     else
@@ -426,9 +464,18 @@ bool MainWindow::callEmmaxGwas(void)
         }
     }
     this->process->start(toolpath+"plink", plink.getParamList());
-    this->process->waitForStarted();
+    if (!this->process->waitForStarted())
+    {
+        this->resetWindow();
+        return false;
+    }
     this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped/tfam");
-    this->process->waitForFinished(-1);
+    if (!this->process->waitForFinished(-1))
+    {
+        this->resetWindow();
+        QMessageBox::information(nullptr, "Error", "Exit plink with error when make transpose in callEmmaxGwas    !");
+        return false;
+    }
     this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
 
     Emmax emmax;
@@ -439,9 +486,18 @@ bool MainWindow::callEmmaxGwas(void)
              return false;  // Make kinship failed.
          }
          this->process->start(toolpath+"emmax-kin", emmax.getParamList());
-         this->process->waitForStarted();
+         if (!this->process->waitForStarted())
+         {
+             this->resetWindow();
+             return false;
+         }
          this->runningMsgWidget->setTitle("Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf");
-         this->process->waitForFinished(-1);
+         if (!this->process->waitForFinished(-1))
+         {
+             this->resetWindow();
+             QMessageBox::information(nullptr, "Error", "Exit emmax-kin with error when  make kinship    !");
+             return false;
+         }
          this->runningMsgWidget->setTitle(genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made");
          kinship = genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf";
     }
@@ -454,9 +510,18 @@ bool MainWindow::callEmmaxGwas(void)
     {
         this->process->start(toolpath+"emmax", emmax.getParamList());
         // Running message to display message.
-        this->process->waitForStarted();
+        if (!this->process->waitForStarted())
+        {
+            this->resetWindow();
+            return false;
+        }
         this->runningMsgWidget->setTitle("Emmax: " + name+" is running...");
-        this->process->waitForFinished(-1);
+        if (!this->process->waitForFinished(-1))
+        {
+            this->resetWindow();
+            QMessageBox::information(nullptr, "Error", "Exit emmax with error when run GWAS    !");
+            return false;
+        }
         this->runningMsgWidget->setTitle("Emmax: " + name+" is finished");
     }
     else
@@ -505,9 +570,18 @@ bool MainWindow::callPlinkGwas(void)
                   model, ms, maf, out+"/"+name))
     {
         this->process->start(toolpath+"plink", plink.getParamList());
-        this->process->waitForStarted();
+        if (!this->process->waitForStarted())
+        {
+            this->resetWindow();
+            return false;
+        }
         this->runningMsgWidget->setTitle("Plink: " + name+" is running...");
-        this->process->waitForFinished(-1);
+        if (!this->process->waitForFinished(-1))
+        {
+            this->resetWindow();
+            QMessageBox::information(nullptr, "Error", "Exit plink with error when run GWAS    !");
+            return false;
+        }
         this->runningMsgWidget->setTitle("Plink: " + name+" is finished");
     }
     else
@@ -529,7 +603,7 @@ void MainWindow::on_readoutput()
 void MainWindow::on_readerror()
 {
     QString tool = ui->toolComboBox->currentText();
-    if (tool == "emmax")
+    if (tool == "emmax" || tool == "gemma")
     {   // Emmax let messages print to stand error.
         this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
         this->runningMsgWidget->repaint();
