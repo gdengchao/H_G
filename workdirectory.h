@@ -9,13 +9,13 @@ public:
     WorkDirectory();
     WorkDirectory(QString const name, QString const dir);
 
-    void setModuleName(QString const name);
-    QString getModuleName(void);
+    void setProjectName(QString const name);
+    QString getProjectName(void);
     void setOutputDirectory(QString const dir);
     QString getOutputDirectory(void);
 
 private:
-    QString moduleName;
+    QString projectName;
     QString outputDirectory;
 };
 

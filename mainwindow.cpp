@@ -196,13 +196,13 @@ void MainWindow::on_browButton_clicked()
     if (!dir.isEmpty())
     {
         this->workDirectory->setOutputDirectory(dir);
-        ui->outdirLineEdit->setText(dir+"/"+this->workDirectory->getModuleName());
+        ui->outdirLineEdit->setText(dir+"/"+this->workDirectory->getProjectName());
     }
 }
 
 void MainWindow::on_modulenameLineEdit_textChanged(const QString &text)
 {
-    this->workDirectory->setModuleName(text);
+    this->workDirectory->setProjectName(text);
     if (!ui->outdirLineEdit->text().isEmpty())
     {   // If a out directory is selected, display the out directory + the module name.
         ui->outdirLineEdit->setText(this->workDirectory->getOutputDirectory()+"/"+text);
@@ -300,7 +300,7 @@ bool MainWindow::callGemmaGwas(void)
     QString covar = this->fileReader->getCovariateFile();
     QString kinship = this->fileReader->getKinshipFile();
     QString out = this->workDirectory->getOutputDirectory();  // Include module name.
-    QString name = this->workDirectory->getModuleName();
+    QString name = this->workDirectory->getProjectName();
     if (out.isNull() || name.isNull())
     {
         QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
@@ -404,8 +404,9 @@ bool MainWindow::callGemmaGwas(void)
             return false;
         }
 
-        QDir gemmaOut(QDir::currentPath() + "/output/");
-        gemmaOut.rename(QDir::currentPath() + "/output/", out+"/output/");
+        QDir dir;   // gemma output in the execution file dir by default.
+        // We move it to the work dir.   It will be wrong when "/output" change to "/output/"
+        dir.rename(QDir::currentPath() + "/output", out+"/output");
 
         this->runningMsgWidget->setTitle("Gemma: " + name+" is finished");
     }
@@ -429,7 +430,7 @@ bool MainWindow::callEmmaxGwas(void)
     QString covar = this->fileReader->getCovariateFile();
     QString kinship = this->fileReader->getKinshipFile();
     QString out = this->workDirectory->getOutputDirectory();  // Include module name.
-    QString name = this->workDirectory->getModuleName();
+    QString name = this->workDirectory->getProjectName();
     if (out.isNull() || name.isNull())
     {
         QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
@@ -527,7 +528,6 @@ bool MainWindow::callEmmaxGwas(void)
     }
     else
     {
-
         return false;
     }
 
@@ -545,7 +545,7 @@ bool MainWindow::callPlinkGwas(void)
     QString covar = this->fileReader->getCovariateFile();
     QString kinship = this->fileReader->getKinshipFile();
     QString out = this->workDirectory->getOutputDirectory();  // Include module name.
-    QString name = this->workDirectory->getModuleName();
+    QString name = this->workDirectory->getProjectName();
     if (out.isNull() || name.isNull())
     {
         QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");

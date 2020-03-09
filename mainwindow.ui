@@ -126,12 +126,12 @@ pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Module Name:      </string>
+            <string>Project Name:      </string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="modulenameLineEdit"/>
+          <widget class="QLineEdit" name="projectNameLineEdit"/>
          </item>
          <item>
           <spacer name="horizontalSpacer">

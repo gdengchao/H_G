@@ -5,17 +5,17 @@ WorkDirectory::WorkDirectory()
 
 }
 
-void WorkDirectory::setModuleName(QString const name)
+void WorkDirectory::setProjectName(QString const name)
 {
     if (!name.isEmpty())
     {
-        this->moduleName = name;
+        this->projectName = name;
     }
 }
 
-QString WorkDirectory::getModuleName(void)
+QString WorkDirectory::getProjectName(void)
 {
-    return this->moduleName;
+    return this->projectName;
 }
 
 void WorkDirectory::setOutputDirectory(QString const dir)
