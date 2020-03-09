@@ -375,7 +375,7 @@ bool MainWindow::callGemmaGwas(void)
              this->resetWindow();
              return false;
          }
-         this->runningMsgWidget->setTitle("Making " + genoFileBaseName + "cXX.txt");
+         this->runningMsgWidget->setTitle("Making " + genoFileBaseName + ".cXX.txt");
          if (!this->process->waitForFinished(-1))
          {
              this->resetWindow();
@@ -383,11 +383,8 @@ bool MainWindow::callGemmaGwas(void)
              return false;
          }
          this->runningMsgWidget->setTitle(genoFileBaseName + ".cXX.txt is made");
-         //kinship = genoFileAbPath + "/output/" + genoFileBaseName + "cXX.txt";    // Attention
-         kinship = QDir::currentPath() + "/output/" + genoFileBaseName + "cXX.txt";
-
-         QFile testKinship(kinship);
-         qDebug() << testKinship.exists() << "\t" << QDir::currentPath();
+         //kinship = genoFileAbPath + "/output/" + genoFileBaseName + ".cXX.txt";    // Attention
+         kinship = QDir::currentPath() + "/output/" + genoFileBaseName + ".cXX.txt";
     }
 
     if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name))
@@ -406,6 +403,10 @@ bool MainWindow::callGemmaGwas(void)
             QMessageBox::information(nullptr, "Error", "Exit gemma with error when run GWAS! ");
             return false;
         }
+
+        QDir gemmaOut(QDir::currentPath() + "/output/");
+        gemmaOut.rename(QDir::currentPath() + "/output/", out+"/output/");
+
         this->runningMsgWidget->setTitle("Gemma: " + name+" is finished");
     }
     else

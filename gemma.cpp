@@ -95,7 +95,7 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
     QFileInfo famFileInfo(fam), tmpFamFileInfo(tmpFamFile);
     QString famFileName = famFileInfo.fileName();
     QString famFileAbPath = famFileInfo.absolutePath();
-    QString tmpFamFileAbFilePaht = tmpFamFileInfo.absoluteFilePath();   // /path/basename.suffix
+    QString tmpFamFileAbFilePath = tmpFamFileInfo.absoluteFilePath();   // /path/basename.suffix
 
     QTextStream tmpFamStream(&tmpFamFile);
     QTextStream pheStream(&pheFile);
@@ -126,7 +126,7 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
     tmpFamFile.close();
 
     famFile.remove();
-    tmpFamFile.rename(tmpFamFileAbFilePaht, famFileAbPath+"/"+famFileName);
+    tmpFamFile.rename(tmpFamFileAbFilePath, famFileAbPath+"/"+famFileName);
 
     return true;
 }
