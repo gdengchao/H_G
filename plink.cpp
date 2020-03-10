@@ -1,6 +1,6 @@
 #include "plink.h"
 
-Plink::Plink(): toolpath("/tool/plink"), model({"glm", "mlm", "linear_regression"})
+Plink::Plink(): toolpath("/tool/plink"), model({"GLM", "Linear Regression"})
 {
     this->paramlist.clear();
 }
@@ -19,6 +19,12 @@ QString Plink::getParamString(void)
     }
     return ret;
 }
+
+QStringList Plink::getSupportedModel(void)
+{
+    return this->model;
+}
+
 
 bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString ms)
 {

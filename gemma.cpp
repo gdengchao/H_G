@@ -1,6 +1,6 @@
 #include "gemma.h"
 
-Gemma::Gemma(): toolpath("/tool/"), model({"mlm"})
+Gemma::Gemma(): toolpath("/tool/"), model({"LMM", "BSLM"})
 {
     this->paramlist.clear();
 }
@@ -18,6 +18,11 @@ QString Gemma::getParamString(void)
         ret += item + " ";
     }
     return ret;
+}
+
+QStringList Gemma::getSupportedModel(void)
+{
+    return this->model;
 }
 
 bool Gemma:: makeKinship(QString genotype, QString out)
@@ -40,10 +45,11 @@ bool Gemma:: makeKinship(QString genotype, QString out)
 }
 
 // genotype must be the prefix of binary file.
-bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship, QString out)
+bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship,
+                    QString out, QString ms, QString maf, QString model)
 {
     this->paramlist.clear();            // Clear paramlist before set parameter.
-    if (genotype.isNull() || phenotype.isNull() || kinship.isNull())
+    if (genotype.isNull() || phenotype.isNull() || kinship.isNull() || model.isNull())
     {
         if (phenotype.isNull())
         {
@@ -56,15 +62,38 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
         return false;
     }
 
-    // gemma -bfile 222_filter1 -k 222_filter1.cXX.txt -lmm 1 -n 2 -o 222_filter1
     this->paramlist.append("-bfile");
     this->paramlist.append(genotype);
-    this->paramlist.append("-k");
-    this->paramlist.append(kinship);
-    this->paramlist.append("-lmm");
-    this->paramlist.append("1");
-    this->paramlist.append("-n");
-    this->paramlist.append("2");
+
+    if (model == "LMM")
+    {   // gemma -bfile 222_filter1 -k 222_filter1.cXX.txt -lmm 1 -n 2 -o 222_filter1
+        this->paramlist.append("-k");
+        this->paramlist.append(kinship);
+        this->paramlist.append("-lmm");
+        this->paramlist.append("1");
+        this->paramlist.append("-n");
+        this->paramlist.append("2");
+    }
+
+    if (model == "BSLM")
+    {  // gemma -bfile 222_filter1 -bslmm 1 -n 2 -o tmp
+        this->paramlist.append("-bslmm");
+        this->paramlist.append("1");
+        this->paramlist.append("-n");
+        this->paramlist.append("2");
+    }
+
+    if (!ms.isNull())
+    {
+        this->paramlist.append("-miss");
+        this->paramlist.append(ms);
+    }
+
+    if (!maf.isNull())
+    {
+        this->paramlist.append("-maf");
+        this->paramlist.append(maf);
+    }
 
     if (!covariate.isNull())
     {

@@ -13,7 +13,7 @@ public:
     bool makeKinship(QString genotype);
     QStringList getParamList(void);    // Every param can't have any space.
     QString getParamString(void);
-
+    QStringList getSupportedModel(void);
 private:
     const QString toolpath;
     const QStringList model;

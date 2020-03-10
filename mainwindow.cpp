@@ -19,6 +19,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->selectedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->excludedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
+    // Recommend maf and  ms
+    ui->mafDoubleSpinBox->setValue(0.05);
+    ui->msDoubleSpinBox->setValue(0.1);
+    ui->mafSlider->setValue(5);
+    ui->msSlider->setValue(10);
+
     // Initiate variables.
     fileReader = new FileReader;
     workDirectory = new WorkDirectory;
@@ -200,14 +206,6 @@ void MainWindow::on_browButton_clicked()
     }
 }
 
-void MainWindow::on_modulenameLineEdit_textChanged(const QString &text)
-{
-    this->workDirectory->setProjectName(text);
-    if (!ui->outdirLineEdit->text().isEmpty())
-    {   // If a out directory is selected, display the out directory + the module name.
-        ui->outdirLineEdit->setText(this->workDirectory->getOutputDirectory()+"/"+text);
-    }
-}
 
 void MainWindow::on_excludeAllPhenoButton_clicked()
 {
@@ -299,7 +297,7 @@ bool MainWindow::callGemmaGwas(void)
     QString map = this->fileReader->getMapFile();
     QString covar = this->fileReader->getCovariateFile();
     QString kinship = this->fileReader->getKinshipFile();
-    QString out = this->workDirectory->getOutputDirectory();  // Include module name.
+    QString out = this->workDirectory->getOutputDirectory();  // Include project name.
     QString name = this->workDirectory->getProjectName();
     if (out.isNull() || name.isNull())
     {
@@ -387,7 +385,7 @@ bool MainWindow::callGemmaGwas(void)
          kinship = QDir::currentPath() + "/output/" + genoFileBaseName + ".cXX.txt";
     }
 
-    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name))
+    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name, ms, maf, model))
     {
         this->process->start(toolpath+"gemma", gemma.getParamList());
         // Running message to display message.
@@ -405,8 +403,16 @@ bool MainWindow::callGemmaGwas(void)
         }
 
         QDir dir;   // gemma output in the execution file dir by default.
-        // We move it to the work dir.   It will be wrong when "/output" change to "/output/"
-        dir.rename(QDir::currentPath() + "/output", out+"/output");
+        QDir objDir(out+"/output");
+        // We move it to the work dir.
+        int i = 0;
+        while(objDir.exists())
+        {   // It will be wrong when object dir existed.
+            i++;
+            objDir.setPath(out+"/output"+QString::number(i));
+        }
+        // It will be wrong when "/output" change to "/output/"
+        dir.rename(QDir::currentPath() + "/output", out+"/output"+(i==0?"":QString::number(i)));
 
         this->runningMsgWidget->setTitle("Gemma: " + name+" is finished");
     }
@@ -429,7 +435,7 @@ bool MainWindow::callEmmaxGwas(void)
     QString map = this->fileReader->getMapFile();
     QString covar = this->fileReader->getCovariateFile();
     QString kinship = this->fileReader->getKinshipFile();
-    QString out = this->workDirectory->getOutputDirectory();  // Include module name.
+    QString out = this->workDirectory->getOutputDirectory();  // Include project name.
     QString name = this->workDirectory->getProjectName();
     if (out.isNull() || name.isNull())
     {
@@ -493,14 +499,14 @@ bool MainWindow::callEmmaxGwas(void)
              this->resetWindow();
              return false;
          }
-         this->runningMsgWidget->setTitle("Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf");
+         this->runningMsgWidget->setTitle("Making " + genoFileBaseName + ".hBN.kinf");
          if (!this->process->waitForFinished(-1))
          {
              this->resetWindow();
              QMessageBox::information(nullptr, "Error", "Exit emmax-kin with error when  make kinship    !");
              return false;
          }
-         this->runningMsgWidget->setTitle(genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf is made");
+         this->runningMsgWidget->setTitle(genoFileBaseName + ".hBN.kinf is made");
          kinship = genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf";
     }
     else
@@ -544,7 +550,7 @@ bool MainWindow::callPlinkGwas(void)
     QString map = this->fileReader->getMapFile();
     QString covar = this->fileReader->getCovariateFile();
     QString kinship = this->fileReader->getKinshipFile();
-    QString out = this->workDirectory->getOutputDirectory();  // Include module name.
+    QString out = this->workDirectory->getOutputDirectory();  // Include project name.
     QString name = this->workDirectory->getProjectName();
     if (out.isNull() || name.isNull())
     {
@@ -679,4 +685,34 @@ void MainWindow::resetWindow()
     }
     ui->rungwasButton->setText("Run");
     ui->rungwasButton->setEnabled(true);
+}
+
+void MainWindow::on_projectNameLineEdit_textChanged(const QString &text)
+{
+    this->workDirectory->setProjectName(text);
+    if (!ui->outdirLineEdit->text().isEmpty())
+    {   // If a out directory is selected, display the out directory + the project name.
+        ui->outdirLineEdit->setText(this->workDirectory->getOutputDirectory()+"/"+text);
+    }
+}
+
+void MainWindow::on_toolComboBox_currentTextChanged(const QString &tool)
+{
+    ui->modelComboBox->clear();
+    if (tool == "plink")
+    {
+        Plink plink;
+        ui->modelComboBox->addItems(plink.getSupportedModel());
+    }
+
+    if (tool == "gemma")
+    {
+        Gemma gemma;
+        ui->modelComboBox->addItems(gemma.getSupportedModel());
+    }
+    if (tool == "emmax")
+    {
+        Emmax emmax;
+        ui->modelComboBox->addItems(emmax.getSupportedModel());
+    }
 }

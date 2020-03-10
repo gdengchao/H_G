@@ -248,7 +248,7 @@ border-radius:5px;//这个是改变成圆角边框;
               <double>1.000000000000000</double>
              </property>
              <property name="singleStep">
-              <double>0.020000000000000</double>
+              <double>0.010000000000000</double>
              </property>
              <property name="stepType">
               <enum>QAbstractSpinBox::DefaultStepType</enum>
@@ -348,17 +348,12 @@ border-radius:5px;//这个是改变成圆角边框;
              </property>
              <item>
               <property name="text">
-               <string/>
+               <string>GLM</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string/>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string/>
+               <string>Lineear Regression</string>
               </property>
              </item>
             </widget>

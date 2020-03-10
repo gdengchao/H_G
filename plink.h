@@ -20,6 +20,7 @@ public:
                  QString ms, QString maf, QString out);
     QStringList getParamList(void);    // Every param can't have any space.
     QString getParamString(void);
+    QStringList getSupportedModel(void);
 
 private:
     const QString toolpath;

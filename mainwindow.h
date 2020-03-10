@@ -39,7 +39,7 @@ private slots:
 
     // for WorkDirectory
     void on_browButton_clicked();
-    void on_modulenameLineEdit_textChanged(const QString &text);
+    void on_projectNameLineEdit_textChanged(const QString &text);
 
     // for PhenoSelector
     void on_excludeAllPhenoButton_clicked();
@@ -60,6 +60,9 @@ private slots:
     void on_readoutput();
     void on_readerror();
     void on_closeRunningWidget();
+
+    // For tool and model selector
+    void on_toolComboBox_currentTextChanged(const QString &tool);
 
 private:
     Ui::MainWindow *ui;
