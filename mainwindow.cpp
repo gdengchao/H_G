@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     // connect QProcess->start(tool) and runningMsgWidget.
     connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
     connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
-    connect(runningMsgWidget, SIGNAL(close()), this->process, SLOT(on_closeRunningWidget()));
+    connect(runningMsgWidget, SIGNAL(closeSignal()), this, SLOT(on_closeRunningWidget()));
 }
 
 MainWindow::~MainWindow()

@@ -56,13 +56,14 @@ private slots:
     void on_msDoubleSpinBox_editingFinished();
     void on_mafDoubleSpinBox_editingFinished();
 
-    // for running MessageBox
+    // for running Message
     void on_readoutput();
     void on_readerror();
     void on_closeRunningWidget();
 
     // For tool and model selector
     void on_toolComboBox_currentTextChanged(const QString &tool);
+
 
 private:
     Ui::MainWindow *ui;

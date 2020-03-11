@@ -38,3 +38,13 @@ QString RunningMsgWidget::getText(void)
 {
     return ui->textBrowser->toPlainText();
 }
+
+void RunningMsgWidget::closeEvent(QCloseEvent *event)
+{
+    if (this->isVisible())
+    {
+        this->hide();
+    }
+    emit this->closeSignal();
+    event->ignore();
+}
