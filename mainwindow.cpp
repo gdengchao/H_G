@@ -79,19 +79,30 @@ void MainWindow::on_pheFileToolButton_clicked()
 
     this->fileReader->setPhenotypeFile(fileNames[0]);
 
-    QStringList  fileDirList = fileNames[0].split("/");
-    QString fileName = fileDirList[fileDirList.length()-1]; // Get the file name from a path.
-    ui->pheFileLabel->setText(fileName);
+    QFileInfo  pheFileInfo(fileNames[0]);
+    QString fileBaseName = pheFileInfo.baseName(); // Get the file name from a path.
+    ui->pheFileLabel->setText(fileBaseName);
 
-    // Get types of phenotype, and write to list widget. ------- Just every coloumn(second begin) is phenotype is OK.
-    QFile fptr(fileNames[0]);
-    fptr.open(QIODevice::ReadOnly|QIODevice::Text);
-    QString phenoFirstLine = fptr.readLine();
-    phenoFirstLine.replace("\r\n", "");         // Strip "\n"
-    phenoFirstLine.replace("\n", "");
-    QStringList phenoList = phenoFirstLine.split("\t");
-    phenoList.removeFirst();
-    phenoSelector->setSelectedPheno(phenoList);
+    // Get types of phenotype, and write to list widget.
+    QString fileSuffix = pheFileInfo.suffix();
+    if (fileSuffix != "phe")
+    {   // FID IID PHE1 PHE2 PHE3 ... (With header)
+        QFile fptr(fileNames[0]);
+        fptr.open(QIODevice::ReadOnly|QIODevice::Text);
+        QString phenoFirstLine = fptr.readLine();
+        phenoFirstLine.replace("\r\n", "");         // Strip "\n"
+        phenoFirstLine.replace("\n", "");
+        QStringList phenoList = phenoFirstLine.split("\t");
+        phenoList.removeFirst();    // Remove first two columns
+        phenoList.removeFirst();
+        phenoSelector->setSelectedPheno(phenoList);
+    }
+    else
+    {   // FID IID PHE (No header)
+        QStringList phenoList;
+        phenoList.append(fileBaseName);
+        phenoSelector->setSelectedPheno(phenoList);
+    }
 
     ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
 }
@@ -116,9 +127,9 @@ void MainWindow::on_genoFileToolButton_clicked()
 
     this->fileReader->setGenotypeFile(fileNames[0]);
 
-    QStringList  fileDirList = fileNames[0].split("/");
-    QString fileName = fileDirList[fileDirList.length()-1];
-    ui->genoFileLabel->setText(fileName);
+    QFileInfo  genoFileInfo(fileNames[0]);
+    QString fileBaseName = genoFileInfo.baseName();
+    ui->mapFileLabel->setText(fileBaseName);
 }
 
 void MainWindow::on_mapFileToolButton_clicked()
@@ -141,9 +152,9 @@ void MainWindow::on_mapFileToolButton_clicked()
 
     this->fileReader->setMapFile(fileNames[0]);
 
-    QStringList  fileDirList = fileNames[0].split("/");
-    QString fileName = fileDirList[fileDirList.length()-1];
-    ui->mapFileLabel->setText(fileName);
+    QFileInfo  mapFileInfo(fileNames[0]);
+    QString fileBaseName = mapFileInfo.baseName();
+    ui->mapFileLabel->setText(fileBaseName);
 }
 
 void MainWindow::on_covarFileToolButton_clicked()
@@ -166,9 +177,9 @@ void MainWindow::on_covarFileToolButton_clicked()
 
     this->fileReader->setCovariateFile(fileNames[0]);
 
-    QStringList  fileDirList = fileNames[0].split("/");
-    QString fileName = fileDirList[fileDirList.length()-1];
-    ui->covarFileLabel->setText(fileName);
+    QFileInfo  covarFileInfo(fileNames[0]);
+    QString fileBaseName = covarFileInfo.baseName();
+    ui->mapFileLabel->setText(fileBaseName);
 }
 
 void MainWindow::on_kinFileToolButton_clicked()
@@ -191,9 +202,9 @@ void MainWindow::on_kinFileToolButton_clicked()
 
     this->fileReader->setKinshipFile(fileNames[0]);
 
-    QStringList  fileDirList = fileNames[0].split("/");
-    QString fileName = fileDirList[fileDirList.length()-1];
-    ui->kinFileLabel->setText(fileName);
+    QFileInfo  kinFileInfo(fileNames[0]);
+    QString fileBaseName = kinFileInfo.baseName();
+    ui->mapFileLabel->setText(fileBaseName);
 }
 
 void MainWindow::on_browButton_clicked()
