@@ -45,6 +45,7 @@ void RunningMsgWidget::closeEvent(QCloseEvent *event)
     {
         this->hide();
     }
+    this->clearText();
     emit this->closeSignal();
     event->ignore();
 }

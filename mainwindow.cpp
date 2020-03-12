@@ -76,12 +76,12 @@ void MainWindow::on_pheFileToolButton_clicked()
         return;
     }
     ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));    // Set file Icon.
-
     this->fileReader->setPhenotypeFile(fileNames[0]);
 
     QFileInfo  pheFileInfo(fileNames[0]);
-    QString fileBaseName = pheFileInfo.baseName(); // Get the file name from a path.
-    ui->pheFileLabel->setText(fileBaseName);
+    QString fileBaseName = pheFileInfo.baseName();
+    QString fileName = pheFileInfo.fileName(); // Get the file name from a path.
+    ui->pheFileLabel->setText(fileName);
 
     // Get types of phenotype, and write to list widget.
     QString fileSuffix = pheFileInfo.suffix();
@@ -92,7 +92,7 @@ void MainWindow::on_pheFileToolButton_clicked()
         QString phenoFirstLine = fptr.readLine();
         phenoFirstLine.replace("\r\n", "");         // Strip "\n"
         phenoFirstLine.replace("\n", "");
-        QStringList phenoList = phenoFirstLine.split("\t");
+        QStringList phenoList = phenoFirstLine.split(QRegExp("\\s+"), QString::SkipEmptyParts);;
         phenoList.removeFirst();    // Remove first two columns
         phenoList.removeFirst();
         phenoSelector->setSelectedPheno(phenoList);
@@ -104,6 +104,7 @@ void MainWindow::on_pheFileToolButton_clicked()
         phenoSelector->setSelectedPheno(phenoList);
     }
 
+    ui->selectedPhenoListWidget->clear();
     ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
 }
 
@@ -124,12 +125,11 @@ void MainWindow::on_genoFileToolButton_clicked()
         return;
     }
     ui->genoFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
-
     this->fileReader->setGenotypeFile(fileNames[0]);
 
     QFileInfo  genoFileInfo(fileNames[0]);
-    QString fileBaseName = genoFileInfo.baseName();
-    ui->mapFileLabel->setText(fileBaseName);
+    QString fileName = genoFileInfo.fileName(); // Get the file name from a path.
+    ui->genoFileLabel->setText(fileName);
 }
 
 void MainWindow::on_mapFileToolButton_clicked()
@@ -149,12 +149,11 @@ void MainWindow::on_mapFileToolButton_clicked()
         return;
     }
     ui->mapFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
-
     this->fileReader->setMapFile(fileNames[0]);
 
     QFileInfo  mapFileInfo(fileNames[0]);
-    QString fileBaseName = mapFileInfo.baseName();
-    ui->mapFileLabel->setText(fileBaseName);
+    QString fileName = mapFileInfo.fileName(); // Get the file name from a path.
+    ui->mapFileLabel->setText(fileName);
 }
 
 void MainWindow::on_covarFileToolButton_clicked()
@@ -174,12 +173,11 @@ void MainWindow::on_covarFileToolButton_clicked()
         return;
     }
     ui->covarFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
-
     this->fileReader->setCovariateFile(fileNames[0]);
 
     QFileInfo  covarFileInfo(fileNames[0]);
-    QString fileBaseName = covarFileInfo.baseName();
-    ui->mapFileLabel->setText(fileBaseName);
+    QString fileName = covarFileInfo.fileName(); // Get the file name from a path.
+    ui->covarFileLabel->setText(fileName);
 }
 
 void MainWindow::on_kinFileToolButton_clicked()
@@ -199,12 +197,11 @@ void MainWindow::on_kinFileToolButton_clicked()
         return;
     }
     ui->kinFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));
-
     this->fileReader->setKinshipFile(fileNames[0]);
 
     QFileInfo  kinFileInfo(fileNames[0]);
-    QString fileBaseName = kinFileInfo.baseName();
-    ui->mapFileLabel->setText(fileBaseName);
+    QString fileName = kinFileInfo.fileName(); // Get the file name from a path.
+    ui->kinFileLabel->setText(fileName);
 }
 
 void MainWindow::on_browButton_clicked()
@@ -220,6 +217,10 @@ void MainWindow::on_browButton_clicked()
 
 void MainWindow::on_excludeAllPhenoButton_clicked()
 {
+    if (ui->selectedPhenoListWidget->count() <= 1)
+    {
+        return;
+    }
     phenoSelector->excludeAllPheno();
     ui->selectedPhenoListWidget->clear();   // Clear the list widget.
     ui->excludedPhenoListWidget->clear();
@@ -247,6 +248,10 @@ void MainWindow::on_selectPhenoButton_clicked()
 
 void MainWindow::on_excludePhenoButton_clicked()
 {
+    if (ui->selectedPhenoListWidget->count() <= 1)
+    {
+        return;
+    }
     phenoSelector->excludePheno(ui->selectedPhenoListWidget->selectedItems());
     ui->selectedPhenoListWidget->clear();
     ui->excludedPhenoListWidget->clear();
@@ -259,47 +264,7 @@ void MainWindow::on_rungwasButton_clicked()
     //QString toolpath = "/tools/";
     //QString toolpath = "F://Code//Qt/H_G//tools//";  // Lab418. For Debug, start from debug/a.exe fold.
     //QString toolpath = "G:\\GitHub\\H_G\\tools\\";  // Laptop Win10
-    // if (userOS->currentOS() == "linux") {}
 
-    QString tool = ui->toolComboBox->currentText();
-    ui->rungwasButton->setText("Running");
-    ui->rungwasButton->setDisabled(true);
-    this->runningMsgWidget->clearText();
-    this->runningMsgWidget->show();
-
-    if (tool == "emmax")
-    {
-        if (!this->callEmmaxGwas())
-        {
-            this->resetWindow();
-            return;
-        }
-    }
-
-    if (tool == "gemma")
-    {
-        if (!this->callGemmaGwas())
-        {
-            this->resetWindow();
-            return;
-        }
-    }
-
-    if (tool == "plink")  // plink GWAS
-    {
-        if (!this->callPlinkGwas())
-        {
-            this->resetWindow();
-            this->runningMsgWidget->close();
-            return;
-        }
-    }
-
-    this->resetWindow();
-}
-
-bool MainWindow::callGemmaGwas(void)
-{
     QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux. Attention
     QString tool = ui->toolComboBox->currentText();
 
@@ -310,6 +275,96 @@ bool MainWindow::callGemmaGwas(void)
     QString kinship = this->fileReader->getKinshipFile();
     QString out = this->workDirectory->getOutputDirectory();  // Include project name.
     QString name = this->workDirectory->getProjectName();
+
+    ui->rungwasButton->setText("Running");
+    ui->rungwasButton->setDisabled(true);
+    this->runningMsgWidget->clearText();
+    this->runningMsgWidget->show();
+
+    QFileInfo pheFileInfo(phenotype);
+    QString pheFileBaseName = pheFileInfo.baseName();
+    QString pheFileAbPath = pheFileInfo.absolutePath();
+    QString pheFileSuffix = pheFileInfo.suffix();
+
+    if (pheFileSuffix == "phe")
+    {
+        if (tool == "emmax")
+        {
+            if (!this->callEmmaxGwas(toolpath, phenotype, genotype, map, covar, kinship, out, name))
+            {
+                this->resetWindow();
+                return;
+            }
+        }
+
+        if (tool == "gemma")
+        {
+            if (!this->callGemmaGwas(toolpath, phenotype, genotype, map, covar, kinship, out, name))
+            {
+                this->resetWindow();
+                return;
+            }
+        }
+
+        if (tool == "plink")  // plink GWAS
+        {
+            if (!this->callPlinkGwas(toolpath, phenotype, genotype, map, covar, kinship, out, name))
+            {
+                this->resetWindow();
+                return;
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < ui->selectedPhenoListWidget->count(); i++)
+        {
+
+            QListWidgetItem *item = ui->selectedPhenoListWidget->item(i);
+            qDebug() << "i: " << i << "\t" << "item->text(): " << item->text();
+
+            if (!this->makePheFile(phenotype, item->text()))
+            {
+                this->resetWindow();
+                return;
+            }
+            QString madedPheFile = pheFileAbPath + "/" + item->text() + ".phe";
+            if (tool == "emmax")
+            {
+                if (!this->callEmmaxGwas(toolpath, madedPheFile, genotype, map, covar, kinship, out, name))
+                {
+                    this->resetWindow();
+
+                    return;
+                }
+            }
+
+            if (tool == "gemma")
+            {
+                if (!this->callGemmaGwas(toolpath, madedPheFile, genotype, map, covar, kinship, out, name))
+                {
+                    this->resetWindow();
+                    return;
+                }
+            }
+
+            if (tool == "plink")  // plink GWAS
+            {
+                if (!this->callPlinkGwas(toolpath, madedPheFile, genotype, map, covar, kinship, out, name))
+                {
+                    this->resetWindow();
+                    return;
+                }
+            }
+        }
+    }
+
+    this->resetWindow();
+}
+
+bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+                               QString covar, QString kinship, QString out, QString name)
+{
     if (out.isNull() || name.isNull())
     {
         QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
@@ -436,18 +491,9 @@ bool MainWindow::callGemmaGwas(void)
     return true;
 }
 
-bool MainWindow::callEmmaxGwas(void)
+bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+                               QString covar, QString kinship, QString out, QString name)
 {
-    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux. Attention
-    QString tool = ui->toolComboBox->currentText();
-
-    QString phenotype = this->fileReader->getPhenotypeFile();
-    QString genotype = this->fileReader->getGenotypeFile();
-    QString map = this->fileReader->getMapFile();
-    QString covar = this->fileReader->getCovariateFile();
-    QString kinship = this->fileReader->getKinshipFile();
-    QString out = this->workDirectory->getOutputDirectory();  // Include project name.
-    QString name = this->workDirectory->getProjectName();
     if (out.isNull() || name.isNull())
     {
         QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
@@ -551,18 +597,9 @@ bool MainWindow::callEmmaxGwas(void)
     return true;
 }
 
-bool MainWindow::callPlinkGwas(void)
+bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+                               QString covar, QString kinship, QString out, QString name)
 {
-    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux. Attention
-    QString tool = ui->toolComboBox->currentText();
-
-    QString phenotype = this->fileReader->getPhenotypeFile();
-    QString genotype = this->fileReader->getGenotypeFile();
-    QString map = this->fileReader->getMapFile();
-    QString covar = this->fileReader->getCovariateFile();
-    QString kinship = this->fileReader->getKinshipFile();
-    QString out = this->workDirectory->getOutputDirectory();  // Include project name.
-    QString name = this->workDirectory->getProjectName();
     if (out.isNull() || name.isNull())
     {
         QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
@@ -726,4 +763,60 @@ void MainWindow::on_toolComboBox_currentTextChanged(const QString &tool)
         Emmax emmax;
         ui->modelComboBox->addItems(emmax.getSupportedModel());
     }
+}
+
+bool MainWindow::makePheFile(QString const phenotype, QString const selectedPheno)
+{
+    if (phenotype.isNull() || selectedPheno.isEmpty())
+    {
+        return false;
+    }
+
+    QFileInfo pheFileInfo(phenotype);
+    QString pheFileAbPath = pheFileInfo.absolutePath();
+    QString pheFileBaseName = pheFileInfo.baseName();
+
+    QFile srcFile(phenotype);
+    QFile dstFile(pheFileAbPath+"/"+selectedPheno+".phe");
+
+    if (!srcFile.open(QIODevice::ReadOnly) || !dstFile.open(QIODevice::ReadWrite))
+    {
+        return false;
+    }
+
+    QTextStream srcFileStream(&srcFile);
+    QTextStream dstFileStream(&dstFile);
+
+    QStringList header = srcFileStream.readLine().split("\t");   // header
+
+    int selectedPheIndex = header.indexOf(selectedPheno);   // get the columns of selected phenotype.
+
+    qDebug() << "header: " << header;
+    qDebug() << selectedPheIndex << "\t" << selectedPheno;
+
+    if (selectedPheIndex == -1)
+    {
+        return false;
+    }
+
+    while (!srcFileStream.atEnd())
+    {
+        QString outLine;
+        QStringList line = srcFileStream.readLine().split("\t", QString::SkipEmptyParts);
+        if (selectedPheIndex >= line.length())
+        {   // Any missing rate?
+             outLine = line[0] + "\t" + line[1] + "\tNA\n";
+        }
+        else
+        {
+            outLine = line[0] + "\t" + line[1] + "\t" + line[selectedPheIndex] + "\n";
+        }
+        //dstFileStream << line[0] << "\t" << line[1] << "\t" << line[selectedPheIndex] << "\n";
+        dstFileStream << outLine;
+    }
+
+    srcFile.close();
+    dstFile.close();
+
+    return true;
 }

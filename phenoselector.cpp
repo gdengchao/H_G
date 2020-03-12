@@ -22,7 +22,6 @@ void PhenoSelector::setSelectedPheno(QStringList const list)
 {
     if (!list.isEmpty())
     {
-        this->selectedPhenoList.clear();
         this->selectedPhenoList = list;
     }
 }

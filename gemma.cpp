@@ -119,7 +119,6 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
     QFile famFile(fam);
     QFile tmpFamFile(fam+".tmp");  // A temp file to save the final data of fam file.
 
-    tmpFamFile.open(QIODevice::ReadWrite);
 
     QFileInfo famFileInfo(fam), tmpFamFileInfo(tmpFamFile);
     QString famFileName = famFileInfo.fileName();
@@ -130,7 +129,9 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
     QTextStream pheStream(&pheFile);
     QTextStream famStream(&famFile);
 
-    if (!pheFile.open(QIODevice::ReadOnly) || !famFile.open(QIODevice::ReadOnly))
+    if (!pheFile.open(QIODevice::ReadOnly) ||
+        !famFile.open(QIODevice::ReadOnly) ||
+        !tmpFamFile.open(QIODevice::ReadWrite))
     {
         return false;
     }

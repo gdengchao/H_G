@@ -76,10 +76,14 @@ private:
     QProcess *process;
 
     // Usual
-    bool isVcfFile(QString file);
+    bool isVcfFile(QString const file);
     void resetWindow(void);
-    bool callPlinkGwas(void);
-    bool callEmmaxGwas(void);
-    bool callGemmaGwas(void);
+    bool callPlinkGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+                       QString covar, QString kinship, QString out, QString name);
+    bool callEmmaxGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+                       QString covar, QString kinship, QString out, QString name);
+    bool callGemmaGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+                       QString covar, QString kinship, QString out, QString name);
+    bool makePheFile(QString const phenotype, QString const selectedPheno);
 };
 #endif // MAINWINDOW_H
