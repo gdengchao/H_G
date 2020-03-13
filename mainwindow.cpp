@@ -104,7 +104,11 @@ void MainWindow::on_pheFileToolButton_clicked()
         phenoSelector->setSelectedPheno(phenoList);
     }
 
+    QStringList list;
+    this->phenoSelector->setExcludedPheno(list);
+
     ui->selectedPhenoListWidget->clear();
+    ui->excludedPhenoListWidget->clear();
     ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
 }
 
@@ -319,9 +323,7 @@ void MainWindow::on_rungwasButton_clicked()
     {
         for (int i = 0; i < ui->selectedPhenoListWidget->count(); i++)
         {
-
             QListWidgetItem *item = ui->selectedPhenoListWidget->item(i);
-            qDebug() << "i: " << i << "\t" << "item->text(): " << item->text();
 
             if (!this->makePheFile(phenotype, item->text()))
             {
@@ -382,6 +384,10 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
     QString genoFileBaseName = genoFileInfo.baseName();     // geno
     QString genoFileSuffix = genoFileInfo.suffix();         //
     QString genoFileAbPath = genoFileInfo.absolutePath();
+
+    // Phenotype file info.
+    QFileInfo pheFileInfo = QFileInfo(phenotype);
+    QString pheFileBaseName = pheFileInfo.baseName();
 
     // Need binary files.
     Plink plink;
@@ -451,7 +457,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
          kinship = QDir::currentPath() + "/output/" + genoFileBaseName + ".cXX.txt";
     }
 
-    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name, ms, maf, model))
+    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name+"_"+pheFileBaseName, ms, maf, model))
     {
         this->process->start(toolpath+"gemma", gemma.getParamList());
         // Running message to display message.
@@ -460,7 +466,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
             this->resetWindow();
             return false;
         }
-        this->runningMsgWidget->setTitle("Gemma: " + name+" is running...");
+        this->runningMsgWidget->setTitle("Gemma(" + pheFileBaseName+ "): " + name+" is running...");
         if (!this->process->waitForFinished(-1))
         {
             this->resetWindow();
@@ -480,7 +486,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         // It will be wrong when "/output" change to "/output/"
         dir.rename(QDir::currentPath() + "/output", out+"/output"+(i==0?"":QString::number(i)));
 
-        this->runningMsgWidget->setTitle("Gemma: " + name+" is finished");
+        this->runningMsgWidget->setTitle("Gemma("+pheFileBaseName+"): "+name+" is finished");
     }
     else
     {
@@ -511,6 +517,11 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     QString genoFileBaseName = genoFileInfo.baseName();     // geno
     QString genoFileSuffix = genoFileInfo.suffix();         //
     QString genoFileAbPath = genoFileInfo.absolutePath();
+
+    // Phenotype file info.
+    QFileInfo pheFileInfo = QFileInfo(phenotype);
+    QString pheFileBaseName = pheFileInfo.baseName();
+
     // Need tped/fam files.
     Plink plink;
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
@@ -571,7 +582,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
         QMessageBox::information(nullptr, "Error", "Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf ERROR!   ");
         return false;
     }
-    if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name))
+    if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name+"_"+pheFileBaseName))
     {
         this->process->start(toolpath+"emmax", emmax.getParamList());
         // Running message to display message.
@@ -580,14 +591,14 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
             this->resetWindow();
             return false;
         }
-        this->runningMsgWidget->setTitle("Emmax: " + name+" is running...");
+        this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is running...");
         if (!this->process->waitForFinished(-1))
         {
             this->resetWindow();
             QMessageBox::information(nullptr, "Error", "Exit emmax with error when run GWAS    !");
             return false;
         }
-        this->runningMsgWidget->setTitle("Emmax: " + name+" is finished");
+        this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is finished");
     }
     else
     {
@@ -618,11 +629,14 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
     QString genoFileSuffix = genoFileInfo.suffix();         //
     QString genoFileAbPath = genoFileInfo.absolutePath();
 
+    // Phenotype file info.
+    QFileInfo pheFileInfo = QFileInfo(phenotype);
+    QString pheFileBaseName = pheFileInfo.baseName();
 
     // Run GWAS
     Plink plink;
     if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
-                  model, ms, maf, out+"/"+name))
+                  model, ms, maf, out+"/"+name+"_"+pheFileBaseName))
     {
         this->process->start(toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
@@ -630,14 +644,14 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
             this->resetWindow();
             return false;
         }
-        this->runningMsgWidget->setTitle("Plink: " + name+" is running...");
+        this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is running...");
         if (!this->process->waitForFinished(-1))
         {
             this->resetWindow();
             QMessageBox::information(nullptr, "Error", "Exit plink with error when run GWAS    !");
             return false;
         }
-        this->runningMsgWidget->setTitle("Plink: " + name+" is finished");
+        this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is finished");
     }
     else
     {
@@ -673,13 +687,7 @@ void MainWindow::on_readerror()
 
 void MainWindow::on_closeRunningWidget()
 {
-    if (this->process)
-    {
-        this->process->terminate();
-        this->process->waitForFinished(-1);
-    }
-    ui->rungwasButton->setText("Run");
-    ui->rungwasButton->setEnabled(true);
+    this->resetWindow();
     qApp->processEvents();
 }
 
@@ -790,9 +798,6 @@ bool MainWindow::makePheFile(QString const phenotype, QString const selectedPhen
     QStringList header = srcFileStream.readLine().split("\t");   // header
 
     int selectedPheIndex = header.indexOf(selectedPheno);   // get the columns of selected phenotype.
-
-    qDebug() << "header: " << header;
-    qDebug() << selectedPheIndex << "\t" << selectedPheno;
 
     if (selectedPheIndex == -1)
     {

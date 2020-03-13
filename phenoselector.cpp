@@ -1,4 +1,4 @@
-#include "phenoselector.h"
+ #include "phenoselector.h"
 
 PhenoSelector::PhenoSelector()
 {
@@ -24,6 +24,10 @@ void PhenoSelector::setSelectedPheno(QStringList const list)
     {
         this->selectedPhenoList = list;
     }
+    else
+    {
+        this->selectedPhenoList.clear();
+    }
 }
 
 QStringList PhenoSelector::getSelectedPheno(void)
@@ -36,6 +40,10 @@ void PhenoSelector::setExcludedPheno(QStringList const list)
     if (!list.isEmpty())
     {
         this->excludedPhenoList = list;
+    }
+    else
+    {
+        this->excludedPhenoList.clear();
     }
 }
 
