@@ -633,8 +633,18 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
     QFileInfo pheFileInfo = QFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
 
-    // Run GWAS
     Plink plink;
+    if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+    {
+        if(!plink.vcf2plink(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        {
+            return false;
+        }
+        genotype = genoFileAbPath + "/" + genoFileBaseName + ".ped";
+        map = genoFileAbPath + "/" + genoFileBaseName + ".map";
+    }
+
+    // Run GWAS
     if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
                   model, ms, maf, out+"/"+name+"_"+pheFileBaseName))
     {
@@ -663,8 +673,8 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
 
 void MainWindow::on_readoutput()
 {
-    //QString curText = this->runningMsgWidget->getText();
-    this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardOutput().data()));
+    QString text = QString::fromLocal8Bit(this->process->readAllStandardOutput().data());
+    this->runningMsgWidget->appendText(text);
     this->runningMsgWidget->repaint();
     qApp->processEvents();
 }
@@ -672,17 +682,20 @@ void MainWindow::on_readoutput()
 void MainWindow::on_readerror()
 {
     QString tool = ui->toolComboBox->currentText();
-    if (tool == "emmax" || tool == "gemma")
-    {   // Emmax let messages print to stand error.
-        this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-        this->runningMsgWidget->repaint();
-        qApp->processEvents();
-    }
-    else
-    {
-        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-        this->runningMsgWidget->close();
-    }
+//    if (tool == "emmax" || tool == "gemma")
+//    {   // Emmax let messages print to stand error.
+//        this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
+//        this->runningMsgWidget->repaint();
+//        qApp->processEvents();
+//    }
+//    else
+//    {
+//        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
+//        this->runningMsgWidget->close();
+//    }
+    this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
+    this->runningMsgWidget->repaint();
+    qApp->processEvents();
 }
 
 void MainWindow::on_closeRunningWidget()
@@ -737,7 +750,7 @@ void MainWindow::resetWindow()
     if (this->process)
     {
         this->process->terminate();
-        this->process->waitForFinished(-1);
+        this->process->waitForFinished();
     }
     ui->rungwasButton->setText("Run");
     ui->rungwasButton->setEnabled(true);

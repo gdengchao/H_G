@@ -20,8 +20,10 @@ public:
     void appendText(QString text);
     void clearText(void);
     void setTitle(QString title);
+    void refreshLastLine(QString line);
     QString getText(void);
 
+    // To stop process.
     void closeEvent(QCloseEvent *event);
 
 private:

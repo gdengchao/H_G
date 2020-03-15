@@ -49,3 +49,31 @@ void RunningMsgWidget::closeEvent(QCloseEvent *event)
     emit this->closeSignal();
     event->ignore();
 }
+
+// Delete the last line and append the new line.
+void RunningMsgWidget::refreshLastLine(QString line)
+{
+    if (line.isNull())
+    {
+        return;
+    }
+
+    int index = line.length();
+    if (line[index-1] == "\n")
+    {
+        index --;
+    }
+
+    if (line[index-1] != '%' || (line[index-1]=='%'&&line[index-2]=='0'&&!line[index-3].isNumber()))
+    {
+        this->appendText(line);
+    }
+    else
+    {
+        QStringList curText = this->getText().split("\n");
+        curText.removeLast();
+        curText.append(line);
+        this->setText(curText.join("\n"));
+    }
+
+}
