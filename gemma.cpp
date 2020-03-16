@@ -1,6 +1,6 @@
 #include "gemma.h"
 
-Gemma::Gemma(): toolpath("/tool/"), model({"LMM", "BSLM"})
+Gemma::Gemma(): toolpath("/tool/"), model({"LMM", "BSLMM"})
 {
     this->paramlist.clear();
 }
@@ -75,7 +75,7 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
         this->paramlist.append("2");
     }
 
-    if (model == "BSLM")
+    if (model == "BSLMM")
     {  // gemma -bfile 222_filter1 -bslmm 1 -n 2 -o tmp
         this->paramlist.append("-bslmm");
         this->paramlist.append("1");

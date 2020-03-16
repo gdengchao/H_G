@@ -30,11 +30,11 @@ emmax: -c       covariate
 
 5. Association
 
-plink: plink --ped .ped --map .map --assoc --pheno phenotype [--covar covariate] --linear   [--maf maf] [--geno ms]
-                                                                                 --logistic
+plink: plink --ped .ped --map .map --assoc --pheno phenotype [--covar covariate] --linear   [--maf maf] [--geno ms]	(For scalar)
+                                                                                 --logistic				(For case control)
 
 gemma: (Pre: replace "NA" to -9, then complete .fam)    .fam -- FID IID PID MID Sex 1 PHE
-    LMM:    gemma -bfile geno_pre -k geno_pre.cXX.txt -lmm 1 -n 2 -o out
-    BSLM:   gemma -bfile geno_pre -bslmm 1 -n 2 -o out
+    LMM(Univariate Linear Mixed Models):    gemma -bfile geno_pre -k geno_pre.cXX.txt -lmm 1 -n 2 -o out
+    BSLM(Bayesian Sparse Linear Mixed Model):   gemma -bfile geno_pre -bslmm 1 -n 2 -o out
 
 emmax: emmax -v -d 10 -t geno_pre_tfile -p phenotype -k kinship -o out

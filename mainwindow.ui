@@ -322,13 +322,6 @@ border-radius:5px;//这个是改变成圆角边框;
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Tool and model</string>
-           </property>
-          </widget>
-         </item>
          <item row="3" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout_11">
            <item>
@@ -342,7 +335,7 @@ border-radius:5px;//这个是改变成圆角边框;
             <widget class="QComboBox" name="modelComboBox">
              <property name="minimumSize">
               <size>
-               <width>143</width>
+               <width>0</width>
                <height>0</height>
               </size>
              </property>
@@ -353,10 +346,23 @@ border-radius:5px;//这个是改变成圆角边框;
              </item>
              <item>
               <property name="text">
-               <string>Logistic Regression</string>
+               <string>Logistic</string>
               </property>
              </item>
             </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </item>
@@ -415,6 +421,13 @@ border-radius:5px;//这个是改变成圆角边框;
             </spacer>
            </item>
           </layout>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Tool and model</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
