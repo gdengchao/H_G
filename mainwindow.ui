@@ -348,12 +348,12 @@ border-radius:5px;//这个是改变成圆角边框;
              </property>
              <item>
               <property name="text">
-               <string>GLM</string>
+               <string>Linear</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>Lineear Regression</string>
+               <string>Logistic Regression</string>
               </property>
              </item>
             </widget>

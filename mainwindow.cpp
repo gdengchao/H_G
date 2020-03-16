@@ -413,7 +413,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
     if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
             && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
     {
-        if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName))
+        if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
         {
             this->resetWindow();
             return false;

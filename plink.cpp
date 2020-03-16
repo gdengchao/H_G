@@ -1,6 +1,6 @@
 #include "plink.h"
 
-Plink::Plink(): toolpath("/tool/plink"), model({"GLM", "Linear Regression"})
+Plink::Plink(): toolpath("/tool/plink"), model({"Linear", "Logistic Regression"})
 {
     this->paramlist.clear();
 }
@@ -31,6 +31,8 @@ bool Plink::vcf2plink(QString vcfFile, QString out, QString maf, QString ms)
     {
         return false;
     }
+
+    //plink --vcf vcfFile [--maf maf] [--geno ms] --recode12 --out out
 
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--vcf");
@@ -63,6 +65,7 @@ bool Plink::vcf2binary(QString vcfFile, QString out, QString maf, QString ms)
         return false;
     }
 
+    // plink --vcf vcfFile --maf maf --geno maf --recode12 --out out
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--vcf");
     this->paramlist.append(vcfFile);
@@ -78,7 +81,7 @@ bool Plink::vcf2binary(QString vcfFile, QString out, QString maf, QString ms)
         this->paramlist.append(ms);
     }
 
-    this->paramlist.append("--recode12");
+    this->paramlist.append("--make-bed");
     this->paramlist.append("--out");
     this->paramlist.append(out);
     //this->paramlist.append("--noweb");
@@ -93,6 +96,7 @@ bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString ms)
         return false;
     }
 
+    // plink --vcf --maf maf --geno ms --recode12 --ouput-missing-genotype 0 --transpose --out out
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--vcf");
     this->paramlist.append(vcfFile);
@@ -126,6 +130,7 @@ bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QStri
         return false;
     }
 
+    // plink --ped pedFile --map mapFile [--maf maf] [--geno ms] --recode12 --transpose --out out
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--ped");
     this->paramlist.append(pedFile);
@@ -154,18 +159,31 @@ bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QStri
     return true;
 }
 
-bool Plink::plink2binary(QString pedFile, QString mapFile, QString out)
+bool Plink::plink2binary(QString pedFile, QString mapFile, QString out, QString maf, QString ms)
 {
     if (pedFile.isNull() || mapFile.isNull() || out.isNull())
     {
         return false;
     }
 
+    // plink --ped .ped --map .map [--maf maf] [--geno ms] --make-bed --out out
     this->paramlist.clear();
     this->paramlist.append("--ped");
     this->paramlist.append(pedFile);
     this->paramlist.append("--map");
     this->paramlist.append(mapFile);
+
+    if (!maf.isNull())
+    {
+        this->paramlist.append("--maf");
+        this->paramlist.append(maf);
+    }
+    if (!ms.isNull())
+    {
+        this->paramlist.append("--geno");
+        this->paramlist.append(ms);
+    }
+
     this->paramlist.append("--make-bed");
     this->paramlist.append("--out");
     this->paramlist.append(out);
@@ -213,18 +231,18 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
     }
     if (model.isNull())
     {
-        if (model == "glm")
+        if (model == "Linear")
         {
             this->paramlist.append("--linear");
         }
-        if (model == "logistic regression")
+        if (model == "Logistic Regression")
         {
             this->paramlist.append("--logistic");
         }
     }
     if (!ms.isNull())
     {
-        this->paramlist.append("--mind");
+        this->paramlist.append("--geno");
         this->paramlist.append(ms);
     }
     if (!maf.isNull())

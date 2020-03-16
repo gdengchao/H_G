@@ -15,7 +15,7 @@ public:
     bool vcf2binary(QString vcfFile, QString out, QString maf, QString ms);
     bool vcf2plink(QString vcfFile, QString out, QString maf, QString ms);
     bool plink2transpose(QString pedFile, QString mapFile, QString out, QString maf, QString ms);
-    bool plink2binary(QString pedFile, QString mapFile, QString out);
+    bool plink2binary(QString pedFile, QString mapFile, QString out, QString maf, QString ms);
     bool runGWAS(QString phenotype, QString genotype, QString map,
                  QString covariate, QString kinship, QString model,
                  QString ms, QString maf, QString out);
