@@ -8,6 +8,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <QList>
+#include <QThread>
 #include "filereader.h"
 #include "workdirectory.h"
 #include "phenoselector.h"

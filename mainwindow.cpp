@@ -75,6 +75,22 @@ void MainWindow::on_pheFileToolButton_clicked()
     {
         return;
     }
+
+    QFile fptr(fileNames[0]);
+    fptr.open(QIODevice::ReadOnly|QIODevice::Text);
+    QString phenoFirstLine = fptr.readLine();
+    phenoFirstLine.replace("\r\n", "");         // Strip "\n"
+    phenoFirstLine.replace("\n", "");
+    QStringList phenoList = phenoFirstLine.split(QRegExp("\\s+"), QString::SkipEmptyParts);;
+
+    if (phenoList.length() < 3)
+    {
+        QMessageBox::information(nullptr, "Error", "Phenotype file format error!    ");
+        ui->selectedPhenoListWidget->clear();
+        ui->excludedPhenoListWidget->clear();
+        return;
+    }
+
     ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/file.png"));    // Set file Icon.
     this->fileReader->setPhenotypeFile(fileNames[0]);
 
@@ -87,12 +103,7 @@ void MainWindow::on_pheFileToolButton_clicked()
     QString fileSuffix = pheFileInfo.suffix();
     if (fileSuffix != "phe")
     {   // FID IID PHE1 PHE2 PHE3 ... (With header)
-        QFile fptr(fileNames[0]);
-        fptr.open(QIODevice::ReadOnly|QIODevice::Text);
-        QString phenoFirstLine = fptr.readLine();
-        phenoFirstLine.replace("\r\n", "");         // Strip "\n"
-        phenoFirstLine.replace("\n", "");
-        QStringList phenoList = phenoFirstLine.split(QRegExp("\\s+"), QString::SkipEmptyParts);;
+
         phenoList.removeFirst();    // Remove first two columns
         phenoList.removeFirst();
         phenoSelector->setSelectedPheno(phenoList);
@@ -677,6 +688,7 @@ void MainWindow::on_readoutput()
     this->runningMsgWidget->appendText(text);
     this->runningMsgWidget->repaint();
     qApp->processEvents();
+    QThread::msleep(10);
 }
 
 void MainWindow::on_readerror()
