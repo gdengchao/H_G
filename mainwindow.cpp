@@ -411,9 +411,18 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         }
     }
     if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
-            && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
+            && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "binary"
     {
         if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        {
+            this->resetWindow();
+            return false;
+        }
+    }
+    if (genotype.split(".")[genotype.split(".").length()-1] == "tped"
+            && map.split(".")[map.split(".").length()-1] == "tfam")  // Transform "transpose" to "binary"
+    {
+        if (!plink.transpose2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
         {
             this->resetWindow();
             return false;
@@ -546,6 +555,13 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
             && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
     {
         if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        {
+            return false;
+        }
+    }
+    if (genotype.split(".")[genotype.split(".").length()-1] == "bed")  // Transform "binary" to "transpose"
+    {
+        if (!plink.binary2transpose(genoFileAbPath+"/"+genoFileBaseName,  genoFileAbPath+"/"+genoFileBaseName, maf, ms))
         {
             return false;
         }

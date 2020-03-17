@@ -192,6 +192,82 @@ bool Plink::plink2binary(QString pedFile, QString mapFile, QString out, QString 
     return true;
 }
 
+bool Plink::transpose2binary(QString tpedFile, QString tfamFile, QString out, QString maf, QString ms)
+{
+    if (tpedFile.isNull() || tfamFile.isNull() || out.isNull())
+    {
+        return false;
+    }
+
+    // plink --tped .tped --tfam .tfam [--maf maf] [--geno ms] --make-bed --out out
+    this->paramlist.clear();
+    this->paramlist.append("--tped");
+    this->paramlist.append(tpedFile);
+    this->paramlist.append("--tfam");
+    this->paramlist.append(tfamFile);
+
+    if (!maf.isNull())
+    {
+        this->paramlist.append("--maf");
+        this->paramlist.append(maf);
+    }
+    if (!ms.isNull())
+    {
+        this->paramlist.append("--geno");
+        this->paramlist.append(ms);
+    }
+
+    this->paramlist.append("--make-bed");
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+    //this->paramlist.append("--noweb");
+
+    return true;
+}
+
+bool Plink::binary2transpose(QString binaryFile, QString out, QString maf, QString ms)
+{
+    if (binaryFile.isNull() || out.isNull())
+    {
+        return false;
+    }
+
+    QFile bedFile(binaryFile+".bed");
+    QFile bimFile(binaryFile+".bim");
+    QFile famFile(binaryFile+".fam");
+
+    if (!bedFile.exists() || !bimFile.exists() || !famFile.exists())
+    {
+        return false;
+    }
+
+    // plink --bfile binaryFile [--maf maf] [--geno ms] --recode12 --transpose --out out
+    this->paramlist.clear();            // Clear paramlist before set parameter.
+    this->paramlist.append("--bfile");
+    this->paramlist.append(binaryFile);
+
+    if (!maf.isNull())
+    {
+        this->paramlist.append("--maf");
+        this->paramlist.append(maf);
+    }
+    if (!ms.isNull())
+    {
+        this->paramlist.append("--geno");
+        this->paramlist.append(ms);
+    }
+
+    this->paramlist.append("--recode12");
+    this->paramlist.append("--output-missing-genotype");
+    this->paramlist.append("0");
+    this->paramlist.append("--transpose");
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+    //this->paramlist.append("--noweb");
+
+    return true;
+}
+
 bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
                     QString covariate, QString kinship, QString model,
                     QString ms, QString maf, QString out)

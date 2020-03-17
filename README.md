@@ -3,7 +3,7 @@
 1. Phenotype
 
 .phe:   FID IID PHE
-else:   FID IIF PHE1 PHE2
+else (Multi phenotype, make .phe):   FID IIF PHE1 PHE2
 
 
 2. Genotype, Map
@@ -34,7 +34,7 @@ plink: plink --ped .ped --map .map --assoc --pheno phenotype [--covar covariate]
                                                                                  --logistic				(For case control)
 
 gemma: (Pre: replace "NA" to -9, then complete .fam)    .fam -- FID IID PID MID Sex 1 PHE
-    LMM(Univariate Linear Mixed Models):    gemma -bfile geno_pre -k geno_pre.cXX.txt -lmm 1 -n 2 -o out
-    BSLM(Bayesian Sparse Linear Mixed Model):   gemma -bfile geno_pre -bslmm 1 -n 2 -o out
+    LMM(Linear Mixed Models):    gemma -bfile geno_pre -k geno_pre.cXX.txt -lmm 1 -n 2 -o out
+    BSLMM(Bayesian Sparse Linear Mixed Model):   gemma -bfile geno_pre -bslmm 1 -n 2 -o out
 
 emmax: emmax -v -d 10 -t geno_pre_tfile -p phenotype -k kinship -o out
