@@ -142,7 +142,12 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
         // Replace "NA" to "-9"
         QStringList pheCurLineList = pheCurLine.replace("NA", "-9").split(QRegExp("\\s+"), QString::SkipEmptyParts);
         QStringList famCurLineList = famCurLine.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-        famCurLineList.removeLast();
+
+        while (famCurLineList.length() > 5)
+        {
+            famCurLineList.removeLast();
+        }
+
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
         tmpFamStream << famCurLineList.join("\t") << "\t1\t" << pheCurLineList[pheCurLineList.length()-1] << "\n";
     }

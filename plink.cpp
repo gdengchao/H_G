@@ -285,11 +285,49 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
         return false;
     }
 
+    // Genotype file info.
+    QFileInfo genoFileInfo = QFileInfo(genotype);
+    QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
+    QString genoFileBaseName = genoFileInfo.baseName();     // geno
+    QString genoFileSuffix = genoFileInfo.suffix();         //
+    QString genoFileAbPath = genoFileInfo.absolutePath();
+
     this->paramlist.clear();            // Clear paramlist before set parameter.
-    this->paramlist.append("--ped");
-    this->paramlist.append(genotype);
-    this->paramlist.append("--map");
-    this->paramlist.append(map);
+    if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+    {
+        this->paramlist.append("--vcf");
+        this->paramlist.append(genotype);
+    }
+    if (genotype.split(".")[genotype.split(".").length()-1] == "ped")
+    {
+        if (map.isNull())
+        {
+            map = genoFileAbPath+"/"+genoFileBaseName+".map";
+        }
+        this->paramlist.append("--ped");
+        this->paramlist.append(genotype);
+        this->paramlist.append("--map");
+        this->paramlist.append(map);
+    }
+
+    if (genotype.split(".")[genotype.split(".").length()-1] == "tped")
+    {
+        if (map.isNull())
+        {
+            map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
+        }
+        this->paramlist.append("--tped");
+        this->paramlist.append(genotype);
+        this->paramlist.append("--tfam");
+        this->paramlist.append(map);
+    }
+
+    if (genotype.split(".")[genotype.split(".").length()-1] == "bed")
+    {
+        this->paramlist.append("--bfile");
+        this->paramlist.append(genoFileAbPath+"/"+genoFileBaseName);
+    }
+
     //this->paramlist.append("--assoc");
     this->paramlist.append("--pheno");
     this->paramlist.append(phenotype);
@@ -330,4 +368,25 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
     //this->paramlist.append("--noweb");
 
     return true;
+}
+
+bool Plink::isVcfFile(QString file) // Just consider filename.
+{
+    if (file.isNull() || file.isEmpty())
+    {
+        return false;
+    }
+
+    QFileInfo fileInfo = QFileInfo(file);
+    QStringList fileNameList = fileInfo.fileName().split(".");         // demo.vcf.gz
+
+    for (QString item : fileNameList)
+    {
+        if (item == "vcf")
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

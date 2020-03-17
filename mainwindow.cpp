@@ -400,6 +400,10 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
     QFileInfo pheFileInfo = QFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
 
+
+    // Necessary to transform file ?
+    bool transformFileFlag = false;
+
     // Need binary files.
     Plink plink;
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
@@ -409,39 +413,55 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
             this->resetWindow();
             return false;
         }
+
+        transformFileFlag = true;
     }
-    if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
-            && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "binary"
+    if (genotype.split(".")[genotype.split(".").length()-1] == "ped")  // Transform "plink" to "binary"
     {
+        if (map.isNull())
+        {
+            map = genoFileAbPath+"/"+genoFileBaseName+".map";
+        }
         if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
         {
             this->resetWindow();
             return false;
         }
+
+        transformFileFlag = true;
     }
-    if (genotype.split(".")[genotype.split(".").length()-1] == "tped"
-            && map.split(".")[map.split(".").length()-1] == "tfam")  // Transform "transpose" to "binary"
+
+    if (genotype.split(".")[genotype.split(".").length()-1] == "tped")  // Transform "transpose" to "binary"
     {
+        if (map.isNull())
+        {
+            map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
+        }
         if (!plink.transpose2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
         {
             this->resetWindow();
             return false;
         }
+        transformFileFlag = true;
     }
-    this->process->start(toolpath+"plink", plink.getParamList());
-    if (!this->process->waitForStarted())
+
+    if (transformFileFlag)
     {
-        this->resetWindow();
-        return false;
+        this->process->start(toolpath+"plink", plink.getParamList());
+        if (!this->process->waitForStarted())
+        {
+            this->resetWindow();
+            return false;
+        }
+        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
+        if (!this->process->waitForFinished(-1))
+        {
+            this->resetWindow();
+            QMessageBox::information(nullptr, "Error", "Exit plink with error when make binary in callGemmaGwas!  ");
+            return false;
+        }
+        this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
     }
-    this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
-    if (!this->process->waitForFinished(-1))
-    {
-        this->resetWindow();
-        QMessageBox::information(nullptr, "Error", "Exit plink with error when make binary in callGemmaGwas!  ");
-        return false;
-    }
-    this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
 
     Gemma gemma;
 
@@ -542,6 +562,9 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     QFileInfo pheFileInfo = QFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
 
+    // Necessary to transform file ?
+    bool transformFileFlag = false;
+
     // Need tped/fam files.
     Plink plink;
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
@@ -550,14 +573,20 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
         {
             return false;
         }
+        transformFileFlag = true;
     }
-    if (genotype.split(".")[genotype.split(".").length()-1] == "ped"
-            && map.split(".")[map.split(".").length()-1] == "map")  // Transform "plink" to "transpose"
+    if (genotype.split(".")[genotype.split(".").length()-1] == "ped")  // Transform "plink" to "transpose"
     {
+        if (map.isNull())
+        {
+            map = genoFileAbPath+"/"+genoFileBaseName+".map";
+        }
+
         if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
         {
             return false;
         }
+        transformFileFlag = true;
     }
     if (genotype.split(".")[genotype.split(".").length()-1] == "bed")  // Transform "binary" to "transpose"
     {
@@ -565,21 +594,26 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
         {
             return false;
         }
+        transformFileFlag = true;
     }
-    this->process->start(toolpath+"plink", plink.getParamList());
-    if (!this->process->waitForStarted())
+
+    if (transformFileFlag)
     {
-        this->resetWindow();
-        return false;
+        this->process->start(toolpath+"plink", plink.getParamList());
+        if (!this->process->waitForStarted())
+        {
+            this->resetWindow();
+            return false;
+        }
+        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped/tfam");
+        if (!this->process->waitForFinished(-1))
+        {
+            this->resetWindow();
+            QMessageBox::information(nullptr, "Error", "Exit plink with error when make transpose in callEmmaxGwas    !");
+            return false;
+        }
+        this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
     }
-    this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped/tfam");
-    if (!this->process->waitForFinished(-1))
-    {
-        this->resetWindow();
-        QMessageBox::information(nullptr, "Error", "Exit plink with error when make transpose in callEmmaxGwas    !");
-        return false;
-    }
-    this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
 
     Emmax emmax;
     if (kinship.isNull())
@@ -661,15 +695,6 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
     QString pheFileBaseName = pheFileInfo.baseName();
 
     Plink plink;
-    if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
-    {
-        if(!plink.vcf2plink(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
-        {
-            return false;
-        }
-        genotype = genoFileAbPath + "/" + genoFileBaseName + ".ped";
-        map = genoFileAbPath + "/" + genoFileBaseName + ".map";
-    }
 
     // Run GWAS
     if(plink.runGWAS(phenotype, genotype, map, covar, kinship,

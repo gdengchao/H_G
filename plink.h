@@ -1,6 +1,8 @@
 #ifndef PLINK_H
 #define PLINK_H
 
+#include <QFile>
+#include <QFileInfo>
 #include <QObject>
 #include <QStringList>
 #include <QProcess>
@@ -30,6 +32,8 @@ private:
     const QString toolpath;
     const QStringList model;
     QStringList paramlist;
+
+    bool isVcfFile(QString file);
 };
 
 #endif // PLINK_H
