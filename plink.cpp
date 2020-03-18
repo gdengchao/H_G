@@ -1,28 +1,9 @@
 #include "plink.h"
 
-Plink::Plink(): toolpath("/tool/plink"), model({"Linear", "Logistic"})
+Plink::Plink()
 {
+    this->model << "Linear" << "Logistic";
     this->paramlist.clear();
-}
-
-QStringList Plink::getParamList(void)
-{
-    return this->paramlist;
-}
-
-QString Plink::getParamString(void)
-{
-    QString ret;
-    for (QString item:this->paramlist)
-    {
-        ret += item + " ";
-    }
-    return ret;
-}
-
-QStringList Plink::getSupportedModel(void)
-{
-    return this->model;
 }
 
 bool Plink::vcf2plink(QString vcfFile, QString out, QString maf, QString ms)

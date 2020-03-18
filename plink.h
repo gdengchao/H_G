@@ -9,8 +9,9 @@
 #include <QMessageBox>
 #include <QFile>
 #include "useros.h"
+#include "tool.h"
 
-class Plink
+class Plink : public Tool
 {
 public:
     Plink();
@@ -24,14 +25,16 @@ public:
     bool runGWAS(QString phenotype, QString genotype, QString map,
                  QString covariate, QString kinship, QString model,
                  QString ms, QString maf, QString out);
-    QStringList getParamList(void);    // Every param can't have any space.
-    QString getParamString(void);
-    QStringList getSupportedModel(void);
+//    QStringList getParamList(void);    // Every param can't have any space.
+//    QString getParamString(void);
+//    void setParam(QStringList param);
+//    void setParam(QString param);
+//    QStringList getSupportedModel(void);
 
 private:
-    const QString toolpath;
-    const QStringList model;
-    QStringList paramlist;
+//    const QString toolpath;
+//    const QStringList model;
+//    QStringList paramlist;
 
     bool isVcfFile(QString file);
 };

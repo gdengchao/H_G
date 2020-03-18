@@ -1,28 +1,9 @@
 #include "emmax.h"
 
-Emmax::Emmax(): toolpath("/tool/emmax"), model({"EMMA"})
+Emmax::Emmax()
 {
+    this->model << "EMMA";
     this->paramlist.clear();
-}
-
-QStringList Emmax::getParamList(void)
-{
-    return this->paramlist;
-}
-
-QString Emmax::getParamString(void)
-{
-    QString ret;
-    for (QString item:this->paramlist)
-    {
-        ret += item + " ";
-    }
-    return ret;
-}
-
-QStringList Emmax::getSupportedModel(void)
-{
-    return this->model;
 }
 
 bool Emmax:: makeKinship(QString genotype)

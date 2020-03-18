@@ -1,28 +1,9 @@
 #include "gemma.h"
 
-Gemma::Gemma(): toolpath("/tool/"), model({"LMM", "BSLMM"})
+Gemma::Gemma()
 {
+    this->model << "LMM" << "BSLMM";
     this->paramlist.clear();
-}
-
-QStringList Gemma::getParamList(void)
-{
-    return this->paramlist;
-}
-
-QString Gemma::getParamString(void)
-{
-    QString ret;
-    for (QString item:this->paramlist)
-    {
-        ret += item + " ";
-    }
-    return ret;
-}
-
-QStringList Gemma::getSupportedModel(void)
-{
-    return this->model;
 }
 
 bool Gemma:: makeKinship(QString genotype, QString out)

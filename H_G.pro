@@ -23,7 +23,9 @@ SOURCES += \
     mainwindow.cpp \
     phenoselector.cpp \
     plink.cpp \
+    plinkdetailparamwidget.cpp \
     runningmsgwidget.cpp \
+    tool.cpp \
     toolselector.cpp \
     useros.cpp \
     workdirectory.cpp
@@ -35,13 +37,16 @@ HEADERS += \
     mainwindow.h \
     phenoselector.h \
     plink.h \
+    plinkdetailparamwidget.h \
     runningmsgwidget.h \
+    tool.h \
     toolselector.h \
     useros.h \
     workdirectory.h
 
 FORMS += \
     mainwindow.ui \
+    plinkdetailparamwidget.ui \
     runningmsgwidget.ui
 
 # Default rules for deployment.
