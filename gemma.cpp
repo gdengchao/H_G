@@ -26,8 +26,8 @@ bool Gemma:: makeKinship(QString genotype, QString out)
 }
 
 // genotype must be the prefix of binary file.
-bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship,
-                    QString out, QString ms, QString maf, QString model)
+bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate,
+                    QString kinship, QString out, QString model)
 {
     this->paramlist.clear();            // Clear paramlist before set parameter.
     if (genotype.isNull() || phenotype.isNull() || kinship.isNull() || model.isNull())
@@ -62,18 +62,6 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
         this->paramlist.append("1");
         this->paramlist.append("-n");
         this->paramlist.append("2");
-    }
-
-    if (!ms.isNull())
-    {
-        this->paramlist.append("-miss");
-        this->paramlist.append(ms);
-    }
-
-    if (!maf.isNull())
-    {
-        this->paramlist.append("-maf");
-        this->paramlist.append(maf);
     }
 
     if (!covariate.isNull())

@@ -6,14 +6,14 @@ Plink::Plink()
     this->paramlist.clear();
 }
 
-bool Plink::vcf2plink(QString vcfFile, QString out, QString maf, QString ms)
+bool Plink::vcf2plink(QString vcfFile, QString out, QString maf, QString mind, QString geno)
 {
     if (vcfFile.isNull() || out.isNull())
     {
         return false;
     }
 
-    //plink --vcf vcfFile [--maf maf] [--geno ms] --recode12 --out out
+    //plink --vcf vcfFile [--maf maf] [--mind mind] [--geno geno] --recode --out out
 
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--vcf");
@@ -24,13 +24,18 @@ bool Plink::vcf2plink(QString vcfFile, QString out, QString maf, QString ms)
         this->paramlist.append("--maf");
         this->paramlist.append(maf);
     }
-    if (!ms.isNull())
+    if (!mind.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(mind);
+    }
+    if (!geno.isNull())
     {
         this->paramlist.append("--geno");
-        this->paramlist.append(ms);
+        this->paramlist.append(geno);
     }
 
-    //this->paramlist.append("--recode12");
+    this->paramlist.append("--recode");
     this->paramlist.append("--out");
     this->paramlist.append(out);
     //this->paramlist.append("--noweb");
@@ -39,14 +44,14 @@ bool Plink::vcf2plink(QString vcfFile, QString out, QString maf, QString ms)
 }
 
 
-bool Plink::vcf2binary(QString vcfFile, QString out, QString maf, QString ms)
+bool Plink::vcf2binary(QString vcfFile, QString out, QString maf, QString mind, QString geno)
 {
     if (vcfFile.isNull() || out.isNull())
     {
         return false;
     }
 
-    // plink --vcf vcfFile --maf maf --geno maf --recode12 --out out
+    // plink --vcf vcfFile [--maf maf] [--mind mind] [--geno geno] --make-bed --out out
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--vcf");
     this->paramlist.append(vcfFile);
@@ -56,28 +61,32 @@ bool Plink::vcf2binary(QString vcfFile, QString out, QString maf, QString ms)
         this->paramlist.append("--maf");
         this->paramlist.append(maf);
     }
-    if (!ms.isNull())
+    if (!mind.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(mind);
+    }
+    if (!geno.isNull())
     {
         this->paramlist.append("--geno");
-        this->paramlist.append(ms);
+        this->paramlist.append(geno);
     }
 
     this->paramlist.append("--make-bed");
     this->paramlist.append("--out");
     this->paramlist.append(out);
-    //this->paramlist.append("--noweb");
 
     return true;
 }
 
-bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString ms)
+bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString mind, QString geno)
 {
     if (vcfFile.isNull() || out.isNull())
     {
         return false;
     }
 
-    // plink --vcf --maf maf --geno ms --recode12 --ouput-missing-genotype 0 --transpose --out out
+    // plink --vcf [--maf maf] [--mind mind] [--geno geno] --recode12 --ouput-missing-genotype 0 --transpose --out out
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--vcf");
     this->paramlist.append(vcfFile);
@@ -87,10 +96,15 @@ bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString ms)
         this->paramlist.append("--maf");
         this->paramlist.append(maf);
     }
-    if (!ms.isNull())
+    if (!mind.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(mind);
+    }
+    if (!geno.isNull())
     {
         this->paramlist.append("--geno");
-        this->paramlist.append(ms);
+        this->paramlist.append(geno);
     }
 
     this->paramlist.append("--recode12");
@@ -99,19 +113,18 @@ bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString ms)
     this->paramlist.append("--transpose");
     this->paramlist.append("--out");
     this->paramlist.append(out);
-    //this->paramlist.append("--noweb");
 
     return true;
 }
 
-bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QString maf, QString ms)
+bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QString maf, QString mind, QString geno)
 {
     if (pedFile.isNull() || mapFile.isNull() || out.isNull())
     {
         return false;
     }
 
-    // plink --ped pedFile --map mapFile [--maf maf] [--geno ms] --recode12 --transpose --out out
+    // plink --ped pedFile --map mapFile [--maf maf] [--mind mind] [--geno geno] --recode12 --transpose --out out
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--ped");
     this->paramlist.append(pedFile);
@@ -123,10 +136,16 @@ bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QStri
         this->paramlist.append("--maf");
         this->paramlist.append(maf);
     }
-    if (!ms.isNull())
+    if (!mind.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(mind);
+    }
+
+    if (!geno.isNull())
     {
         this->paramlist.append("--geno");
-        this->paramlist.append(ms);
+        this->paramlist.append(geno);
     }
 
     this->paramlist.append("--recode12");
@@ -135,19 +154,18 @@ bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QStri
     this->paramlist.append("--transpose");
     this->paramlist.append("--out");
     this->paramlist.append(out);
-    //this->paramlist.append("--noweb");
 
     return true;
 }
 
-bool Plink::plink2binary(QString pedFile, QString mapFile, QString out, QString maf, QString ms)
+bool Plink::plink2binary(QString pedFile, QString mapFile, QString out, QString maf, QString mind, QString geno)
 {
     if (pedFile.isNull() || mapFile.isNull() || out.isNull())
     {
         return false;
     }
 
-    // plink --ped .ped --map .map [--maf maf] [--geno ms] --make-bed --out out
+    // plink --ped .ped --map .map [--maf maf] [--mind mind] [--geno geno] --make-bed --out out
     this->paramlist.clear();
     this->paramlist.append("--ped");
     this->paramlist.append(pedFile);
@@ -159,10 +177,15 @@ bool Plink::plink2binary(QString pedFile, QString mapFile, QString out, QString 
         this->paramlist.append("--maf");
         this->paramlist.append(maf);
     }
-    if (!ms.isNull())
+    if (!mind.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(mind);
+    }
+    if (!geno.isNull())
     {
         this->paramlist.append("--geno");
-        this->paramlist.append(ms);
+        this->paramlist.append(geno);
     }
 
     this->paramlist.append("--make-bed");
@@ -173,14 +196,14 @@ bool Plink::plink2binary(QString pedFile, QString mapFile, QString out, QString 
     return true;
 }
 
-bool Plink::transpose2binary(QString tpedFile, QString tfamFile, QString out, QString maf, QString ms)
+bool Plink::transpose2binary(QString tpedFile, QString tfamFile, QString out, QString maf, QString mind, QString geno)
 {
     if (tpedFile.isNull() || tfamFile.isNull() || out.isNull())
     {
         return false;
     }
 
-    // plink --tped .tped --tfam .tfam [--maf maf] [--geno ms] --make-bed --out out
+    // plink --tped .tped --tfam .tfam [--maf maf] [--mind mind] [--geno geno] --make-bed --out out
     this->paramlist.clear();
     this->paramlist.append("--tped");
     this->paramlist.append(tpedFile);
@@ -192,10 +215,15 @@ bool Plink::transpose2binary(QString tpedFile, QString tfamFile, QString out, QS
         this->paramlist.append("--maf");
         this->paramlist.append(maf);
     }
-    if (!ms.isNull())
+    if (!mind.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(mind);
+    }
+    if (!geno.isNull())
     {
         this->paramlist.append("--geno");
-        this->paramlist.append(ms);
+        this->paramlist.append(geno);
     }
 
     this->paramlist.append("--make-bed");
@@ -206,7 +234,7 @@ bool Plink::transpose2binary(QString tpedFile, QString tfamFile, QString out, QS
     return true;
 }
 
-bool Plink::binary2transpose(QString binaryFile, QString out, QString maf, QString ms)
+bool Plink::binary2transpose(QString binaryFile, QString out, QString maf, QString mind, QString geno)
 {
     if (binaryFile.isNull() || out.isNull())
     {
@@ -232,10 +260,15 @@ bool Plink::binary2transpose(QString binaryFile, QString out, QString maf, QStri
         this->paramlist.append("--maf");
         this->paramlist.append(maf);
     }
-    if (!ms.isNull())
+    if (!mind.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(mind);
+    }
+    if (!geno.isNull())
     {
         this->paramlist.append("--geno");
-        this->paramlist.append(ms);
+        this->paramlist.append(geno);
     }
 
     this->paramlist.append("--recode12");
@@ -244,14 +277,12 @@ bool Plink::binary2transpose(QString binaryFile, QString out, QString maf, QStri
     this->paramlist.append("--transpose");
     this->paramlist.append("--out");
     this->paramlist.append(out);
-    //this->paramlist.append("--noweb");
 
     return true;
 }
 
-bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
-                    QString covariate, QString kinship, QString model,
-                    QString ms, QString maf, QString out)
+bool Plink::runGWAS(QString phenotype, QString genotype, QString map, QString covariate,
+                    QString kinship, QString model, QString out)
 {
     if (phenotype.isNull() || genotype.isNull() || model.isNull())
     {
@@ -332,23 +363,44 @@ bool Plink::runGWAS(QString phenotype, QString genotype, QString map,
         this->paramlist.append("--logistic");
     }
 
-    if (!ms.isNull())
-    {
-        this->paramlist.append("--geno");
-        this->paramlist.append(ms);
-    }
-    if (!maf.isNull())
-    {
-        this->paramlist.append("--maf");
-        this->paramlist.append(maf);
-    }
-
     this->paramlist.append("--allow-no-sex");
     this->paramlist.append("--out");
     this->paramlist.append(out);
-    //this->paramlist.append("--noweb");
 
     return true;
+}
+
+void Plink::filterData(QString genotype, QString map, QString maf, QString mind, QString geno)
+{
+    if (genotype.isNull() || map.isNull())
+    {
+        return;
+    }
+
+    QFileInfo genoFileInfo(geno);
+    QString genoFileBaseName = genoFileInfo.baseName();
+    QString genoFileAbPath = genoFileInfo.absolutePath();
+    QString genoFileSuffix = genoFileInfo.suffix();
+
+    if (this->isVcfFile(genotype))
+    {
+
+    }
+
+    if (genoFileSuffix == "ped")
+    {
+
+    }
+
+    if (genoFileSuffix == "tped")
+    {
+
+    }
+
+    if (genoFileSuffix == "bed")
+    {
+
+    }
 }
 
 bool Plink::isVcfFile(QString file) // Just consider filename.

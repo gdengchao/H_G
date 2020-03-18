@@ -52,10 +52,8 @@ private slots:
     void on_rungwasButton_clicked();
 
     // for maf and ms
-    void on_mafSlider_valueChanged(int value);
-    void on_msSlider_valueChanged(int value);
-    void on_msDoubleSpinBox_editingFinished();
-    void on_mafDoubleSpinBox_editingFinished();
+//    void on_msDoubleSpinBox_editingFinished();
+//    void on_mafDoubleSpinBox_editingFinished();
 
     // for running Message
     void on_readoutput();

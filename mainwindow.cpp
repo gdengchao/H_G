@@ -21,9 +21,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Recommend maf and  ms
     ui->mafDoubleSpinBox->setValue(0.05);
-    ui->msDoubleSpinBox->setValue(0.1);
-    ui->mafSlider->setValue(5);
-    ui->msSlider->setValue(10);
+    ui->mindDoubleSpinBox->setValue(0.2);
+    ui->genoDoubleSpinBox->setValue(0);
+//    ui->mafSlider->setValue(5);
+//    ui->msSlider->setValue(10);
 
     // Initiate variables.
     fileReader = new FileReader;
@@ -385,8 +386,9 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
     }
 
     QString model = ui->modelComboBox->currentText();
-    QString ms = ui->msRadioButton->isChecked()? ui->msDoubleSpinBox->text():nullptr;
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
+    QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
+    QString geno = ui->genoRadioButton->isChecked()? ui->genoRadioButton->text():nullptr;
     //UserOS *userOS = new UserOS;
 
     // Genotype file info.
@@ -408,7 +410,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
     Plink plink;
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
     {
-        if(!plink.vcf2binary(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        if(!plink.vcf2binary(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
         {
             this->resetWindow();
             return false;
@@ -422,7 +424,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         {
             map = genoFileAbPath+"/"+genoFileBaseName+".map";
         }
-        if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
         {
             this->resetWindow();
             return false;
@@ -437,7 +439,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         {
             map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
         }
-        if (!plink.transpose2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        if (!plink.transpose2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
         {
             this->resetWindow();
             return false;
@@ -497,7 +499,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
          kinship = QDir::currentPath() + "/output/" + genoFileBaseName + ".cXX.txt";
     }
 
-    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name+"_"+pheFileBaseName, ms, maf, model))
+    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name+"_"+pheFileBaseName, model))
     {
         this->process->start(toolpath+"gemma", gemma.getParamList());
         // Running message to display message.
@@ -547,8 +549,9 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     }
 
     QString model = ui->modelComboBox->currentText();
-    QString ms = ui->msRadioButton->isChecked()? ui->msDoubleSpinBox->text():nullptr;
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
+    QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
+    QString geno = ui->genoRadioButton->isChecked()? ui->genoRadioButton->text():nullptr;
     //UserOS *userOS = new UserOS;
 
     // Genotype file info.
@@ -569,7 +572,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     Plink plink;
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
     {
-        if(!plink.vcf2transpose(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        if(!plink.vcf2transpose(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
         {
             return false;
         }
@@ -582,7 +585,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
             map = genoFileAbPath+"/"+genoFileBaseName+".map";
         }
 
-        if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
         {
             return false;
         }
@@ -590,7 +593,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     }
     if (genotype.split(".")[genotype.split(".").length()-1] == "bed")  // Transform "binary" to "transpose"
     {
-        if (!plink.binary2transpose(genoFileAbPath+"/"+genoFileBaseName,  genoFileAbPath+"/"+genoFileBaseName, maf, ms))
+        if (!plink.binary2transpose(genoFileAbPath+"/"+genoFileBaseName,  genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
         {
             return false;
         }
@@ -679,8 +682,9 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
     }
 
     QString model = ui->modelComboBox->currentText();
-    QString ms = ui->msRadioButton->isChecked()? ui->msDoubleSpinBox->text():nullptr;
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
+    QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
+    QString geno = ui->genoRadioButton->isChecked()? ui->genoRadioButton->text():nullptr;
     // UserOS *userOS = new UserOS;
 
     // Genotype file info.
@@ -698,7 +702,7 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
 
     // Run GWAS
     if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
-                  model, ms, maf, out+"/"+name+"_"+pheFileBaseName))
+                  model, out+"/"+name+"_"+pheFileBaseName))
     {
         this->process->start(toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
@@ -757,25 +761,25 @@ void MainWindow::on_closeRunningWidget()
     qApp->processEvents();
 }
 
-void MainWindow::on_mafSlider_valueChanged(int value)
-{
-    ui->mafDoubleSpinBox->setValue(value/100.0);
-}
+//void MainWindow::on_mafSlider_valueChanged(int value)
+//{
+//    ui->mafDoubleSpinBox->setValue(value/100.0);
+//}
 
-void MainWindow::on_mafDoubleSpinBox_editingFinished()
-{
-    ui->mafSlider->setValue(int(ui->mafDoubleSpinBox->value() * 100));
-}
+//void MainWindow::on_mafDoubleSpinBox_editingFinished()
+//{
+//    ui->mafSlider->setValue(int(ui->mafDoubleSpinBox->value() * 100));
+//}
 
-void MainWindow::on_msDoubleSpinBox_editingFinished()
-{
-    ui->msSlider->setValue(int(ui->msDoubleSpinBox->value() * 100));
-}
+//void MainWindow::on_msDoubleSpinBox_editingFinished()
+//{
+//    ui->msSlider->setValue(int(ui->msDoubleSpinBox->value() * 100));
+//}
 
-void MainWindow::on_msSlider_valueChanged(int value)
-{
-    ui->msDoubleSpinBox->setValue(value/100.0);
-}
+//void MainWindow::on_msSlider_valueChanged(int value)
+//{
+//    ui->msDoubleSpinBox->setValue(value/100.0);
+//}
 
 bool MainWindow::isVcfFile(QString file) // Just consider filename.
 {

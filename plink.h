@@ -15,26 +15,23 @@ class Plink : public Tool
 {
 public:
     Plink();
-    bool vcf2transpose(QString vcfFile, QString out, QString maf, QString ms);
-    bool vcf2binary(QString vcfFile, QString out, QString maf, QString ms);
-    bool vcf2plink(QString vcfFile, QString out, QString maf, QString ms);
-    bool plink2transpose(QString pedFile, QString mapFile, QString out, QString maf, QString ms);
-    bool plink2binary(QString pedFile, QString mapFile, QString out, QString maf, QString ms);
-    bool transpose2binary(QString tpedFile, QString tfamFile, QString out, QString maf, QString ms);
-    bool binary2transpose(QString binaryFile, QString out, QString maf, QString ms);
-    bool runGWAS(QString phenotype, QString genotype, QString map,
-                 QString covariate, QString kinship, QString model,
-                 QString ms, QString maf, QString out);
-//    QStringList getParamList(void);    // Every param can't have any space.
-//    QString getParamString(void);
-//    void setParam(QStringList param);
-//    void setParam(QString param);
-//    QStringList getSupportedModel(void);
+    bool vcf2transpose(QString vcfFile, QString out, QString maf, QString mind, QString geno);
+    bool vcf2binary(QString vcfFile, QString out, QString maf, QString mind, QString geno);
+    bool vcf2plink(QString vcfFile, QString out, QString maf, QString mind, QString geno);
+    bool plink2transpose(QString pedFile, QString mapFile, QString out,
+                         QString maf, QString mind, QString geno);
+    bool plink2binary(QString pedFile, QString mapFile, QString out,
+                      QString maf, QString mind, QString geno);
+    bool transpose2binary(QString tpedFile, QString tfamFile, QString out,
+                          QString maf, QString mind, QString geno);
+    bool binary2transpose(QString binaryFile, QString out,
+                          QString maf, QString mind, QString geno);
+    bool runGWAS(QString phenotype, QString genotype, QString map, QString covariate,
+                 QString kinship, QString model,QString out);
+\
+    void filterData(QString genotype, QString map, QString maf, QString mind, QString geno);
 
 private:
-//    const QString toolpath;
-//    const QStringList model;
-//    QStringList paramlist;
 
     bool isVcfFile(QString file);
 };
