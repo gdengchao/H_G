@@ -15,6 +15,13 @@ class Plink : public Tool
 {
 public:
     Plink();
+
+/*  !!! NOTICE:
+ *
+ * Any paht of binary genotype file didn't contain the suffix.
+ *
+*/
+    // File transform
     bool vcf2transpose(QString vcfFile, QString out, QString maf, QString mind, QString geno);
     bool vcf2binary(QString vcfFile, QString out, QString maf, QString mind, QString geno);
     bool vcf2plink(QString vcfFile, QString out, QString maf, QString mind, QString geno);
@@ -26,10 +33,17 @@ public:
                           QString maf, QString mind, QString geno);
     bool binary2transpose(QString binaryFile, QString out,
                           QString maf, QString mind, QString geno);
-    bool runGWAS(QString phenotype, QString genotype, QString map, QString covariate,
-                 QString kinship, QString model,QString out);
 \
-    void filterData(QString genotype, QString map, QString maf, QString mind, QString geno);
+    // Filter data(Quality control)
+    void filterVcfFile(QString genotype, QString maf, QString mind, QString geno, QString out);
+    void filterBinaryFile(QString genotype, QString maf, QString mind, QString geno, QString out);
+    void filterPlinkFile(QString genotype, QString map, QString maf, QString mind, QString geno, QString out);
+    void filterTransposeFile(QString genotype, QString map, QString maf, QString mind, QString geno, QString out);
+    void filterData(QString genotype, QString map, QString maf, QString mind, QString geno, QString out);
+
+    // Run
+    bool runGWAS(QString phenotype, QString genotype, QString map, QString covariate, QString kinship,
+                 QString model, QString maf, QString mind, QString geno,QString out);
 
 private:
 

@@ -388,7 +388,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
     QString model = ui->modelComboBox->currentText();
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
-    QString geno = ui->genoRadioButton->isChecked()? ui->genoRadioButton->text():nullptr;
+    QString geno = ui->genoRadioButton->isChecked()? ui->genoDoubleSpinBox->text():nullptr;
     //UserOS *userOS = new UserOS;
 
     // Genotype file info.
@@ -405,12 +405,13 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
 
     // Necessary to transform file ?
     bool transformFileFlag = false;
+    bool filterDataFlag = false;
 
-    // Need binary files.
+    // Need binary files.  Every temp file and a "_tmp" after baseName, and will be deleted after gwas.
     Plink plink;
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
     {
-        if(!plink.vcf2binary(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
+        if(!plink.vcf2binary(genotype, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
         {
             this->resetWindow();
             return false;
@@ -424,7 +425,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         {
             map = genoFileAbPath+"/"+genoFileBaseName+".map";
         }
-        if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
+        if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
         {
             this->resetWindow();
             return false;
@@ -439,7 +440,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         {
             map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
         }
-        if (!plink.transpose2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
+        if (!plink.transpose2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
         {
             this->resetWindow();
             return false;
@@ -447,8 +448,14 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         transformFileFlag = true;
     }
 
-    if (transformFileFlag)
-    {
+    if (genotype.split(".")[genotype.split(".").length()-1] == "bed")
+    {   // When don't set any QC param, it won't execute.
+        plink.filterBinaryFile(genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno, genoFileAbPath+"/"+genoFileBaseName+"_tmp");
+        filterDataFlag = true;
+    }
+
+    if (transformFileFlag || filterDataFlag)
+    {   // Run plink to transform file or filter data.
         this->process->start(toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
         {
@@ -467,7 +474,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
 
     Gemma gemma;
 
-    if (!gemma.phe_fam_Preparation(phenotype, genoFileAbPath+"/"+genoFileBaseName+".fam"))
+    if (!gemma.phe_fam_Preparation(phenotype, genoFileAbPath+"/"+genoFileBaseName+"_tmp"+".fam"))
     {   // Replace "NA" to "-9", then complete .fam
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
         this->resetWindow();
@@ -476,7 +483,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
 
     if (kinship.isNull())
     {
-         if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName, genoFileBaseName))
+         if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp", genoFileBaseName+"_tmp"))
          {
              this->resetWindow();
              return false;  // Make kinship failed.
@@ -487,19 +494,21 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
              this->resetWindow();
              return false;
          }
-         this->runningMsgWidget->setTitle("Making " + genoFileBaseName + ".cXX.txt");
+         //this->runningMsgWidget->setTitle("Making " + genoFileBaseName+"_tmp" + ".cXX.txt");
+         this->runningMsgWidget->setTitle("Making kinship");
          if (!this->process->waitForFinished(-1))
          {
              this->resetWindow();
              QMessageBox::information(nullptr, "Error", "Exit gemma with error when  make kinship!   ");
              return false;
          }
-         this->runningMsgWidget->setTitle(genoFileBaseName + ".cXX.txt is made");
+         //this->runningMsgWidget->setTitle(genoFileBaseName+"_tmp" + ".cXX.txt is made");
+         this->runningMsgWidget->setTitle("Kinship is made");
          //kinship = genoFileAbPath + "/output/" + genoFileBaseName + ".cXX.txt";    // Attention
-         kinship = QDir::currentPath() + "/output/" + genoFileBaseName + ".cXX.txt";
+         kinship = QDir::currentPath() + "/output/" + genoFileBaseName+"_tmp" + ".cXX.txt";
     }
 
-    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, name+"_"+pheFileBaseName, model))
+    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship, name+"_"+pheFileBaseName, model))
     {
         this->process->start(toolpath+"gemma", gemma.getParamList());
         // Running message to display message.
@@ -515,6 +524,16 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
             QMessageBox::information(nullptr, "Error", "Exit gemma with error when run GWAS! ");
             return false;
         }
+
+        QFile file;
+        // delete intermidiate file.
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.bed");
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.bim");
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.fam");
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.log");
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.nosex");
+        file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.cXX.txt");
+        file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.log.txt");
 
         QDir dir;   // gemma output in the execution file dir by default.
         QDir objDir(out+"/output");
@@ -551,14 +570,14 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     QString model = ui->modelComboBox->currentText();
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
-    QString geno = ui->genoRadioButton->isChecked()? ui->genoRadioButton->text():nullptr;
+    QString geno = ui->genoRadioButton->isChecked()? ui->genoDoubleSpinBox->text():nullptr;
     //UserOS *userOS = new UserOS;
 
     // Genotype file info.
     QFileInfo genoFileInfo = QFileInfo(genotype);
-    QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
-    QString genoFileBaseName = genoFileInfo.baseName();     // geno
-    QString genoFileSuffix = genoFileInfo.suffix();         //
+    QString genoFileName = genoFileInfo.fileName();
+    QString genoFileBaseName = genoFileInfo.baseName();
+    QString genoFileSuffix = genoFileInfo.suffix();
     QString genoFileAbPath = genoFileInfo.absolutePath();
 
     // Phenotype file info.
@@ -567,12 +586,13 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
 
     // Necessary to transform file ?
     bool transformFileFlag = false;
+    bool filterDataFlag = false;
 
-    // Need tped/fam files.
+    // Need tped/fam files. Add "_tmp", then delete after gwas.
     Plink plink;
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
     {
-        if(!plink.vcf2transpose(genotype, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
+        if(!plink.vcf2transpose(genotype, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
         {
             return false;
         }
@@ -585,7 +605,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
             map = genoFileAbPath+"/"+genoFileBaseName+".map";
         }
 
-        if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
+        if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
         {
             return false;
         }
@@ -593,14 +613,21 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     }
     if (genotype.split(".")[genotype.split(".").length()-1] == "bed")  // Transform "binary" to "transpose"
     {
-        if (!plink.binary2transpose(genoFileAbPath+"/"+genoFileBaseName,  genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno))
+        if (!plink.binary2transpose(genoFileAbPath+"/"+genoFileBaseName,
+                                    genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
         {
             return false;
         }
         transformFileFlag = true;
     }
 
-    if (transformFileFlag)
+    if (genotype.split(".")[genotype.split(".").length()-1] == "tped")  // Transform "binary" to "transpose"
+    {
+        plink.filterTransposeFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno);
+        filterDataFlag = true;
+    }
+
+    if (transformFileFlag || filterDataFlag)
     {
         this->process->start(toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
@@ -621,7 +648,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     Emmax emmax;
     if (kinship.isNull())
     {
-         if (!emmax.makeKinship(genoFileAbPath+"/"+genoFileBaseName))
+         if (!emmax.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp"))
          {
              return false;  // Make kinship failed.
          }
@@ -631,22 +658,24 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
              this->resetWindow();
              return false;
          }
-         this->runningMsgWidget->setTitle("Making " + genoFileBaseName + ".hBN.kinf");
+         //this->runningMsgWidget->setTitle("Making " + genoFileBaseName + ".hBN.kinf");
+         this->runningMsgWidget->setTitle("Making kinship");
          if (!this->process->waitForFinished(-1))
          {
              this->resetWindow();
              QMessageBox::information(nullptr, "Error", "Exit emmax-kin with error when  make kinship    !");
              return false;
          }
-         this->runningMsgWidget->setTitle(genoFileBaseName + ".hBN.kinf is made");
-         kinship = genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf";
+         //this->runningMsgWidget->setTitle(genoFileBaseName + ".hBN.kinf is made");
+         this->runningMsgWidget->setTitle("Kinship is made");
+         kinship = genoFileAbPath + "/" + genoFileBaseName+"_tmp" + ".hBN.kinf";
     }
     else
     {
         QMessageBox::information(nullptr, "Error", "Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf ERROR!   ");
         return false;
     }
-    if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName, phenotype, covar, kinship, out+"/"+name+"_"+pheFileBaseName))
+    if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship, out+"/"+name+"_"+pheFileBaseName))
     {
         this->process->start(toolpath+"emmax", emmax.getParamList());
         // Running message to display message.
@@ -662,6 +691,17 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
             QMessageBox::information(nullptr, "Error", "Exit emmax with error when run GWAS    !");
             return false;
         }
+
+
+        QFile file;
+        // delete intermidiate file.
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.map");
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.tped");
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.tfam");
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.log");
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.nosex");
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hBN.kinf");
+
         this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is finished");
     }
     else
@@ -684,7 +724,7 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
     QString model = ui->modelComboBox->currentText();
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
-    QString geno = ui->genoRadioButton->isChecked()? ui->genoRadioButton->text():nullptr;
+    QString geno = ui->genoRadioButton->isChecked()? ui->genoDoubleSpinBox->text():nullptr;
     // UserOS *userOS = new UserOS;
 
     // Genotype file info.
@@ -701,8 +741,8 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
     Plink plink;
 
     // Run GWAS
-    if(plink.runGWAS(phenotype, genotype, map, covar, kinship,
-                  model, out+"/"+name+"_"+pheFileBaseName))
+    if(plink.runGWAS(phenotype, genotype, map, covar, kinship, model,
+                     maf, mind, geno, out+"/"+name+"_"+pheFileBaseName))
     {
         this->process->start(toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())

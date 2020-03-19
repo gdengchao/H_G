@@ -6,6 +6,12 @@ Gemma::Gemma()
     this->paramlist.clear();
 }
 
+/**
+ * @brief Gemma::makeKinship
+ * @param genotype:binary file, without suffix, need .bed/.fam/.bim in the same path.
+ * @param out: a file base name.
+ * @return
+ */
 bool Gemma:: makeKinship(QString genotype, QString out)
 {
     if (genotype.isNull() || out.isNull())
@@ -25,7 +31,16 @@ bool Gemma:: makeKinship(QString genotype, QString out)
     return true;
 }
 
-// genotype must be the prefix of binary file.
+/**
+ * @brief Gemma::runGWAS
+ * @param genotype: the prefix of binary file.
+ * @param phenotype
+ * @param covariate
+ * @param kinship
+ * @param out
+ * @param model
+ * @return
+ */
 bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate,
                     QString kinship, QString out, QString model)
 {
