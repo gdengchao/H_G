@@ -623,7 +623,11 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
 
     if (genotype.split(".")[genotype.split(".").length()-1] == "tped")  // Transform "binary" to "transpose"
     {
-        plink.filterTransposeFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno);
+        if (map.isNull())
+        {
+            map = genoFileAbPath + "/" + genoFileBaseName + ".tfam";
+        }
+        plink.filterTransposeFile(genotype, map, maf, mind, geno, genoFileAbPath+"/"+genoFileBaseName+"_tmp");
         filterDataFlag = true;
     }
 
