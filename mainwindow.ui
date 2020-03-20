@@ -160,7 +160,7 @@ border-radius:5px;//这个是改变成圆角边框;
 }</string>
            </property>
            <property name="text">
-            <string>&gt;&gt;</string>
+            <string>...</string>
            </property>
            <property name="autoDefault">
             <bool>false</bool>
@@ -723,7 +723,7 @@ border-radius:5px;//这个是改变成圆角边框;
       <x>30</x>
       <y>30</y>
       <width>111</width>
-      <height>501</height>
+      <height>520</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">

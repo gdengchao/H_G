@@ -31,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
     workDirectory = new WorkDirectory;
     phenoSelector = new PhenoSelector;
     runningMsgWidget = new RunningMsgWidget;
+    gemmaParamWidget = new GemmaParamWidget;
+    emmaxParamWidget = new EmmaxParamWidget;
     process = new QProcess;
 
     // connect QProcess->start(tool) and runningMsgWidget.
@@ -49,6 +51,11 @@ MainWindow::~MainWindow()
 
     runningMsgWidget->close();
     delete runningMsgWidget;
+
+    gemmaParamWidget->close();
+    delete gemmaParamWidget;
+    emmaxParamWidget->close();
+    delete emmaxParamWidget;
 
     if (process)    // QProcess
     {
@@ -385,6 +392,9 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         return false;
     }
 
+    // Detail parameters.
+    QMap<QString, QString> moreParam = this->gemmaParamWidget->getCurrentParam();
+
     QString model = ui->modelComboBox->currentText();
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
@@ -401,8 +411,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
     // Phenotype file info.
     QFileInfo pheFileInfo = QFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
-
-
+\
     // Necessary to transform file ?
     bool transformFileFlag = false;
     bool filterDataFlag = false;
@@ -483,7 +492,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
 
     if (kinship.isNull())
     {
-         if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp", genoFileBaseName+"_tmp"))
+         if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp", genoFileBaseName+"_tmp", moreParam))
          {
              this->resetWindow();
              return false;  // Make kinship failed.
@@ -508,7 +517,8 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
          kinship = QDir::currentPath() + "/output/" + genoFileBaseName+"_tmp" + ".cXX.txt";
     }
 
-    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship, name+"_"+pheFileBaseName, model))
+    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship,
+                      name+"_"+pheFileBaseName, model, moreParam))
     {
         this->process->start(toolpath+"gemma", gemma.getParamList());
         // Running message to display message.
@@ -938,4 +948,18 @@ bool MainWindow::makePheFile(QString const phenotype, QString const selectedPhen
     dstFile.close();
 
     return true;
+}
+
+void MainWindow::on_detailPushButton_clicked()
+{
+    if (ui->toolComboBox->currentText() == "gemma")
+    {
+        this->gemmaParamWidget->show();
+    }
+
+    if (ui->toolComboBox->currentText() == "emmax")
+    {
+        this->emmaxParamWidget->show();
+    }
+
 }

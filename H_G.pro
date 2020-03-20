@@ -17,13 +17,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     emmax.cpp \
+    emmaxparamwidget.cpp \
     filereader.cpp \
     gemma.cpp \
+    gemmaparamwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     phenoselector.cpp \
     plink.cpp \
-    plinkdetailparamwidget.cpp \
     runningmsgwidget.cpp \
     tool.cpp \
     toolselector.cpp \
@@ -32,12 +33,13 @@ SOURCES += \
 
 HEADERS += \
     emmax.h \
+    emmaxparamwidget.h \
     filereader.h \
     gemma.h \
+    gemmaparamwidget.h \
     mainwindow.h \
     phenoselector.h \
     plink.h \
-    plinkdetailparamwidget.h \
     runningmsgwidget.h \
     tool.h \
     toolselector.h \
@@ -45,8 +47,9 @@ HEADERS += \
     workdirectory.h
 
 FORMS += \
+    emmaxparamwidget.ui \
+    gemmaparamwidget.ui \
     mainwindow.ui \
-    plinkdetailparamwidget.ui \
     runningmsgwidget.ui
 
 # Default rules for deployment.

@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QList>
 #include <QThread>
+#include <QMap>
 #include "filereader.h"
 #include "workdirectory.h"
 #include "phenoselector.h"
@@ -17,6 +18,8 @@
 #include "emmax.h"
 #include "gemma.h"
 #include "runningmsgwidget.h"
+#include "gemmaparamwidget.h"
+#include "emmaxparamwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -51,10 +54,6 @@ private slots:
     // for run pushButton
     void on_rungwasButton_clicked();
 
-    // for maf and ms
-//    void on_msDoubleSpinBox_editingFinished();
-//    void on_mafDoubleSpinBox_editingFinished();
-
     // for running Message
     void on_readoutput();
     void on_readerror();
@@ -63,9 +62,13 @@ private slots:
     // For tool and model selector
     void on_toolComboBox_currentTextChanged(const QString &tool);
 
+    // Detail params.
+    void on_detailPushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
+
+    // Basic values.
     FileReader *fileReader;             // Read file, and save the directory.
     WorkDirectory *workDirectory;       // Set and save the module name and the output directory.
     PhenoSelector *phenoSelector;       // Select objective phenotype to analysis.
@@ -73,6 +76,10 @@ private:
     // for display running information.
     RunningMsgWidget *runningMsgWidget;
     QProcess *process;
+
+    // To set detail paramters
+    GemmaParamWidget *gemmaParamWidget;
+    EmmaxParamWidget *emmaxParamWidget;
 
     // Usual
     bool isVcfFile(QString const file);

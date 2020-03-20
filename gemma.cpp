@@ -12,7 +12,7 @@ Gemma::Gemma()
  * @param out: a file base name.
  * @return
  */
-bool Gemma:: makeKinship(QString genotype, QString out)
+bool Gemma:: makeKinship(QString genotype, QString out, QMap<QString, QString> moreParam)
 {
     if (genotype.isNull() || out.isNull())
     {
@@ -23,10 +23,12 @@ bool Gemma:: makeKinship(QString genotype, QString out)
     this->paramlist.clear();
     this->paramlist.append("-bfile");
     this->paramlist.append(genotype);
+
     this->paramlist.append("-gk");
     this->paramlist.append("1");
     this->paramlist.append("-o");
     this->paramlist.append(out);
+
 
     return true;
 }
@@ -41,8 +43,8 @@ bool Gemma:: makeKinship(QString genotype, QString out)
  * @param model
  * @return
  */
-bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate,
-                    QString kinship, QString out, QString model)
+bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship,
+                    QString out, QString model, QMap<QString, QString> moreParam)
 {
     this->paramlist.clear();            // Clear paramlist before set parameter.
     if (genotype.isNull() || phenotype.isNull() || kinship.isNull() || model.isNull())
