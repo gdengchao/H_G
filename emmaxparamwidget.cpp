@@ -7,7 +7,7 @@ EmmaxParamWidget::EmmaxParamWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    this->setWindowTitle("Detail settings");
+    this->setWindowTitle("Emmax settings");
 
     // Create button group and set exclusive.
     kinAutoBtnGroup = new QButtonGroup;
@@ -33,7 +33,7 @@ EmmaxParamWidget::~EmmaxParamWidget()
 
 bool EmmaxParamWidget::isMakeKinAuto(void)
 {
-    if (!ui->yesKinRadioButton)
+    if (!ui->yesKinRadioButton->isChecked())
     {
         return false;
     }
@@ -42,7 +42,7 @@ bool EmmaxParamWidget::isMakeKinAuto(void)
 
 bool EmmaxParamWidget::isBNkinMatrix(void)
 {
-    if (!ui->bnRadioButton)
+    if (!ui->bnRadioButton->isChecked())
     {
         return false;
     }
@@ -51,7 +51,7 @@ bool EmmaxParamWidget::isBNkinMatrix(void)
 
 bool EmmaxParamWidget::isIBSkinMatrix(void)
 {
-    if (!ui->ibsRadioButton)
+    if (!ui->ibsRadioButton->isChecked())
     {
         return false;
     }
@@ -61,6 +61,8 @@ bool EmmaxParamWidget::isIBSkinMatrix(void)
 /**
  * @brief EmmaxParamWidget::getCurrentParam
  * @return A QStringList contain the values in the widget.
+ *      QMap retParam: "makekin", "kinmatrix"
+ *
  */
 QMap<QString, QString> EmmaxParamWidget::getCurrentParam(void)
 {
@@ -75,6 +77,7 @@ QMap<QString, QString> EmmaxParamWidget::getCurrentParam(void)
     {
         retParam.insert("makekin", "no");
     }
+
     if (this->isBNkinMatrix())
     {
         retParam.insert("kinmatrix", "BN");

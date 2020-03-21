@@ -6,26 +6,34 @@ Emmax::Emmax()
     this->paramlist.clear();
 }
 
-bool Emmax:: makeKinship(QString genotype)
+bool Emmax:: makeKinship(QString genotype, QMap<QString, QString> moreParam)
 {
     if (genotype.isNull())
     {
         return false;
     }
 
-    // emmax-kin -v -h -d 10 222_filter1_rec12
+    // BN:  emmax-kin -v -h -d 10 222_filter1_rec12
+    // IBS: emmax-kin -v -h -s -d 10 222_filter1_rec12
     this->paramlist.clear();
     this->paramlist.append("-v");
     this->paramlist.append("-h");
     this->paramlist.append("-d");
     this->paramlist.append("10");
+
+    if (moreParam["kinmatrix"] == "IBS")
+    {
+        this->paramlist.append("-s");
+    }
+
     this->paramlist.append(genotype);
 
     return true;
 }
 
 // genotype must be the prefix of tped/fam file.
-bool Emmax::runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship, QString out)
+bool Emmax::runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship,
+                    QString out, QMap<QString, QString> moreParam)
 {
     if (genotype.isNull() || phenotype.isNull())
     {

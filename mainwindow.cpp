@@ -577,6 +577,9 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
         return false;
     }
 
+    // Detail parameters.
+    QMap<QString, QString> moreParam = this->emmaxParamWidget->getCurrentParam();
+
     QString model = ui->modelComboBox->currentText();
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
@@ -660,9 +663,9 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     }
 
     Emmax emmax;
-    if (kinship.isNull())
+    if (kinship.isNull() && emmaxParamWidget->isMakeKinAuto())
     {
-         if (!emmax.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp"))
+         if (!emmax.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp", moreParam))
          {
              return false;  // Make kinship failed.
          }
@@ -682,14 +685,23 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
          }
          //this->runningMsgWidget->setTitle(genoFileBaseName + ".hBN.kinf is made");
          this->runningMsgWidget->setTitle("Kinship is made");
-         kinship = genoFileAbPath + "/" + genoFileBaseName+"_tmp" + ".hBN.kinf";
+
+         if (emmaxParamWidget->isBNkinMatrix())
+         {
+             kinship = genoFileAbPath + "/" + genoFileBaseName+"_tmp" + ".hBN.kinf";
+         }
+         else
+         {
+            kinship = genoFileAbPath + "/" + genoFileBaseName+"_tmp" + ".hIBS.kinf";
+         }
     }
-    else
-    {
-        QMessageBox::information(nullptr, "Error", "Making " + genoFileAbPath + "/" + genoFileBaseName + ".hBN.kinf ERROR!   ");
-        return false;
-    }
-    if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship, out+"/"+name+"_"+pheFileBaseName))
+//    else if (emmaxParamWidget->isMakeKinAuto())
+//    {
+//        QMessageBox::information(nullptr, "Error", "Making kinship ERROR!   ");
+//        return false;
+//    }
+    if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship,
+                      out+"/"+name+"_"+pheFileBaseName, moreParam))
     {
         this->process->start(toolpath+"emmax", emmax.getParamList());
         // Running message to display message.
@@ -714,7 +726,14 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
         file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.tfam");
         file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.log");
         file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.nosex");
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hBN.kinf");
+        if (emmaxParamWidget->isBNkinMatrix())
+        {
+            file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hBN.kinf");
+        }
+        else
+        {
+            file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hIBS.kinf");
+        }
 
         this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is finished");
     }

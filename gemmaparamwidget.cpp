@@ -7,7 +7,7 @@ GemmaParamWidget::GemmaParamWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    this->setWindowTitle("Detail settings");
+    this->setWindowTitle("Gemma settings");
 
     // Create button group and set exclusive.
     kinAutoBtnGroup = new QButtonGroup;
