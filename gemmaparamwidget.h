@@ -18,14 +18,25 @@ public:
     explicit GemmaParamWidget(QWidget *parent = nullptr);
     ~GemmaParamWidget();
 
-    bool isMakeKinAuto(void);
-    bool isBNkinMatrix(void);
-    bool isIBSkinMatrix(void);
+    bool isMakeRelatedMatAuto(void);
+    bool isCentRelatedMat(void);
+    bool isStdRelatedMat(void);
     bool isWaldTest(void);
     bool isLikelihoodRatioTest(void);
     bool isScoreTest(void);
     bool isAllTest(void);
+    bool isStdLinearBSLMM(void);
+    bool isRidgeRegreBSLMM(void);
+    bool isProbitBSLMM(void);
     QMap<QString, QString> getCurrentParam(void);
+
+    void setLmmParamEnabled(bool boolean);
+    void setBslmmParamEnabled(bool boolean);
+
+private slots:
+    void on_noKinRadioButton_clicked();
+
+    void on_yesKinRadioButton_clicked();
 
 private:
     Ui::GemmaParamWidget *ui;
@@ -33,6 +44,7 @@ private:
     QButtonGroup *kinAutoBtnGroup;
     QButtonGroup *kinMatrixBtnGroup;
     QButtonGroup *lmmTestBtnGroup;
+    QButtonGroup *bslmmModelBtnGroup;
 };
 
 #endif // GEMMAPARAMWIDGET_H

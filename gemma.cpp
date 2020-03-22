@@ -25,7 +25,7 @@ bool Gemma:: makeKinship(QString genotype, QString out, QMap<QString, QString> m
     this->paramlist.append(genotype);
 
     this->paramlist.append("-gk");
-    this->paramlist.append("1");
+    this->paramlist.append(moreParam["kinmatrix"]);
     this->paramlist.append("-o");
     this->paramlist.append(out);
 
@@ -76,7 +76,7 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
     if (model == "BSLMM")
     {  // gemma -bfile 222_filter1 -bslmm 1 -n 2 -o tmp
         this->paramlist.append("-bslmm");
-        this->paramlist.append("1");
+        this->paramlist.append(moreParam["bslmmmodel"]);
         this->paramlist.append("-n");
         this->paramlist.append("2");
     }

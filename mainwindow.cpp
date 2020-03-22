@@ -490,7 +490,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         return false;
     }
 
-    if (kinship.isNull())
+    if (kinship.isNull() && this->gemmaParamWidget->isMakeRelatedMatAuto())
     {
          if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp", genoFileBaseName+"_tmp", moreParam))
          {
@@ -514,7 +514,15 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
          //this->runningMsgWidget->setTitle(genoFileBaseName+"_tmp" + ".cXX.txt is made");
          this->runningMsgWidget->setTitle("Kinship is made");
          //kinship = genoFileAbPath + "/output/" + genoFileBaseName + ".cXX.txt";    // Attention
-         kinship = QDir::currentPath() + "/output/" + genoFileBaseName+"_tmp" + ".cXX.txt";
+
+         if (moreParam["kinmatrix"] == "1")
+         {
+             kinship = QDir::currentPath() + "/output/" + genoFileBaseName+"_tmp" + ".cXX.txt";
+         }
+         else
+         {
+             kinship = QDir::currentPath() + "/output/" + genoFileBaseName+"_tmp" + ".sXX.txt";
+         }
     }
 
     if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship,
@@ -542,8 +550,16 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.fam");
         file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.log");
         file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.nosex");
-        file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.cXX.txt");
+        if (moreParam["kinmatrix"] == "1")
+        {
+            file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.cXX.txt");
+        }
+        else
+        {
+            file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.sXX.txt");
+        }
         file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.log.txt");
+
 
         QDir dir;   // gemma output in the execution file dir by default.
         QDir objDir(out+"/output");
@@ -973,6 +989,17 @@ void MainWindow::on_detailPushButton_clicked()
 {
     if (ui->toolComboBox->currentText() == "gemma")
     {
+        if (ui->modelComboBox->currentText() == "LMM")
+        {
+            this->gemmaParamWidget->setLmmParamEnabled(true);
+            this->gemmaParamWidget->setBslmmParamEnabled(false);
+        }
+        else
+        {
+            this->gemmaParamWidget->setLmmParamEnabled(false);
+            this->gemmaParamWidget->setBslmmParamEnabled(true);
+        }
+
         this->gemmaParamWidget->show();
     }
 
