@@ -12,16 +12,23 @@ GemmaParamWidget::GemmaParamWidget(QWidget *parent) :
     // Create button group and set exclusive.
     kinAutoBtnGroup = new QButtonGroup;
     kinMatrixBtnGroup = new QButtonGroup;
+    lmmTestBtnGroup = new QButtonGroup;
     kinAutoBtnGroup->addButton(ui->yesKinRadioButton);
     kinAutoBtnGroup->addButton(ui->noKinRadioButton);
     kinAutoBtnGroup->setExclusive(true);
     kinMatrixBtnGroup->addButton(ui->bnRadioButton);
     kinMatrixBtnGroup->addButton(ui->ibsRadioButton);
     kinMatrixBtnGroup->setExclusive(true);
+    lmmTestBtnGroup->addButton(ui->waldTestRadioButton);
+    lmmTestBtnGroup->addButton(ui->likelihoodRadioButton);
+    lmmTestBtnGroup->addButton(ui->scoreTestRadioButton);
+    lmmTestBtnGroup->addButton(ui->allTestRadioButton);
+    lmmTestBtnGroup->setExclusive(true);
 
     // Set default paramters.
     ui->yesKinRadioButton->setChecked(true);
     ui->bnRadioButton->setChecked(true);
+    ui->waldTestRadioButton->setChecked(true);
 }
 
 GemmaParamWidget::~GemmaParamWidget()
@@ -33,7 +40,7 @@ GemmaParamWidget::~GemmaParamWidget()
 
 bool GemmaParamWidget::isMakeKinAuto(void)
 {
-    if (!ui->yesKinRadioButton)
+    if (!ui->yesKinRadioButton->isChecked())
     {
         return false;
     }
@@ -42,7 +49,7 @@ bool GemmaParamWidget::isMakeKinAuto(void)
 
 bool GemmaParamWidget::isBNkinMatrix(void)
 {
-    if (!ui->bnRadioButton)
+    if (!ui->bnRadioButton->isChecked())
     {
         return false;
     }
@@ -51,7 +58,43 @@ bool GemmaParamWidget::isBNkinMatrix(void)
 
 bool GemmaParamWidget::isIBSkinMatrix(void)
 {
-    if (!ui->ibsRadioButton)
+    if (!ui->ibsRadioButton->isChecked())
+    {
+        return false;
+    }
+    return true;
+}
+
+bool GemmaParamWidget::isWaldTest(void)
+{
+    if (!ui->waldTestRadioButton->isChecked())
+    {
+        return false;
+    }
+    return true;
+}
+
+bool GemmaParamWidget::isLikelihoodRatioTest(void)
+{
+    if (!ui->likelihoodRadioButton->isChecked())
+    {
+        return false;
+    }
+    return true;
+}
+
+bool GemmaParamWidget::isScoreTest(void)
+{
+    if (!ui->scoreTestRadioButton->isChecked())
+    {
+        return false;
+    }
+    return true;
+}
+
+bool GemmaParamWidget::isAllTest(void)
+{
+    if (!ui->allTestRadioButton->isChecked())
     {
         return false;
     }
@@ -61,12 +104,14 @@ bool GemmaParamWidget::isIBSkinMatrix(void)
 /**
  * @brief GemmaParamWidget::getCurrentParam
  * @return A QStringList contain the values in the widget.
+ *  retParam:   makekin, kinmatrix, lmmtest
  */
 QMap<QString, QString> GemmaParamWidget::getCurrentParam(void)
 {
 //    QStringList ret;
     QMap<QString, QString> retParam;
 
+    // Make kinship: yes or no, BN or IBS.
     if (this->isMakeKinAuto())
     {
         retParam.insert("makekin", "yes");
@@ -75,6 +120,7 @@ QMap<QString, QString> GemmaParamWidget::getCurrentParam(void)
     {
         retParam.insert("makekin", "no");
     }
+
     if (this->isBNkinMatrix())
     {
         retParam.insert("kinmatrix", "BN");
@@ -82,6 +128,24 @@ QMap<QString, QString> GemmaParamWidget::getCurrentParam(void)
     else
     {
         retParam.insert("kinmatrix", "IBS");
+    }
+
+    // LMM test: wald, likelihood ratio, score, all.
+    if (this->isAllTest())
+    {
+        retParam.insert("lmmtest", "4");
+    }
+    else if (this->isWaldTest())
+    {
+        retParam.insert("lmmtest", "1");
+    }
+    else if (this->isLikelihoodRatioTest())
+    {
+        retParam.insert("lmmtest", "2");
+    }
+    else if (this->isScoreTest())
+    {
+        retParam.insert("lmmtest", "3");
     }
 
     return retParam;

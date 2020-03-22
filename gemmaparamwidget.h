@@ -21,6 +21,10 @@ public:
     bool isMakeKinAuto(void);
     bool isBNkinMatrix(void);
     bool isIBSkinMatrix(void);
+    bool isWaldTest(void);
+    bool isLikelihoodRatioTest(void);
+    bool isScoreTest(void);
+    bool isAllTest(void);
     QMap<QString, QString> getCurrentParam(void);
 
 private:
@@ -28,6 +32,7 @@ private:
 
     QButtonGroup *kinAutoBtnGroup;
     QButtonGroup *kinMatrixBtnGroup;
+    QButtonGroup *lmmTestBtnGroup;
 };
 
 #endif // GEMMAPARAMWIDGET_H

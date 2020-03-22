@@ -68,7 +68,7 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
         this->paramlist.append("-k");
         this->paramlist.append(kinship);
         this->paramlist.append("-lmm");
-        this->paramlist.append("1");
+        this->paramlist.append(moreParam["lmmtest"]);   // wald:1   likelihood:2    score:3     all:4
         this->paramlist.append("-n");
         this->paramlist.append("2");
     }
