@@ -25,7 +25,6 @@ public:
 
 private slots:
     void on_noKinRadioButton_clicked();
-
     void on_yesKinRadioButton_clicked();
 
 private:

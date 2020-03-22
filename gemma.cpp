@@ -69,16 +69,16 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
         this->paramlist.append(kinship);
         this->paramlist.append("-lmm");
         this->paramlist.append(moreParam["lmmtest"]);   // wald:1   likelihood:2    score:3     all:4
-        this->paramlist.append("-n");
-        this->paramlist.append("2");
+//        this->paramlist.append("-n");
+//        this->paramlist.append("2");
     }
 
     if (model == "BSLMM")
     {  // gemma -bfile 222_filter1 -bslmm 1 -n 2 -o tmp
         this->paramlist.append("-bslmm");
         this->paramlist.append(moreParam["bslmmmodel"]);
-        this->paramlist.append("-n");
-        this->paramlist.append("2");
+//        this->paramlist.append("-n");
+//        this->paramlist.append("2");
     }
 
     if (!covariate.isNull())
@@ -135,7 +135,7 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
         }
 
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
-        tmpFamStream << famCurLineList.join("\t") << "\t1\t" << pheCurLineList[pheCurLineList.length()-1] << "\n";
+        tmpFamStream << famCurLineList.join("\t") << /*"\t1\t"*/ "\t" << pheCurLineList[pheCurLineList.length()-1] << "\n";
     }
 
     if (!pheStream.atEnd() || !famStream.atEnd())

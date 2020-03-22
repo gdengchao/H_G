@@ -299,6 +299,17 @@ void MainWindow::on_rungwasButton_clicked()
     QString out = this->workDirectory->getOutputDirectory();  // Include project name.
     QString name = this->workDirectory->getProjectName();
 
+    if (genotype.isNull())
+    {
+        QMessageBox::information(nullptr, "Error", "Plese select a genotype file!  ");
+        return;
+    }
+    if (out.isNull() || name.isNull())
+    {
+        QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
+        return;
+    }
+
     ui->rungwasButton->setText("Running");
     ui->rungwasButton->setDisabled(true);
     this->runningMsgWidget->clearText();
@@ -386,12 +397,6 @@ void MainWindow::on_rungwasButton_clicked()
 bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString genotype, QString map,
                                QString covar, QString kinship, QString out, QString name)
 {
-    if (out.isNull() || name.isNull())
-    {
-        QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
-        return false;
-    }
-
     // Detail parameters.
     QMap<QString, QString> moreParam = this->gemmaParamWidget->getCurrentParam();
 
@@ -483,12 +488,15 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
 
     Gemma gemma;
 
-    if (!gemma.phe_fam_Preparation(phenotype, genoFileAbPath+"/"+genoFileBaseName+"_tmp"+".fam"))
+
+    if (gemmaParamWidget->isFamCompletedAuto()
+            && !gemma.phe_fam_Preparation(phenotype, genoFileAbPath+"/"+genoFileBaseName+"_tmp"+".fam"))
     {   // Replace "NA" to "-9", then complete .fam
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
         this->resetWindow();
         return false;
     }
+
 
     if (kinship.isNull() && this->gemmaParamWidget->isMakeRelatedMatAuto())
     {
@@ -587,12 +595,6 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
 bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString genotype, QString map,
                                QString covar, QString kinship, QString out, QString name)
 {
-    if (out.isNull() || name.isNull())
-    {
-        QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
-        return false;
-    }
-
     // Detail parameters.
     QMap<QString, QString> moreParam = this->emmaxParamWidget->getCurrentParam();
 
@@ -764,12 +766,6 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
 bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString genotype, QString map,
                                QString covar, QString kinship, QString out, QString name)
 {
-    if (out.isNull() || name.isNull())
-    {
-        QMessageBox::information(nullptr, "Error", "Plese select a  correct work directory!  ");
-        return false;
-    }
-
     QString model = ui->modelComboBox->currentText();
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;

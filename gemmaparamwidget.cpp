@@ -14,6 +14,7 @@ GemmaParamWidget::GemmaParamWidget(QWidget *parent) :
     kinMatrixBtnGroup = new QButtonGroup;
     lmmTestBtnGroup = new QButtonGroup;
     bslmmModelBtnGroup = new QButtonGroup;
+    famCompleteBtnGroup = new QButtonGroup;
     kinAutoBtnGroup->addButton(ui->yesKinRadioButton);
     kinAutoBtnGroup->addButton(ui->noKinRadioButton);
     kinAutoBtnGroup->setExclusive(true);
@@ -29,12 +30,20 @@ GemmaParamWidget::GemmaParamWidget(QWidget *parent) :
     bslmmModelBtnGroup->addButton(ui->ridgeBslmmRadioButton);
     bslmmModelBtnGroup->addButton(ui->probitBslmmRadioButton);
     bslmmModelBtnGroup->setExclusive(true);
+    famCompleteBtnGroup->addButton(ui->yesFamRadioButton);
+    famCompleteBtnGroup->addButton(ui->noFamRadioButton);
+    famCompleteBtnGroup->setExclusive(true);
 
     // Set default paramters.
     ui->yesKinRadioButton->setChecked(true);
     ui->centRelatRadioButton->setChecked(true);
     ui->waldTestRadioButton->setChecked(true);
     ui->stdLinearBslmmRadioButton->setChecked(true);
+    ui->yesFamRadioButton->setChecked(true);
+    // Disable set complete fam.
+    ui->completeFamLabel->setEnabled(false);
+    ui->yesFamRadioButton->setEnabled(false);
+    ui->noFamRadioButton->setEnabled(false);
 }
 
 GemmaParamWidget::~GemmaParamWidget()
@@ -44,6 +53,7 @@ GemmaParamWidget::~GemmaParamWidget()
     delete kinMatrixBtnGroup;
     delete lmmTestBtnGroup;
     delete bslmmModelBtnGroup;
+    delete famCompleteBtnGroup;
 }
 
 void GemmaParamWidget::setLmmParamEnabled(bool boolean)
@@ -52,6 +62,7 @@ void GemmaParamWidget::setLmmParamEnabled(bool boolean)
     ui->likelihoodRadioButton->setEnabled(boolean);
     ui->scoreTestRadioButton->setEnabled(boolean);
     ui->allTestRadioButton->setEnabled(boolean);
+    ui->lmmTestLabel->setEnabled(boolean);
 }
 
 void GemmaParamWidget::setBslmmParamEnabled(bool boolean)
@@ -59,6 +70,7 @@ void GemmaParamWidget::setBslmmParamEnabled(bool boolean)
     ui->stdLinearBslmmRadioButton->setEnabled(boolean);
     ui->probitBslmmRadioButton->setEnabled(boolean);
     ui->ridgeBslmmRadioButton->setEnabled(boolean);
+    ui->bslmmModelLabel->setEnabled(boolean);
 }
 
 bool GemmaParamWidget::isMakeRelatedMatAuto(void)
@@ -126,7 +138,7 @@ bool GemmaParamWidget::isAllTest(void)
 
 bool GemmaParamWidget::isStdLinearBSLMM(void)
 {
-    if (!ui->stdLinearBslmmRadioButton)
+    if (!ui->stdLinearBslmmRadioButton->isChecked())
     {
         return false;
     }
@@ -135,7 +147,7 @@ bool GemmaParamWidget::isStdLinearBSLMM(void)
 
 bool GemmaParamWidget::isRidgeRegreBSLMM(void)
 {
-    if (!ui->ridgeBslmmRadioButton)
+    if (!ui->ridgeBslmmRadioButton->isChecked())
     {
         return false;
     }
@@ -144,13 +156,21 @@ bool GemmaParamWidget::isRidgeRegreBSLMM(void)
 
 bool GemmaParamWidget::isProbitBSLMM(void)
 {
-    if (!ui->probitBslmmRadioButton)
+    if (!ui->probitBslmmRadioButton->isChecked())
     {
         return false;
     }
     return true;
 }
 
+bool GemmaParamWidget::isFamCompletedAuto(void)
+{
+    if (!ui->yesFamRadioButton->isChecked())
+    {
+        return false;
+    }
+    return true;
+}
 
 /**
  * @brief GemmaParamWidget::getCurrentParam
@@ -199,7 +219,7 @@ QMap<QString, QString> GemmaParamWidget::getCurrentParam(void)
         retParam.insert("lmmtest", "3");
     }
 
-    if (this->isStdRelatedMat())
+    if (this->isStdLinearBSLMM())
     {
         retParam.insert("bslmmmodel", "1");
     }
@@ -212,6 +232,15 @@ QMap<QString, QString> GemmaParamWidget::getCurrentParam(void)
         retParam.insert("bslmmmodel", "3");
     }
 
+    // Complete fam file
+    if (this->isFamCompletedAuto())
+    {
+        retParam.insert("famcomplete", "yes");
+    }
+    else
+    {
+        retParam.insert("famcomplete", "no");
+    }
 
     return retParam;
 }

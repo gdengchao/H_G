@@ -28,6 +28,7 @@ public:
     bool isStdLinearBSLMM(void);
     bool isRidgeRegreBSLMM(void);
     bool isProbitBSLMM(void);
+    bool isFamCompletedAuto(void);
     QMap<QString, QString> getCurrentParam(void);
 
     void setLmmParamEnabled(bool boolean);
@@ -35,7 +36,6 @@ public:
 
 private slots:
     void on_noKinRadioButton_clicked();
-
     void on_yesKinRadioButton_clicked();
 
 private:
@@ -45,6 +45,7 @@ private:
     QButtonGroup *kinMatrixBtnGroup;
     QButtonGroup *lmmTestBtnGroup;
     QButtonGroup *bslmmModelBtnGroup;
+    QButtonGroup *famCompleteBtnGroup;
 };
 
 #endif // GEMMAPARAMWIDGET_H
