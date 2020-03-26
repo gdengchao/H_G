@@ -815,7 +815,7 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
 void MainWindow::on_readoutput()
 {
     QString text = QString::fromLocal8Bit(this->process->readAllStandardOutput().data());
-    this->runningMsgWidget->appendText(text);
+    this->runningMsgWidget->setText(this->refreshMessage(this->runningMsgWidget->getText(), text));
     this->runningMsgWidget->repaint();
     qApp->processEvents();
     QThread::msleep(10);
@@ -1003,5 +1003,68 @@ void MainWindow::on_detailPushButton_clicked()
     {
         this->emmaxParamWidget->show();
     }
+}
 
+QString MainWindow::refreshMessage(QString curText, QString newText)
+{
+    if (newText.isEmpty())
+    {   // newMsg don't have valid message.
+        return curText;
+    }
+    if (curText.isEmpty())
+    {   // The first message.
+        return newText;
+    }
+
+    if (curText[curText.size()-1] == '%' && newText[newText.size()-1] == '%')
+    {   // Refresh percent.
+        QString::iterator iter = newText.end(); // After the last char.
+        QString newPercent = "%";
+        iter--;iter--;  // Pointer to the last number.
+        // Get the last percent in newText when there multi percent in the same line.
+        while ((*iter).isNumber())
+        {
+            newPercent = *iter + newPercent;
+            iter--;
+        }
+
+        // Remove the percent in curText.
+
+        while(curText[curText.size()-1] == '%')
+        {
+            curText.remove(curText.size()-1, 1);
+            iter = curText.end();
+            iter--; iter--;
+            while ((*iter).isNumber())
+            {
+                curText.remove(curText.size()-1, 1);
+            }
+        }
+
+        return curText + newText;
+    }
+
+    qDebug() << curText[curText.size() - 1] << "\t" << newText[newText.size()-1];
+    return curText + newText;
+}
+
+void MainWindow::on_drawManPushButton_clicked()
+{
+    ui->drawManPushButton->setEnabled(false);
+    qApp->processEvents();
+
+    QProcess proc;
+    QStringList param;
+    param.append("/home/chao/Documents/code/R/test.R");
+    param.append("/home/chao/Documents/code/R/a.assoc.linear");
+
+    proc.start("Rscript", param);
+    proc.waitForStarted();
+    proc.waitForFinished(-1);
+
+//    QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
+//    QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
+
+    ui->drawManPushButton->setEnabled(true);
+    qApp->processEvents();
 }

@@ -41,9 +41,9 @@ GemmaParamWidget::GemmaParamWidget(QWidget *parent) :
     ui->stdLinearBslmmRadioButton->setChecked(true);
     ui->yesFamRadioButton->setChecked(true);
     // Disable set complete fam.
-    ui->completeFamLabel->setEnabled(false);
-    ui->yesFamRadioButton->setEnabled(false);
-    ui->noFamRadioButton->setEnabled(false);
+    ui->completeFamLabel->setVisible(false);
+    ui->yesFamRadioButton->setVisible(false);
+    ui->noFamRadioButton->setVisible(false);
 }
 
 GemmaParamWidget::~GemmaParamWidget()

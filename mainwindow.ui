@@ -37,8 +37,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>20</y>
+      <x>190</x>
+      <y>10</y>
       <width>581</width>
       <height>521</height>
      </rect>
@@ -56,7 +56,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="iconSize">
      <size>
@@ -189,6 +189,7 @@ border-radius:5px;//这个是改变成圆角边框;
         <widget class="QLabel" name="label">
          <property name="font">
           <font>
+           <family>Arial Rounded MT Bold</family>
            <pointsize>10</pointsize>
            <weight>75</weight>
            <bold>true</bold>
@@ -383,6 +384,7 @@ border-radius:5px;//这个是改变成圆角边框;
           <widget class="QLabel" name="label_13">
            <property name="font">
             <font>
+             <family>Arial Rounded MT Bold</family>
              <pointsize>10</pointsize>
              <weight>75</weight>
              <bold>true</bold>
@@ -533,6 +535,7 @@ border-radius:5px;//这个是改变成圆角边框;
             <widget class="QLabel" name="label_6">
              <property name="font">
               <font>
+               <family>Arial Rounded MT Bold</family>
                <pointsize>10</pointsize>
                <weight>75</weight>
                <bold>true</bold>
@@ -560,6 +563,7 @@ border-radius:5px;//这个是改变成圆角边框;
              <property name="font">
               <font>
                <family>Noto Sans CJK TC</family>
+               <pointsize>9</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
@@ -661,6 +665,7 @@ border-radius:5px;//这个是改变成圆角边框;
           <widget class="QLabel" name="label_9">
            <property name="font">
             <font>
+             <family>Arial Rounded MT Bold</family>
              <pointsize>10</pointsize>
              <weight>75</weight>
              <bold>true</bold>
@@ -725,10 +730,62 @@ border-radius:5px;//这个是改变成圆角边框;
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="plot">
      <attribute name="title">
-      <string>other</string>
+      <string>Plot</string>
      </attribute>
+     <widget class="QPushButton" name="drawManPushButton">
+      <property name="geometry">
+       <rect>
+        <x>400</x>
+        <y>100</y>
+        <width>131</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Manhattan</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_4">
+      <property name="geometry">
+       <rect>
+        <x>36</x>
+        <y>50</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Manhattan plot</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>220</y>
+        <width>81</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Q-Q plot</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_2">
+      <property name="geometry">
+       <rect>
+        <x>390</x>
+        <y>280</y>
+        <width>131</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Q-Q</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="layoutWidget">

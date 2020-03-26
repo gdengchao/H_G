@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QWidget>
 #include <QCloseEvent>
+#include <QTextCursor>
 
 namespace Ui {
 class RunningMsgWidget;

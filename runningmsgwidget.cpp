@@ -17,11 +17,13 @@ RunningMsgWidget::~RunningMsgWidget()
 void RunningMsgWidget::setText(QString text)
 {
     ui->textBrowser->setText(text);
+    ui->textBrowser->moveCursor(QTextCursor::End);
 }
 
 void RunningMsgWidget::appendText(QString text)
 {
     ui->textBrowser->append(text);
+    ui->textBrowser->moveCursor(QTextCursor::End);
 }
 
 void RunningMsgWidget::clearText(void)

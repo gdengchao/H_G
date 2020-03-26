@@ -10,6 +10,7 @@
 #include <QList>
 #include <QThread>
 #include <QMap>
+//#include <RInside.h>
 #include "filereader.h"
 #include "workdirectory.h"
 #include "phenoselector.h"
@@ -65,6 +66,8 @@ private slots:
     // Detail params.
     void on_detailPushButton_clicked();
 
+    void on_drawManPushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -91,5 +94,6 @@ private:
     bool callGemmaGwas(QString toolpath, QString phenotype, QString genotype, QString map,
                        QString covar, QString kinship, QString out, QString name);
     bool makePheFile(QString const phenotype, QString const selectedPheno);
+    QString refreshMessage(QString curMsg, QString newMsg);
 };
 #endif // MAINWINDOW_H
