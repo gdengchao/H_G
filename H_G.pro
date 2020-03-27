@@ -21,6 +21,7 @@ SOURCES += \
     filereader.cpp \
     gemma.cpp \
     gemmaparamwidget.cpp \
+    graphviewer.cpp \
     main.cpp \
     mainwindow.cpp \
     phenoselector.cpp \
@@ -37,6 +38,7 @@ HEADERS += \
     filereader.h \
     gemma.h \
     gemmaparamwidget.h \
+    graphviewer.h \
     mainwindow.h \
     phenoselector.h \
     plink.h \
@@ -49,6 +51,7 @@ HEADERS += \
 FORMS += \
     emmaxparamwidget.ui \
     gemmaparamwidget.ui \
+    graphviewer.ui \
     mainwindow.ui \
     runningmsgwidget.ui
 

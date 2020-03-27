@@ -1,7 +1,10 @@
-    args = commandArgs(T)
+args = commandArgs(T)
 # "a.assoc.linear"
 
 path = args[1]
+
+# write(args[1], stdout())
+# write(args[2], stdout())
 # pathvec = as.vector(unlist(strsplit(path,  "/"))) 
 # 
 # index = which(pathvec == "")
@@ -21,7 +24,8 @@ data$SNP<-as.character(data$SNP)
 data$CHR<-as.integer(data$CHR)
 newData<-na.omit(data)
 
-library("qqman")
+# library("qqman")
+source("/home/chao/Documents/code/H_G/script/manhattan.R")
 manhattan(newData)
 
 # d = read.table("/home/chao/Desktop/hapmap1/a.assoc.linear", header = T)

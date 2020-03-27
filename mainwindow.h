@@ -10,7 +10,8 @@
 #include <QList>
 #include <QThread>
 #include <QMap>
-//#include <RInside.h>
+#include <iostream>
+#include <RInside.h>
 #include "filereader.h"
 #include "workdirectory.h"
 #include "phenoselector.h"
@@ -21,6 +22,9 @@
 #include "runningmsgwidget.h"
 #include "gemmaparamwidget.h"
 #include "emmaxparamwidget.h"
+#include "graphviewer.h"
+
+using namespace Rcpp;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -75,14 +79,14 @@ private:
     FileReader *fileReader;             // Read file, and save the directory.
     WorkDirectory *workDirectory;       // Set and save the module name and the output directory.
     PhenoSelector *phenoSelector;       // Select objective phenotype to analysis.
-
     // for display running information.
     RunningMsgWidget *runningMsgWidget;
     QProcess *process;
-
     // To set detail paramters
     GemmaParamWidget *gemmaParamWidget;
     EmmaxParamWidget *emmaxParamWidget;
+    // Graph Viewer
+    GraphViewer * graphViewer;
 
     // Usual
     bool isVcfFile(QString const file);

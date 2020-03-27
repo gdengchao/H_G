@@ -34,6 +34,13 @@ MainWindow::MainWindow(QWidget *parent)
     gemmaParamWidget = new GemmaParamWidget;
     emmaxParamWidget = new EmmaxParamWidget;
     process = new QProcess;
+    graphViewer = new GraphViewer;
+
+    // Default output directory setting
+    workDirectory->setProjectName("pro1");
+    workDirectory->setOutputDirectory("/home/chao/Desktop/test");
+    ui->projectNameLineEdit->setText(workDirectory->getProjectName());
+    ui->outdirLineEdit->setText(workDirectory->getOutputDirectory()+"/"+workDirectory->getProjectName());
 
     // connect QProcess->start(tool) and runningMsgWidget.
     connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
@@ -63,14 +70,15 @@ MainWindow::~MainWindow()
         process->waitForFinished(-1);
     }
     delete process;
+
+    delete graphViewer;
 }
 
 
 void MainWindow::on_pheFileToolButton_clicked()
 {
     // Basic display
-    QFileDialog *fileDialog = new QFileDialog(this);
-    fileDialog->setWindowTitle("Open phenotype file");
+    QFileDialog *fileDialog = new QFileDialog(this, "Open phenotype file", "", "pheno(*.phe *.txt);;all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
     QStringList fileNames;  // Absolute directory of file.
@@ -133,8 +141,7 @@ void MainWindow::on_pheFileToolButton_clicked()
 
 void MainWindow::on_genoFileToolButton_clicked()
 {
-    QFileDialog *fileDialog = new QFileDialog(this);
-    fileDialog->setWindowTitle("Open genotype file");
+    QFileDialog *fileDialog = new QFileDialog(this, "Open genotype file", "", "geno(*.vcf *.ped *.tped *.bed);;all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
     QStringList fileNames;
@@ -157,8 +164,7 @@ void MainWindow::on_genoFileToolButton_clicked()
 
 void MainWindow::on_mapFileToolButton_clicked()
 {
-    QFileDialog *fileDialog = new QFileDialog(this);
-    fileDialog->setWindowTitle("Open map file");
+    QFileDialog *fileDialog = new QFileDialog(this, "Open map file", "", "map(*.map *.tfam);;all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
     QStringList fileNames;
@@ -181,8 +187,7 @@ void MainWindow::on_mapFileToolButton_clicked()
 
 void MainWindow::on_covarFileToolButton_clicked()
 {
-    QFileDialog *fileDialog = new QFileDialog(this);
-    fileDialog->setWindowTitle("Open covariate file");
+    QFileDialog *fileDialog = new QFileDialog(this, "Open covariate file", "", "covar(*.cov *.covar *.txt);;all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
     QStringList fileNames;
@@ -205,8 +210,7 @@ void MainWindow::on_covarFileToolButton_clicked()
 
 void MainWindow::on_kinFileToolButton_clicked()
 {
-    QFileDialog *fileDialog = new QFileDialog(this);
-    fileDialog->setWindowTitle("Open kinship file");
+    QFileDialog *fileDialog = new QFileDialog(this, "Open kinship file", "", "pheno(*.kin *.kinf *.txt);;all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
     QStringList fileNames;
@@ -1053,15 +1057,19 @@ void MainWindow::on_drawManPushButton_clicked()
     ui->drawManPushButton->setEnabled(false);
     qApp->processEvents();
 
+
     QProcess proc;
     QStringList param;
-    param.append("/home/chao/Documents/code/R/test.R");
+    param.append("/home/chao/Documents/code/H_G/script/drawManhattan.R");
     param.append("/home/chao/Documents/code/R/a.assoc.linear");
+    param.append("hello");
 
     proc.start("Rscript", param);
     proc.waitForStarted();
     proc.waitForFinished(-1);
 
+    this->graphViewer->setGraph("/home/chao/man.png");
+    this->graphViewer->show();
 //    QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
 //    QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
 

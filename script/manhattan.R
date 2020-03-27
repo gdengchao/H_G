@@ -48,7 +48,7 @@
 manhattan <- function(x, chr="CHR", bp="BP", p="P", snp="SNP", 
                       col=c("gray10", "gray60"), chrlabs=NULL,
                       suggestiveline=-log10(1e-5), genomewideline=-log10(5e-8), 
-                      highlight=NULL, logp=TRUE, annotatePval = NULL, annotateTop = TRUE, ...) {
+                      highlight=NULL, logp=TRUE, annotatePval = NULL, annotateTop = TRUE, output = "/home/chao/man.png",  ...) {
 
     # Not sure why, but package check will warn without this.
     CHR=BP=P=index=NULL
@@ -161,6 +161,21 @@ manhattan <- function(x, chr="CHR", bp="BP", p="P", snp="SNP",
     dotargs <- list(...)
     ## And call the plot function passing NA, your ... arguments, and the default
     ## arguments that were not defined in the ... arguments.
+    
+    # Set output file name.
+    baseName <- as.character(basename(output)) 
+    suffix <- as.character(unlist(strsplit(baseName, split <- "\\.")))
+    suffix <- as.character(suffix[length(suffix)])
+    
+    if (suffix == "png")
+    {
+        png(file = output, width=1200,height=750)
+    }
+    else if (suffix == "jpeg" || suffix == "jpg")
+    {
+        jpeg(file = output, width=1200,height=750)
+    }
+    
     do.call("plot", c(NA, dotargs, def_args[!names(def_args) %in% names(dotargs)]))
     
     # If manually specifying chromosome labels, ensure a character vector and number of labels matches number chrs.
