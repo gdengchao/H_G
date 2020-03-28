@@ -1057,22 +1057,53 @@ void MainWindow::on_drawManPushButton_clicked()
     ui->drawManPushButton->setEnabled(false);
     qApp->processEvents();
 
+    this->drawManhattan("/home/chao/Documents/code/R/a.assoc.linear", "/home/chao/ok.png");
+
+    ui->drawManPushButton->setEnabled(true);
+    qApp->processEvents();
+}
+
+void MainWindow::drawManhattan(QString data, QString out)
+{
+    if (data.isNull() || out.isNull())
+    {
+        return;
+    }
+
+    int gwBase =  ui->gwBaseLineEdit->text().toInt();
+    int gwExpo = ui->gwExpoLineEdit->text().toInt();
+    int sgBase = ui->sgBaseLineEdit->text().toInt();
+    int sgExpo = ui->sgExpoLineEdit->text().toInt();
+
+//    double genowide = gwBase * pow(10, gwExpo);
+//    double suggest = sgBase * pow(10, sgExpo);
+
+    qDebug() << gwBase << gwExpo << QString::number(gwBase)+'e'+QString::number(gwExpo)
+             << sgBase << sgExpo << QString::number(sgBase)+'e'+QString::number(sgExpo) << endl;
 
     QProcess proc;
     QStringList param;
     param.append("/home/chao/Documents/code/H_G/script/drawManhattan.R");
-    param.append("/home/chao/Documents/code/R/a.assoc.linear");
-    param.append("hello");
+    param.append(data);
+    param.append(out);
+    param.append(QString::number(gwBase)+'e'+QString::number(gwExpo));
+    param.append(QString::number(sgBase)+'e'+QString::number(sgExpo));
 
     proc.start("Rscript", param);
     proc.waitForStarted();
     proc.waitForFinished(-1);
 
-    this->graphViewer->setGraph("/home/chao/man.png");
-    this->graphViewer->show();
-//    QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
-//    QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
 
-    ui->drawManPushButton->setEnabled(true);
-    qApp->processEvents();
+    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
+    {
+        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
+    }
+
+    if (!QString::fromLocal8Bit(proc.readAllStandardOutput().data()).isEmpty())
+    {
+        QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
+    }
+
+    this->graphViewer->setGraph(out);
+    this->graphViewer->show();
 }

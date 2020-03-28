@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QPixmap>
 #include <QGraphicsScene>
+#include <QFileInfo>
 
 namespace Ui {
 class GraphViewer;
@@ -18,6 +19,7 @@ public:
     ~GraphViewer();
 
     void setGraph(QString graph);
+
 
 private:
     Ui::GraphViewer *ui;

@@ -1,31 +1,41 @@
-args = commandArgs(T)
-# "a.assoc.linear"
 
-path = args[1]
+getDataFromSciNotation <- function(scinota = "1e2")
+{
+    vec = as.vector(unlist(strsplit(scinota, "", fixed = T)))
+    eindex = grep('e', vec)
+    base = as.integer(substr(scinota, 1, eindex-1))
+    expo = as.integer(substr(scinota, eindex+1, nchar(scinota)))
+    ret = base * 10 ^ expo
+}
 
-# write(args[1], stdout())
-# write(args[2], stdout())
-# pathvec = as.vector(unlist(strsplit(path,  "/"))) 
-# 
-# index = which(pathvec == "")
-# pathvec = pathvec[-index]
-# 
-# leng = length(pathvec)
-# 
-# baseName = pathvec[length(pathvec)]
-# pathvec = pathvec[-length(pathvec)]
-# abPath = paste("/", paste(pathvec, collapse = "/"), sep = "")
+main <- function()
+{
+    # Get parameter from args.
+    args = commandArgs(T)
+    # "a.assoc.linear"
+    
+    inData = args[1]
+    out =args[2]
+    gwline = args[3]
+    sgline = args[4]
+    
+    genomewide = -log10(getDataFromSciNotation(gwline))
+    suggest = -log10(getDataFromSciNotation(sgline))
+    
+    write(inData, stderr())
+    write(out, stderr())
+    write(gwline, stderr())
+    write(sgline, stderr())
+    
+    data <- read.table(inData, header = T)
+    
+    data$SNP<-as.character(data$SNP)
+    data$CHR<-as.integer(data$CHR)
+    newData<-na.omit(data)
+    
+    ### NOTICE the path of manhattan.R
+    source("/home/chao/Documents/code/H_G/script/manhattan.R") #/home/chao/Documents/code/H_G/script/manhattan.R
+    manhattan(newData, output = out, genomewideline = genomewide, suggestline = suggest)
+}
 
-
-# setwd(abPath) 
-data <- read.table(path, header = T)
-
-data$SNP<-as.character(data$SNP)
-data$CHR<-as.integer(data$CHR)
-newData<-na.omit(data)
-
-# library("qqman")
-source("/home/chao/Documents/code/H_G/script/manhattan.R")
-manhattan(newData)
-
-# d = read.table("/home/chao/Desktop/hapmap1/a.assoc.linear", header = T)
+main()

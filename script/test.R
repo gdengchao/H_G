@@ -1,27 +1,17 @@
-# "a.assoc.linear"
 
-path <- "/home/chao/Documents/code/R/a.assoc.linear"
-pathvec <-  as.vector(unlist(strsplit(path,  "/"))) 
+scinota <- "1e-8"
+vec = as.vector(unlist(strsplit(scinota, "", fixed = T)))
+eindex = grep('e', vec)
+base = as.integer(substr(scinota, 1, eindex-1))
+expo = as.integer(substr(scinota, eindex+1, nchar(scinota)))
+ret = base * 10 ^ expo
 
 
-baseName <- as.character(basename(path)) 
-
-suffix <- as.character(unlist(strsplit(baseName, split <- "\\.")))
-suffix <- as.character(suffix[length(suffix)])
-
-index <- which(pathvec <-<- "")
-pathvec <- pathvec[-index]
-
-len <- length(pathvec)
-
-baseName <- pathvec[length(pathvec)]
-abPath <- paste("/", paste(pathvec, collapse <- "/"), sep <- "")
-
-data <- read.table(path, header <- T)
-
-data$SNP<-as.character(data$SNP)
-data$CHR<-as.integer(data$CHR)
-newData<-na.omit(data)
-
-source("manhattan.R")
-manhattan(newData, , output = "/home/chao/Desktop/plot.jpeg")
+getDataFromSciNotation <- function(scinota = "1e2")
+{
+    vec = as.vector(unlist(strsplit(scinota, "", fixed = T)))
+    eindex = grep('e', vec)
+    base = as.integer(substr(scinota, 1, eindex-1))
+    expo = as.integer(substr(scinota, eindex+1, nchar(scinota)))
+    ret = base * 10 ^ expo
+}

@@ -10,8 +10,9 @@
 #include <QList>
 #include <QThread>
 #include <QMap>
-#include <iostream>
 #include <RInside.h>
+#include <iostream>
+#include <cmath>
 #include "filereader.h"
 #include "workdirectory.h"
 #include "phenoselector.h"
@@ -99,5 +100,6 @@ private:
                        QString covar, QString kinship, QString out, QString name);
     bool makePheFile(QString const phenotype, QString const selectedPheno);
     QString refreshMessage(QString curMsg, QString newMsg);
+    void drawManhattan(QString data, QString out);
 };
 #endif // MAINWINDOW_H
