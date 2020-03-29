@@ -18,7 +18,7 @@
 #' 
 #' @export
 
-qq = function(pvector, ...) {
+qq = function(pvector, output, ...) {
     
     # Check for sensible input
     if (!is.numeric(pvector)) stop("Input must be numeric.")
@@ -47,6 +47,22 @@ qq = function(pvector, ...) {
     ## Next, get a list of ... arguments
     #dotargs <- as.list(match.call())[-1L]
     dotargs <- list(...)
+    
+    # Set output file name.
+    baseName <- as.character(basename(output)) 
+    suffix <- as.character(unlist(strsplit(baseName, split <- "\\.")))
+    suffix <- as.character(suffix[length(suffix)])
+    
+    if (suffix == "png")
+    {
+        png(file = output, width=1200,height=750)
+    }
+    else if (suffix == "jpeg" || suffix == "jpg")
+    {
+        jpeg(file = output, width=1200,height=750)
+    }
+    
+    
     ## And call the plot function passing NA, your ... arguments, and the default
     ## arguments that were not defined in the ... arguments.
     tryCatch(do.call("plot", c(list(x=e, y=o), def_args[!names(def_args) %in% names(dotargs)], dotargs)), warn=stop)

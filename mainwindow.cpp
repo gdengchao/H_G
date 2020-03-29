@@ -1063,6 +1063,17 @@ void MainWindow::on_drawManPushButton_clicked()
     qApp->processEvents();
 }
 
+void MainWindow::on_drawQQPushButton_clicked()
+{
+    ui->drawManPushButton->setEnabled(false);
+    qApp->processEvents();
+
+    this->drawQQplot("/home/chao/Documents/code/R/a.qqplot", "/home/chao/qq.png");
+
+    ui->drawManPushButton->setEnabled(true);
+    qApp->processEvents();
+}
+
 void MainWindow::drawManhattan(QString data, QString out)
 {
     if (data.isNull() || out.isNull())
@@ -1083,11 +1094,45 @@ void MainWindow::drawManhattan(QString data, QString out)
 
     QProcess proc;
     QStringList param;
-    param.append("/home/chao/Documents/code/H_G/script/drawManhattan.R");
+    param.append("/home/chao/Documents/code/H_G/script/plot.R");
+    param.append("manhattan");
     param.append(data);
     param.append(out);
     param.append(QString::number(gwBase)+'e'+QString::number(gwExpo));
     param.append(QString::number(sgBase)+'e'+QString::number(sgExpo));
+
+    proc.start("Rscript", param);
+    proc.waitForStarted();
+    proc.waitForFinished(-1);
+
+
+    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
+    {
+        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
+    }
+
+    if (!QString::fromLocal8Bit(proc.readAllStandardOutput().data()).isEmpty())
+    {
+        QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
+    }
+
+    this->graphViewer->setGraph(out);
+    this->graphViewer->show();
+}
+
+void MainWindow::drawQQplot(QString data, QString out)
+{
+    if (data.isNull() || out.isNull())
+    {
+        return;
+    }
+
+    QProcess proc;
+    QStringList param;
+    param.append("/home/chao/Documents/code/H_G/script/plot.R");
+    param.append("qqplot");
+    param.append(data);
+    param.append(out);
 
     proc.start("Rscript", param);
     proc.waitForStarted();

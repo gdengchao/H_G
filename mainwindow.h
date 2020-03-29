@@ -73,6 +73,8 @@ private slots:
 
     void on_drawManPushButton_clicked();
 
+    void on_drawQQPushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -101,5 +103,6 @@ private:
     bool makePheFile(QString const phenotype, QString const selectedPheno);
     QString refreshMessage(QString curMsg, QString newMsg);
     void drawManhattan(QString data, QString out);
+    void drawQQplot(QString data, QString out);
 };
 #endif // MAINWINDOW_H
