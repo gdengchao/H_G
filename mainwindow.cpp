@@ -1057,7 +1057,7 @@ void MainWindow::on_drawManPushButton_clicked()
     ui->drawManPushButton->setEnabled(false);
     qApp->processEvents();
 
-    this->drawManhattan("/home/chao/Documents/code/R/a.assoc.linear", "/home/chao/ok.png");
+    this->drawManhattan("/home/chao/Documents/code/R/a_fall_time.assoc.linear", "/home/chao/ok.png");
 
     ui->drawManPushButton->setEnabled(true);
     qApp->processEvents();

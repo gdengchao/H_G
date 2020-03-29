@@ -1,7 +1,7 @@
 
-getDataFromSciNotation <- function(scinota = "1e2")
+getDataFromSciNotation <- function(scinota = "1E2")
 {
-    vec = as.vector(unlist(strsplit(scinota, "", fixed = T)))
+    vec = as.vector(unlist(strsplit(tolower(scinota), "", fixed = T)))
     eindex = grep('e', vec)
     base = as.integer(substr(scinota, 1, eindex-1))
     expo = as.integer(substr(scinota, eindex+1, nchar(scinota)))
@@ -35,7 +35,7 @@ main <- function()
     
     ### NOTICE the path of manhattan.R
     source("/home/chao/Documents/code/H_G/script/manhattan.R") #/home/chao/Documents/code/H_G/script/manhattan.R
-    manhattan(newData, output = out, genomewideline = genomewide, suggestline = suggest)
+    manhattan(newData, output = out, suggestiveline = suggest, genomewideline = genomewide)
 }
 
 main()
