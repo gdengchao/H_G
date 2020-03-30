@@ -77,6 +77,8 @@ private slots:
 
     void on_gwasReultBrowButton_clicked();
 
+    void on_projectNameLineEdit_editingFinished();
+
 private:
     Ui::MainWindow *ui;
 

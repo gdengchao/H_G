@@ -1219,3 +1219,11 @@ QString MainWindow::makeManhInputFile(QString pvalueFile)
 
     }
 }
+
+void MainWindow::on_projectNameLineEdit_editingFinished()
+{
+    if (ui->projectNameLineEdit->text().isEmpty())
+    {
+        ui->projectNameLineEdit->setText("pro1");
+    }
+}
