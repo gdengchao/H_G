@@ -1065,6 +1065,14 @@ QString MainWindow::refreshMessage(QString curText, QString newText)
     return curText + newText;
 }
 
+void MainWindow::on_projectNameLineEdit_editingFinished()
+{
+    if (ui->projectNameLineEdit->text().isEmpty())
+    {
+        ui->projectNameLineEdit->setText("pro1");
+    }
+}
+
 void MainWindow::on_drawManPushButton_clicked()
 {
     ui->drawManPushButton->setEnabled(false);
@@ -1209,21 +1217,56 @@ QString MainWindow::makeManhInputFile(QString pvalueFile)
         return pvalueFile;
     }
 
+    /* Script(one line):
+     *  sed 's/:/\t/g; s/chr//g' 222_filter1_phe1_BN.ps
+     *  |perl -alne '{if(/^0/){print "19\tchr0:$F[1]\t$F[0]\t$F[1]\t$F[3]"}
+     *  else{print "$F[0]\tchr$F[0]:$F[1]\t$F[0]\t$F[1]\t$F[3]"}}'
+     *  |sort -k 1,1n -k4,4n |perl -alne '{$num=shift @F;
+     *  $line=join "\t",@F; print $line}'
+     *  |sed '1 i\SNP\tCHR\tBP\tP' > phe1_emmax_table
+     */
+
     if (pvalueFileSuffix == "ps")
     {   // Emmax output file.
+        QFile emmaxFile(pvalueFile);
+        QFile manhInputFile(pvalueFileAbPath+"/"+pvalueFileBaseName+"_tmp.ps");
+        QTextStream emmaxFileStream(&emmaxFile);
+        QTextStream manhInputFileStream(&manhInputFile);
+        if (!emmaxFile.open(QIODevice::ReadOnly) || !manhInputFile.open(QIODevice::ReadWrite))
+        {
+            return nullptr;
+        }
 
+        /* From: .ps:
+         *      [SNP ID], [beta], [p-value] (header, don't exist in file)
+         *      chr0:39616  0.7571908167    0.2146455451
+         * To:
+         *      SNP CHR BP  P (Header is necessary)
+         */
+        manhInputFileStream << "SNP\tCHR\tBP\tP" << endl; // Write header
+        while (!emmaxFileStream.atEnd())
+        {
+            QStringList curLine = emmaxFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+            QString SNP = curLine[0];
+            QString CHR = SNP.split(":")[0].remove(0, 3); // e.g. remove "chr" in "chr12", to get "12"
+            QString BP = SNP.split(":")[1];
+            QString P = curLine[curLine.length()-1];
+            manhInputFileStream << SNP << "\t" << CHR << "\t" << BP << "\t" << P << endl;
+        }
+        return pvalueFileAbPath+"/"+pvalueFileBaseName+"_tmp.ps";
     }
 
+    /* Script (one line):
+     *  perl -alne '{print "$F[1]\t$F[-1]"}'
+     *  phe2_pc2_lmm.assoc.txt |sed 's/:/\t/g;
+     *  s/chr//g' |perl -alne '{if(/^0/){print
+     *  "chr0:$F[1]\t19\t$F[1]\t$F[2]"}
+     *  else{print "chr$F[0]:$F[1]\t$F[0]\t$F[1]\t$F[2]"}}'
+     *  |sort -k 2,2n -k3,3n |sed '1d' |sed '1 i\SNP\tCHR\tBP\tP'
+     *  > phe2_pc2_gemma_lmm
+     */
     if (pvalueFileComSuffix == "assoc.txt")
     {   // Gemma LMM
 
-    }
-}
-
-void MainWindow::on_projectNameLineEdit_editingFinished()
-{
-    if (ui->projectNameLineEdit->text().isEmpty())
-    {
-        ui->projectNameLineEdit->setText("pro1");
     }
 }
