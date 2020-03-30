@@ -22,11 +22,17 @@ drawManhattan <- function(args)
     write(out, stderr())
     write(gwline, stderr())
     write(sgline, stderr())
-    
+
     data <- read.table(inData, header = T)
     
     data$SNP<-as.character(data$SNP)
     data$CHR<-as.integer(data$CHR)
+    
+    if (data$P)
+    {
+        data$P <- as.numeric(data$P)    
+    }
+    
     newData<-na.omit(data)
     
     ### NOTICE the path of manhattan.R

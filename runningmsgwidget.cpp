@@ -61,7 +61,7 @@ void RunningMsgWidget::refreshLastLine(QString line)
     }
 
     int index = line.length();
-    if (line[index-1] == "\n")
+    if (line[index-1] == '\n' || line[index-1] == '\r')
     {
         index --;
     }

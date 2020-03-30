@@ -48,7 +48,7 @@ private slots:
     void on_kinFileToolButton_clicked();
 
     // for WorkDirectory
-    void on_browButton_clicked();
+    void on_outdirBrowButton_clicked();
     void on_projectNameLineEdit_textChanged(const QString &text);
 
     // for PhenoSelector
@@ -71,9 +71,11 @@ private slots:
     // Detail params.
     void on_detailPushButton_clicked();
 
+    // Plot
     void on_drawManPushButton_clicked();
-
     void on_drawQQPushButton_clicked();
+
+    void on_gwasReultBrowButton_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -104,5 +106,6 @@ private:
     QString refreshMessage(QString curMsg, QString newMsg);
     void drawManhattan(QString data, QString out);
     void drawQQplot(QString data, QString out);
+    QString makeManhInputFile(QString pvalueFile);
 };
 #endif // MAINWINDOW_H

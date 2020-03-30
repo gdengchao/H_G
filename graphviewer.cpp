@@ -33,3 +33,8 @@ void GraphViewer::setGraph(QString graph)
         ui->graphicsView->show();
     }
 }
+
+void GraphViewer::showEvent(QShowEvent *)
+{
+    ui->graphicsView->fitInView(scene->sceneRect(),Qt::KeepAspectRatio);
+}

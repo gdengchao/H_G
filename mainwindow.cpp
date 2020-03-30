@@ -231,7 +231,7 @@ void MainWindow::on_kinFileToolButton_clicked()
     ui->kinFileLabel->setText(fileName);
 }
 
-void MainWindow::on_browButton_clicked()
+void MainWindow::on_outdirBrowButton_clicked()
 {
     QString dir = QFileDialog::getExistingDirectory(this, "Choose directory");
     if (!dir.isEmpty())
@@ -585,6 +585,15 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
         // It will be wrong when "/output" change to "/output/"
         dir.rename(QDir::currentPath() + "/output", out+"/output"+(i==0?"":QString::number(i)));
 
+//        ui->gwasResultLineEdit->setText(out+"/output"+(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName);
+
+
+        if (model == "LMM")
+        {
+            ui->gwasResultLineEdit->setText(out+"/output"+(i==0?"":QString::number(i))
+                                            +"/"+name+"_"+pheFileBaseName+".assoc.txt");
+        }
+
         this->runningMsgWidget->setTitle("Gemma("+pheFileBaseName+"): "+name+" is finished");
     }
     else
@@ -740,6 +749,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
             return false;
         }
 
+        ui->gwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
 
         QFile file;
         // delete intermidiate file.
@@ -806,6 +816,9 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
             QMessageBox::information(nullptr, "Error", "Exit plink with error when run GWAS    !");
             return false;
         }
+
+        ui->gwasResultLineEdit->setText(name+"_"+pheFileBaseName+".assoc."+model);
+
         this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is finished");
     }
     else
@@ -1151,4 +1164,58 @@ void MainWindow::drawQQplot(QString data, QString out)
 
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
+}
+
+void MainWindow::on_gwasReultBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", "", "result(*.linear *.logistic *.ps *.txt);;all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->gwasResultLineEdit->setText(fileNames[0]);
+
+    QFileInfo  genoFileInfo(fileNames[0]);
+}
+
+/**
+ * @brief MainWindow::makeQQmanFile
+ * @param pvalueFile
+ * @return  A file will be a input of manhattan.(header: SNP CHR BP P)
+ */
+QString MainWindow::makeManhInputFile(QString pvalueFile)
+{
+    if (pvalueFile.isNull() || pvalueFile.isEmpty())
+    {
+        return pvalueFile;
+    }
+
+    QFileInfo pvalueFileInfo(pvalueFile);
+    QString pvalueFileAbPath = pvalueFileInfo.absolutePath();
+    QString pvalueFileBaseName = pvalueFileInfo.baseName();
+    QString pvalueFileSuffix = pvalueFileInfo.suffix();
+    QString pvalueFileComSuffix = pvalueFileInfo.completeSuffix();
+
+    if ( pvalueFileComSuffix == "assoc.linear" || pvalueFileComSuffix == "assoc.logistic")
+    {   // Plink output file don't need to be transformed.
+        return pvalueFile;
+    }
+
+    if (pvalueFileSuffix == "ps")
+    {   // Emmax output file.
+
+    }
+
+    if (pvalueFileComSuffix == "assoc.txt")
+    {   // Gemma LMM
+
+    }
 }

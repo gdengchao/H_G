@@ -20,11 +20,12 @@ public:
 
     void setGraph(QString graph);
 
-
 private:
     Ui::GraphViewer *ui;
     QImage *image;
     QGraphicsScene *scene;
+
+    void showEvent(QShowEvent *);
 };
 
 #endif // GRAPHVIEWER_H
