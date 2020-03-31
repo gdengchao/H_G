@@ -916,7 +916,7 @@ void MainWindow::resetWindow()
 }
 
 void MainWindow::on_projectNameLineEdit_textChanged(const QString &text)
-{
+{   // When edit finished and the current text is empty, set a default name.
     this->workDirectory->setProjectName(text);
     if (!ui->outdirLineEdit->text().isEmpty())
     {   // If a out directory is selected, display the out directory + the project name.
@@ -1078,7 +1078,13 @@ void MainWindow::on_drawManPushButton_clicked()
     ui->drawManPushButton->setEnabled(false);
     qApp->processEvents();
 
-    this->drawManhattan("/home/chao/Documents/code/R/a_fall_time.assoc.linear", "/home/chao/ok.png");
+    QString gwasResulFile = ui->gwasResultLineEdit->text();
+    QString qqmanFile = makeQQManInputFile(gwasResulFile);
+    this->drawManhattan(qqmanFile, this->workDirectory->getOutputDirectory()
+                     +"/"+this->workDirectory->getProjectName()+"_man.png");
+
+    QFile file;
+    file.remove(qqmanFile);
 
     ui->drawManPushButton->setEnabled(true);
     qApp->processEvents();
@@ -1086,12 +1092,18 @@ void MainWindow::on_drawManPushButton_clicked()
 
 void MainWindow::on_drawQQPushButton_clicked()
 {
-    ui->drawManPushButton->setEnabled(false);
+    ui->drawQQPushButton->setEnabled(false);
     qApp->processEvents();
 
-    this->drawQQplot("/home/chao/Documents/code/R/a.qqplot", "/home/chao/qq.png");
+    QString gwasResulFile = ui->gwasResultLineEdit->text();
+    QString qqmanFile = makeQQManInputFile(gwasResulFile);
+    this->drawQQplot(qqmanFile, this->workDirectory->getOutputDirectory()
+                     +"/"+this->workDirectory->getProjectName()+"_qq.png");
 
-    ui->drawManPushButton->setEnabled(true);
+    QFile file;
+    file.remove(qqmanFile);
+
+    ui->drawQQPushButton->setEnabled(true);
     qApp->processEvents();
 }
 
@@ -1127,15 +1139,15 @@ void MainWindow::drawManhattan(QString data, QString out)
     proc.waitForFinished(-1);
 
 
-    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
-    {
-        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
-    }
+//    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
+//    {
+//        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
+//    }
 
-    if (!QString::fromLocal8Bit(proc.readAllStandardOutput().data()).isEmpty())
-    {
-        QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
-    }
+//    if (!QString::fromLocal8Bit(proc.readAllStandardOutput().data()).isEmpty())
+//    {
+//        QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
+//    }
 
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
@@ -1159,16 +1171,15 @@ void MainWindow::drawQQplot(QString data, QString out)
     proc.waitForStarted();
     proc.waitForFinished(-1);
 
+//    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
+//    {
+//        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
+//    }
 
-    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
-    {
-        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
-    }
-
-    if (!QString::fromLocal8Bit(proc.readAllStandardOutput().data()).isEmpty())
-    {
-        QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
-    }
+//    if (!QString::fromLocal8Bit(proc.readAllStandardOutput().data()).isEmpty())
+//    {
+//        QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
+//    }
 
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
@@ -1176,7 +1187,8 @@ void MainWindow::drawQQplot(QString data, QString out)
 
 void MainWindow::on_gwasReultBrowButton_clicked()
 {
-    QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", "", "result(*.linear *.logistic *.ps *.txt);;all(*)");
+    QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", this->workDirectory->getOutputDirectory(),
+                                              "result(*.linear *.logistic *.ps *.txt);;all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
     QStringList fileNames;
@@ -1199,7 +1211,7 @@ void MainWindow::on_gwasReultBrowButton_clicked()
  * @param pvalueFile
  * @return  A file will be a input of manhattan.(header: SNP CHR BP P)
  */
-QString MainWindow::makeManhInputFile(QString pvalueFile)
+QString MainWindow::makeQQManInputFile(QString pvalueFile)
 {
     if (pvalueFile.isNull() || pvalueFile.isEmpty())
     {
@@ -1229,10 +1241,10 @@ QString MainWindow::makeManhInputFile(QString pvalueFile)
     if (pvalueFileSuffix == "ps")
     {   // Emmax output file.
         QFile emmaxFile(pvalueFile);
-        QFile manhInputFile(pvalueFileAbPath+"/"+pvalueFileBaseName+"_tmp.ps");
+        QFile qqmanInputFile(pvalueFileAbPath+"/"+pvalueFileBaseName+"_qqman.ps");
         QTextStream emmaxFileStream(&emmaxFile);
-        QTextStream manhInputFileStream(&manhInputFile);
-        if (!emmaxFile.open(QIODevice::ReadOnly) || !manhInputFile.open(QIODevice::ReadWrite))
+        QTextStream qqmanInputFileStream(&qqmanInputFile);
+        if (!emmaxFile.open(QIODevice::ReadOnly) || !qqmanInputFile.open(QIODevice::ReadWrite))
         {
             return nullptr;
         }
@@ -1243,7 +1255,7 @@ QString MainWindow::makeManhInputFile(QString pvalueFile)
          * To:
          *      SNP CHR BP  P (Header is necessary)
          */
-        manhInputFileStream << "SNP\tCHR\tBP\tP" << endl; // Write header
+        qqmanInputFileStream << "SNP\tCHR\tBP\tP" << endl; // Write header
         while (!emmaxFileStream.atEnd())
         {
             QStringList curLine = emmaxFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
@@ -1251,9 +1263,10 @@ QString MainWindow::makeManhInputFile(QString pvalueFile)
             QString CHR = SNP.split(":")[0].remove(0, 3); // e.g. remove "chr" in "chr12", to get "12"
             QString BP = SNP.split(":")[1];
             QString P = curLine[curLine.length()-1];
-            manhInputFileStream << SNP << "\t" << CHR << "\t" << BP << "\t" << P << endl;
+            qqmanInputFileStream << SNP << "\t" << CHR << "\t" << BP << "\t" << P << endl;
         }
-        return pvalueFileAbPath+"/"+pvalueFileBaseName+"_tmp.ps";
+
+        return qqmanInputFile.fileName();;
     }
 
     /* Script (one line):

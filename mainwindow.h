@@ -108,6 +108,6 @@ private:
     QString refreshMessage(QString curMsg, QString newMsg);
     void drawManhattan(QString data, QString out);
     void drawQQplot(QString data, QString out);
-    QString makeManhInputFile(QString pvalueFile);
+    QString makeQQManInputFile(QString pvalueFile);
 };
 #endif // MAINWINDOW_H
