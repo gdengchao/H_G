@@ -1080,6 +1080,12 @@ void MainWindow::on_drawManPushButton_clicked()
 
     QString gwasResulFile = ui->gwasResultLineEdit->text();
     QString qqmanFile = makeQQManInputFile(gwasResulFile);
+    if (qqmanFile.isNull())
+    {
+        ui->drawQQPushButton->setEnabled(true);
+        qApp->processEvents();
+        return;
+    }
     this->drawManhattan(qqmanFile, this->workDirectory->getOutputDirectory()
                      +"/"+this->workDirectory->getProjectName()+"_man.png");
 
@@ -1097,6 +1103,12 @@ void MainWindow::on_drawQQPushButton_clicked()
 
     QString gwasResulFile = ui->gwasResultLineEdit->text();
     QString qqmanFile = makeQQManInputFile(gwasResulFile);
+    if (qqmanFile.isNull())
+    {
+        ui->drawQQPushButton->setEnabled(true);
+        qApp->processEvents();
+        return;
+    }
     this->drawQQplot(qqmanFile, this->workDirectory->getOutputDirectory()
                      +"/"+this->workDirectory->getProjectName()+"_qq.png");
 
@@ -1238,35 +1250,40 @@ QString MainWindow::makeQQManInputFile(QString pvalueFile)
      *  |sed '1 i\SNP\tCHR\tBP\tP' > phe1_emmax_table
      */
 
+    QFile gwasResultFile(pvalueFile);
+    QFile qqmanInputFile(pvalueFileAbPath+"/"+pvalueFileBaseName+"_"+ui->toolComboBox->currentText()+".qqman");
+    QTextStream gwasResultFileStream(&gwasResultFile);
+    QTextStream qqmanInputFileStream(&qqmanInputFile);
+    if (!gwasResultFile.open(QIODevice::ReadOnly) || !qqmanInputFile.open(QIODevice::ReadWrite))
+    {
+        QMessageBox::information(nullptr, "Error", "Open gwasResultFile error.  ");
+        return nullptr;
+    }
     if (pvalueFileSuffix == "ps")
     {   // Emmax output file.
-        QFile emmaxFile(pvalueFile);
-        QFile qqmanInputFile(pvalueFileAbPath+"/"+pvalueFileBaseName+"_qqman.ps");
-        QTextStream emmaxFileStream(&emmaxFile);
-        QTextStream qqmanInputFileStream(&qqmanInputFile);
-        if (!emmaxFile.open(QIODevice::ReadOnly) || !qqmanInputFile.open(QIODevice::ReadWrite))
-        {
-            return nullptr;
-        }
-
         /* From: .ps:
-         *      [SNP ID], [beta], [p-value] (header, don't exist in file)
+         *      [SNP ID(CHR:BP)], [beta], [p-value] (header, don't exist in file)
          *      chr0:39616  0.7571908167    0.2146455451
          * To:
          *      SNP CHR BP  P (Header is necessary)
          */
         qqmanInputFileStream << "SNP\tCHR\tBP\tP" << endl; // Write header
-        while (!emmaxFileStream.atEnd())
+        while (!gwasResultFileStream.atEnd())
         {
-            QStringList curLine = emmaxFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+            QStringList curLine = gwasResultFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
             QString SNP = curLine[0];
+            if (SNP.split(":").length() < 2)
+            {
+                QMessageBox::information(nullptr, "Error", ".ps file format error(maybe without chr).   ");
+                return nullptr;
+            }
             QString CHR = SNP.split(":")[0].remove(0, 3); // e.g. remove "chr" in "chr12", to get "12"
             QString BP = SNP.split(":")[1];
             QString P = curLine[curLine.length()-1];
             qqmanInputFileStream << SNP << "\t" << CHR << "\t" << BP << "\t" << P << endl;
         }
 
-        return qqmanInputFile.fileName();;
+        return qqmanInputFile.fileName();
     }
 
     /* Script (one line):
@@ -1280,6 +1297,25 @@ QString MainWindow::makeQQManInputFile(QString pvalueFile)
      */
     if (pvalueFileComSuffix == "assoc.txt")
     {   // Gemma LMM
+        /* From:
+         *  chr	rs	ps	n_miss	allele1	allele0	af	beta	se	logl_H1	l_remle	p_wald
+         * To:
+         *  SNP CHR BP  P (Header is necessary)
+         */
+        gwasResultFileStream.readLine();    // Read header, we don't need it in .qqman file.
+        qqmanInputFileStream << "SNP\tCHR\tBP\tP" << endl; // Write header
+        while (!gwasResultFileStream.atEnd())
+        {
+            QStringList curLine = gwasResultFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+            QString SNP = curLine[1];
+            QString CHR = curLine[0];
+            QString BP = curLine[2];
+            QString P = curLine[curLine.length()-1];
+            qqmanInputFileStream << SNP << "\t" << CHR << "\t" << BP << "\t" << P << endl;
+        }
 
+        return qqmanInputFile.fileName();;
     }
+
+    return nullptr;
 }
