@@ -82,6 +82,10 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
+    //  Tool and script path;
+    QString toolpath = "tools/";
+    QString scriptpath = "script/";
+
     // Basic values.
     FileReader *fileReader;             // Read file, and save the directory.
     WorkDirectory *workDirectory;       // Set and save the module name and the output directory.
@@ -98,11 +102,11 @@ private:
     // Usual
     bool isVcfFile(QString const file);
     void resetWindow(void);
-    bool callPlinkGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+    bool callPlinkGwas(QString phenotype, QString genotype, QString map,
                        QString covar, QString kinship, QString out, QString name);
-    bool callEmmaxGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+    bool callEmmaxGwas(QString phenotype, QString genotype, QString map,
                        QString covar, QString kinship, QString out, QString name);
-    bool callGemmaGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+    bool callGemmaGwas(QString phenotype, QString genotype, QString map,
                        QString covar, QString kinship, QString out, QString name);
     bool makePheFile(QString const phenotype, QString const selectedPheno);
     QString refreshMessage(QString curMsg, QString newMsg);

@@ -34,3 +34,8 @@ QStringList Tool::getSupportedModel(void)
 {
     return this->model;
 }
+
+QString Tool::getToolPath()
+{
+    return this->toolpath;
+}

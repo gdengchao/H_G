@@ -13,6 +13,7 @@ public:
     void setParam(QStringList param);
     void setParam(QString param);
     QStringList getSupportedModel(void);
+    QString getToolPath(void);
 
 public:
     const QString toolpath;

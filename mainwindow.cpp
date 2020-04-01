@@ -288,13 +288,7 @@ void MainWindow::on_excludePhenoButton_clicked()
 
 void MainWindow::on_rungwasButton_clicked()
 {
-    //QString toolpath = "/tools/";
-    //QString toolpath = "F://Code//Qt/H_G//tools//";  // Lab418. For Debug, start from debug/a.exe fold.
-    //QString toolpath = "G:\\GitHub\\H_G\\tools\\";  // Laptop Win10
-
-    QString toolpath = "//home//chao//Documents//code//H_G/tools//"; // Laptop Linux. Attention
     QString tool = ui->toolComboBox->currentText();
-
     QString phenotype = this->fileReader->getPhenotypeFile();
     QString genotype = this->fileReader->getGenotypeFile();
     QString map = this->fileReader->getMapFile();
@@ -328,7 +322,7 @@ void MainWindow::on_rungwasButton_clicked()
     {
         if (tool == "emmax")
         {
-            if (!this->callEmmaxGwas(toolpath, phenotype, genotype, map, covar, kinship, out, name))
+            if (!this->callEmmaxGwas(phenotype, genotype, map, covar, kinship, out, name))
             {
                 this->resetWindow();
                 return;
@@ -337,7 +331,7 @@ void MainWindow::on_rungwasButton_clicked()
 
         if (tool == "gemma")
         {
-            if (!this->callGemmaGwas(toolpath, phenotype, genotype, map, covar, kinship, out, name))
+            if (!this->callGemmaGwas(phenotype, genotype, map, covar, kinship, out, name))
             {
                 this->resetWindow();
                 return;
@@ -346,7 +340,7 @@ void MainWindow::on_rungwasButton_clicked()
 
         if (tool == "plink")  // plink GWAS
         {
-            if (!this->callPlinkGwas(toolpath, phenotype, genotype, map, covar, kinship, out, name))
+            if (!this->callPlinkGwas(phenotype, genotype, map, covar, kinship, out, name))
             {
                 this->resetWindow();
                 return;
@@ -367,7 +361,7 @@ void MainWindow::on_rungwasButton_clicked()
             QString madedPheFile = pheFileAbPath + "/" + item->text() + ".phe";
             if (tool == "emmax")
             {
-                if (!this->callEmmaxGwas(toolpath, madedPheFile, genotype, map, covar, kinship, out, name))
+                if (!this->callEmmaxGwas(madedPheFile, genotype, map, covar, kinship, out, name))
                 {
                     this->resetWindow();
 
@@ -377,7 +371,7 @@ void MainWindow::on_rungwasButton_clicked()
 
             if (tool == "gemma")
             {
-                if (!this->callGemmaGwas(toolpath, madedPheFile, genotype, map, covar, kinship, out, name))
+                if (!this->callGemmaGwas(madedPheFile, genotype, map, covar, kinship, out, name))
                 {
                     this->resetWindow();
                     return;
@@ -386,7 +380,7 @@ void MainWindow::on_rungwasButton_clicked()
 
             if (tool == "plink")  // plink GWAS
             {
-                if (!this->callPlinkGwas(toolpath, madedPheFile, genotype, map, covar, kinship, out, name))
+                if (!this->callPlinkGwas(madedPheFile, genotype, map, covar, kinship, out, name))
                 {
                     this->resetWindow();
                     return;
@@ -398,7 +392,7 @@ void MainWindow::on_rungwasButton_clicked()
     this->resetWindow();
 }
 
-bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
                                QString covar, QString kinship, QString out, QString name)
 {
     // Detail parameters.
@@ -474,7 +468,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
 
     if (transformFileFlag || filterDataFlag)
     {   // Run plink to transform file or filter data.
-        this->process->start(toolpath+"plink", plink.getParamList());
+        this->process->start(this->toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
         {
             this->resetWindow();
@@ -509,7 +503,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
              this->resetWindow();
              return false;  // Make kinship failed.
          }
-         this->process->start(toolpath + "gemma", gemma.getParamList());
+         this->process->start(this->toolpath + "gemma", gemma.getParamList());
          if (!this->process->waitForStarted())
          {
              this->resetWindow();
@@ -540,7 +534,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
     if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship,
                       name+"_"+pheFileBaseName, model, moreParam))
     {
-        this->process->start(toolpath+"gemma", gemma.getParamList());
+        this->process->start(this->toolpath+"gemma", gemma.getParamList());
         // Running message to display message.
         if (!this->process->waitForStarted())
         {
@@ -605,7 +599,7 @@ bool MainWindow::callGemmaGwas(QString toolpath, QString phenotype, QString geno
     return true;
 }
 
-bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
                                QString covar, QString kinship, QString out, QString name)
 {
     // Detail parameters.
@@ -677,7 +671,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
 
     if (transformFileFlag || filterDataFlag)
     {
-        this->process->start(toolpath+"plink", plink.getParamList());
+        this->process->start(this->toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
         {
             this->resetWindow();
@@ -700,7 +694,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
          {
              return false;  // Make kinship failed.
          }
-         this->process->start(toolpath+"emmax-kin", emmax.getParamList());
+         this->process->start(this->toolpath+"emmax-kin", emmax.getParamList());
          if (!this->process->waitForStarted())
          {
              this->resetWindow();
@@ -734,7 +728,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship,
                       out+"/"+name+"_"+pheFileBaseName, moreParam))
     {
-        this->process->start(toolpath+"emmax", emmax.getParamList());
+        this->process->start(this->toolpath+"emmax", emmax.getParamList());
         // Running message to display message.
         if (!this->process->waitForStarted())
         {
@@ -777,7 +771,7 @@ bool MainWindow::callEmmaxGwas(QString toolpath, QString phenotype, QString geno
     return true;
 }
 
-bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString genotype, QString map,
+bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
                                QString covar, QString kinship, QString out, QString name)
 {
     QString model = ui->modelComboBox->currentText();
@@ -803,7 +797,7 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
     if(plink.runGWAS(phenotype, genotype, map, covar, kinship, model,
                      maf, mind, geno, out+"/"+name+"_"+pheFileBaseName))
     {
-        this->process->start(toolpath+"plink", plink.getParamList());
+        this->process->start(this->toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
         {
             this->resetWindow();
@@ -817,7 +811,7 @@ bool MainWindow::callPlinkGwas(QString toolpath, QString phenotype, QString geno
             return false;
         }
 
-        ui->gwasResultLineEdit->setText(name+"_"+pheFileBaseName+".assoc."+model);
+        ui->gwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
 
         this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is finished");
     }
@@ -1078,42 +1072,47 @@ void MainWindow::on_drawManPushButton_clicked()
     ui->drawManPushButton->setEnabled(false);
     qApp->processEvents();
 
-    QString gwasResulFile = ui->gwasResultLineEdit->text();
-    QString qqmanFile = makeQQManInputFile(gwasResulFile);
-    if (qqmanFile.isNull())
-    {
-        ui->drawQQPushButton->setEnabled(true);
+    try {
+        QString gwasResulFile = ui->gwasResultLineEdit->text();
+        QString qqmanFile = makeQQManInputFile(gwasResulFile);
+        if (qqmanFile.isNull() || gwasResulFile.isEmpty())
+        {
+            throw -1;
+        }
+        this->drawManhattan(qqmanFile, this->workDirectory->getOutputDirectory()
+                         +"/"+this->workDirectory->getProjectName()+"_man.png");
+
+        QFile file;
+        file.remove(qqmanFile);
+    } catch (int) {
+        ui->drawManPushButton->setEnabled(true);
         qApp->processEvents();
-        return;
     }
-    this->drawManhattan(qqmanFile, this->workDirectory->getOutputDirectory()
-                     +"/"+this->workDirectory->getProjectName()+"_man.png");
-
-    QFile file;
-    file.remove(qqmanFile);
-
     ui->drawManPushButton->setEnabled(true);
     qApp->processEvents();
 }
 
 void MainWindow::on_drawQQPushButton_clicked()
 {
-    ui->drawQQPushButton->setEnabled(false);
-    qApp->processEvents();
+    try {
+        ui->drawQQPushButton->setEnabled(false);
+        qApp->processEvents();
 
-    QString gwasResulFile = ui->gwasResultLineEdit->text();
-    QString qqmanFile = makeQQManInputFile(gwasResulFile);
-    if (qqmanFile.isNull())
-    {
+        QString gwasResulFile = ui->gwasResultLineEdit->text();
+        QString qqmanFile = makeQQManInputFile(gwasResulFile);
+        if (qqmanFile.isNull() || gwasResulFile.isEmpty())
+        {
+            throw -1;
+        }
+        this->drawQQplot(qqmanFile, this->workDirectory->getOutputDirectory()
+                         +"/"+this->workDirectory->getProjectName()+"_qq.png");
+
+        QFile file;
+        file.remove(qqmanFile);
+    } catch (int) {
         ui->drawQQPushButton->setEnabled(true);
         qApp->processEvents();
-        return;
     }
-    this->drawQQplot(qqmanFile, this->workDirectory->getOutputDirectory()
-                     +"/"+this->workDirectory->getProjectName()+"_qq.png");
-
-    QFile file;
-    file.remove(qqmanFile);
 
     ui->drawQQPushButton->setEnabled(true);
     qApp->processEvents();
@@ -1131,15 +1130,9 @@ void MainWindow::drawManhattan(QString data, QString out)
     int sgBase = ui->sgBaseLineEdit->text().toInt();
     int sgExpo = ui->sgExpoLineEdit->text().toInt();
 
-//    double genowide = gwBase * pow(10, gwExpo);
-//    double suggest = sgBase * pow(10, sgExpo);
-
-    qDebug() << gwBase << gwExpo << QString::number(gwBase)+'e'+QString::number(gwExpo)
-             << sgBase << sgExpo << QString::number(sgBase)+'e'+QString::number(sgExpo) << endl;
-
     QProcess proc;
     QStringList param;
-    param.append("/home/chao/Documents/code/H_G/script/plot.R");
+    param.append(this->scriptpath+"plot.R");
     param.append("manhattan");
     param.append(data);
     param.append(out);
@@ -1174,7 +1167,7 @@ void MainWindow::drawQQplot(QString data, QString out)
 
     QProcess proc;
     QStringList param;
-    param.append("/home/chao/Documents/code/H_G/script/plot.R");
+    param.append(this->scriptpath+"plot.R");
     param.append("qqplot");
     param.append(data);
     param.append(out);
@@ -1272,6 +1265,7 @@ QString MainWindow::makeQQManInputFile(QString pvalueFile)
         {
             QStringList curLine = gwasResultFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
             QString SNP = curLine[0];
+
             if (SNP.split(":").length() < 2)
             {
                 QMessageBox::information(nullptr, "Error", ".ps file format error(maybe without chr).   ");
