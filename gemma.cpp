@@ -8,13 +8,13 @@ Gemma::Gemma()
 
 /**
  * @brief Gemma::makeKinship
- * @param genotype:binary file, without suffix, need .bed/.fam/.bim in the same path.
+ * @param binGenoBaseName:binary file, without suffix, need .bed/.fam/.bim in the same path.
  * @param out: a file base name.
  * @return
  */
-bool Gemma:: makeKinship(QString genotype, QString out, QMap<QString, QString> moreParam)
+bool Gemma:: makeKinship(QString binGenoBaseName, QString out, QMap<QString, QString> moreParam)
 {
-    if (genotype.isNull() || out.isNull())
+    if (binGenoBaseName.isNull() || out.isNull())
     {
         return false;
     }
@@ -22,7 +22,7 @@ bool Gemma:: makeKinship(QString genotype, QString out, QMap<QString, QString> m
     // gemma -bfile 222_filter1 -gk 1 -o 222_filter1
     this->paramlist.clear();
     this->paramlist.append("-bfile");
-    this->paramlist.append(genotype);
+    this->paramlist.append(binGenoBaseName);
 
     this->paramlist.append("-gk");
     this->paramlist.append(moreParam["kinmatrix"]);
@@ -35,7 +35,7 @@ bool Gemma:: makeKinship(QString genotype, QString out, QMap<QString, QString> m
 
 /**
  * @brief Gemma::runGWAS
- * @param genotype: the prefix of binary file.
+ * @param binGenoBaseName: the prefix of binary file.
  * @param phenotype
  * @param covariate
  * @param kinship
@@ -43,17 +43,17 @@ bool Gemma:: makeKinship(QString genotype, QString out, QMap<QString, QString> m
  * @param model
  * @return
  */
-bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship,
+bool Gemma::runGWAS(QString binGenoBaseName, QString phenotype, QString covariate, QString kinship,
                     QString out, QString model, QMap<QString, QString> moreParam)
 {
     this->paramlist.clear();            // Clear paramlist before set parameter.
-    if (genotype.isNull() || phenotype.isNull() || kinship.isNull() || model.isNull())
+    if (binGenoBaseName.isNull() || phenotype.isNull() || kinship.isNull() || model.isNull())
     {
         if (phenotype.isNull())
         {
             QMessageBox::information(nullptr, "Error", "A Phenotype File is Needed!    ",   QMessageBox::Yes, QMessageBox::Yes);
         }
-        if (genotype.isNull())
+        if (binGenoBaseName.isNull())
         {
             QMessageBox::information(nullptr, "Error", "A Transpose File is Needed!    ",   QMessageBox::Yes, QMessageBox::Yes);
         }
@@ -61,7 +61,7 @@ bool Gemma::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
     }
 
     this->paramlist.append("-bfile");
-    this->paramlist.append(genotype);
+    this->paramlist.append(binGenoBaseName);
 
     if (model == "LMM")
     {   // gemma -bfile 222_filter1 -k 222_filter1.cXX.txt -lmm 1 -n 2 -o 222_filter1

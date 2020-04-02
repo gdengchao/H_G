@@ -14,9 +14,9 @@ class Gemma : public Tool
 {
 public:
     Gemma();
-    bool runGWAS(QString genotype, QString phenotype, QString covariate, QString kinship, QString out,
+    bool runGWAS(QString binGenoBaseName, QString phenotype, QString covariate, QString kinship, QString out,
                  QString model, QMap<QString, QString> moreParam);
-    bool makeKinship(QString genotype, QString out, QMap<QString, QString> moreParam);
+    bool makeKinship(QString binGenoBaseName, QString out, QMap<QString, QString> moreParam);
     bool phe_fam_Preparation(QString phe, QString fam);
 };
 

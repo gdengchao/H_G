@@ -20,6 +20,7 @@
 #include "plink.h"
 #include "emmax.h"
 #include "gemma.h"
+#include "gcta.h"
 #include "runningmsgwidget.h"
 #include "gemmaparamwidget.h"
 #include "emmaxparamwidget.h"
@@ -79,12 +80,16 @@ private slots:
 
     void on_projectNameLineEdit_editingFinished();
 
+    void on_pcaRunPushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
     //  Tool and script path;
-    QString toolpath = "tools/";
-    QString scriptpath = "script/";
+    QString toolpath = "/home/chao/Documents/code/H_G/tools/";
+    QString scriptpath = "/home/chao/Documents/code/H_G/script/";
+    //QString toolpath = "tools/";  // Realease
+    //QString scriptpath = "script/";
 
     // Basic values.
     FileReader *fileReader;             // Read file, and save the directory.

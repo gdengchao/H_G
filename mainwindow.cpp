@@ -1313,3 +1313,128 @@ QString MainWindow::makeQQManInputFile(QString pvalueFile)
 
     return nullptr;
 }
+
+void MainWindow::on_pcaRunPushButton_clicked()
+{
+    if (this->fileReader->getGenotypeFile().isNull() || this->fileReader->getGenotypeFile().isEmpty())
+    {
+        QMessageBox::information(nullptr, "Error", "A genotype file is necessary!   ");
+        return;
+    }
+
+    ui->pcaRunPushButton->setEnabled(false);
+    qApp->processEvents();
+
+    this->runningMsgWidget->show();
+
+    try {
+        QString genotype = this->fileReader->getGenotypeFile();
+        QFileInfo genoFileInfo(genotype);
+        QString genoFileAbPath = genoFileInfo.absolutePath();
+        QString genoFileBaseName = genoFileInfo.baseName();
+        QString map = this->fileReader->getMapFile();
+        QString out = this->workDirectory->getOutputDirectory();
+        QString name = this->workDirectory->getProjectName();
+        //  binaryFile: Set a default path. Binary geno file with paht without suffix.
+        QString binaryFile = genoFileAbPath+"/"+genoFileBaseName+"_tmp";
+
+        bool transformFileFlag = false;
+
+        // Need binary files.  Every temp file and a "_tmp" after baseName, and will be deleted after gwas.
+        Plink plink;
+        if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+        {
+            if(!plink.vcf2binary(genotype, binaryFile, nullptr, nullptr, nullptr))
+            {
+                throw -1;
+            }
+
+            transformFileFlag = true;
+        }
+        if (genotype.split(".")[genotype.split(".").length()-1] == "ped")  // Transform "plink" to "binary"
+        {
+            if (map.isNull())
+            {
+                map = genoFileAbPath+"/"+genoFileBaseName+".map";
+            }
+            if (!plink.plink2binary(genotype, map, binaryFile, nullptr, nullptr, nullptr))
+            {
+                throw -1;
+            }
+
+            transformFileFlag = true;
+        }
+
+        if (genotype.split(".")[genotype.split(".").length()-1] == "tped")  // Transform "transpose" to "binary"
+        {
+            if (map.isNull())
+            {
+                map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
+            }
+            if (!plink.transpose2binary(genotype, map, binaryFile, nullptr, nullptr, nullptr))
+            {
+                throw -1;
+            }
+            transformFileFlag = true;
+        }
+
+        if (transformFileFlag)
+        {   // Run plink to transform file or filter data.
+            this->process->start(this->toolpath+"plink", plink.getParamList());
+            if (!this->process->waitForStarted())
+            {
+                throw -1;
+            }
+            if (!this->process->waitForFinished(-1))
+            {
+                this->resetWindow();
+                throw -1;
+            }
+        }
+        else
+        {
+            binaryFile = genoFileAbPath + "/" + genoFileBaseName;
+        }
+
+        // Mkae GRM
+        Gcta gcta;
+        if (gcta.makeGRM(binaryFile, binaryFile))
+        {
+            this->process->start(this->toolpath+"gcta64", gcta.getParamList());
+            this->process->waitForStarted();
+            if (!this->process->waitForFinished(-1))
+            {
+                throw -1;
+            }
+        }
+
+        if (gcta.runPCA(binaryFile, ui->nPCsLineEdit->text().toInt(),
+                        ui->nThreadsLineEdit->text().toInt(), genoFileAbPath+"/"+genoFileBaseName))
+        {
+            this->process->start(this->toolpath+"gcta64", gcta.getParamList());
+            this->process->waitForStarted();
+            if (!this->process->waitForFinished(-1))
+            {
+                throw -1;
+            }
+        }
+
+        QFile file;
+        if (transformFileFlag)
+        {
+            file.remove(binaryFile+".bed");
+            file.remove(binaryFile+".bim");
+            file.remove(binaryFile+".fam");
+            file.remove(binaryFile+".nosex");
+        }
+        file.remove(binaryFile+".grm.bin");
+        file.remove(binaryFile+".grm.id");
+        file.remove(binaryFile+".grm.N.bin");
+
+    } catch (...) {
+        ;
+    }
+
+    ui->pcaRunPushButton->setEnabled(true);
+    qApp->processEvents();
+}

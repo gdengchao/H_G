@@ -19,6 +19,7 @@ SOURCES += \
     emmax.cpp \
     emmaxparamwidget.cpp \
     filereader.cpp \
+    gcta.cpp \
     gemma.cpp \
     gemmaparamwidget.cpp \
     graphviewer.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     emmax.h \
     emmaxparamwidget.h \
     filereader.h \
+    gcta.h \
     gemma.h \
     gemmaparamwidget.h \
     graphviewer.h \

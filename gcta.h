@@ -1,25 +1,23 @@
-#ifndef TOOL_H
-#define TOOL_H
+#ifndef GCTA_H
+#define GCTA_H
 
 #include <QStringList>
 
-// Just for Association.
-class Tool
+class Gcta
 {
 public:
-    Tool();
-
+    Gcta();
     QStringList getParamList(void);    // Every param can't have any space.
     QString getParamString(void);
     void setParam(QStringList param);
     void setParam(QString param);
-    QStringList getSupportedModel(void);
     QString getToolPath(void);
 
-protected:
+    bool makeGRM(QString genoBaseName, QString out);
+    bool runPCA(QString grmBaseName, int PCs, int threads, QString out);
+private:
     const QString toolpath;
-    QStringList model;
     QStringList paramlist;
 };
 
-#endif // TOOL_H
+#endif // GCTA_H
