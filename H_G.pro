@@ -25,6 +25,7 @@ SOURCES += \
     graphviewer.cpp \
     main.cpp \
     mainwindow.cpp \
+    mpushbutton.cpp \
     phenoselector.cpp \
     plink.cpp \
     runningmsgwidget.cpp \
@@ -42,6 +43,7 @@ HEADERS += \
     gemmaparamwidget.h \
     graphviewer.h \
     mainwindow.h \
+    mpushbutton.h \
     phenoselector.h \
     plink.h \
     runningmsgwidget.h \
