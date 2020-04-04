@@ -56,7 +56,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <property name="iconSize">
      <size>
@@ -97,6 +97,9 @@
         <family>Arial Rounded MT Bold</family>
         <pointsize>11</pointsize>
        </font>
+      </property>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
       </property>
       <property name="acceptDrops">
        <bool>true</bool>
@@ -258,6 +261,9 @@ border-radius:5px;//这个是改变成圆角边框;
                <height>0</height>
               </size>
              </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>MIND</string>
              </property>
@@ -301,6 +307,9 @@ border-radius:5px;//这个是改变成圆角边框;
           <layout class="QHBoxLayout" name="horizontalLayout_6">
            <item>
             <widget class="QRadioButton" name="genoRadioButton">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>GENO</string>
              </property>
@@ -344,6 +353,9 @@ border-radius:5px;//这个是改变成圆角边框;
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
             <widget class="QRadioButton" name="mafRadioButton">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>MAF</string>
              </property>
@@ -442,6 +454,9 @@ border-radius:5px;//这个是改变成圆角边框;
                <height>0</height>
               </size>
              </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <item>
               <property name="text">
                <string>Linear</string>
@@ -486,6 +501,9 @@ border-radius:5px;//这个是改变成圆角边框;
            </item>
            <item>
             <widget class="QComboBox" name="toolComboBox">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <item>
               <property name="text">
                <string>plink</string>
@@ -571,6 +589,9 @@ border-radius:5px;//这个是改变成圆角边框;
                <bold>true</bold>
               </font>
              </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>&gt;&gt;</string>
              </property>
@@ -616,6 +637,9 @@ border-radius:5px;//这个是改变成圆角边框;
            </item>
            <item>
             <widget class="QPushButton" name="selectPhenoButton">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>Select</string>
              </property>
@@ -623,6 +647,9 @@ border-radius:5px;//这个是改变成圆角边框;
            </item>
            <item>
             <widget class="QPushButton" name="excludePhenoButton">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>Exclude</string>
              </property>
@@ -630,6 +657,9 @@ border-radius:5px;//这个是改变成圆角边框;
            </item>
            <item>
             <widget class="QPushButton" name="selectAllPhenoButton">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>Select All</string>
              </property>
@@ -637,6 +667,9 @@ border-radius:5px;//这个是改变成圆角边框;
            </item>
            <item>
             <widget class="QPushButton" name="excludeAllPhenoButton">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>Exclude All</string>
              </property>
@@ -791,6 +824,9 @@ border-radius:5px;//这个是改变成圆角边框;
        </item>
        <item row="1" column="5">
         <widget class="QPushButton" name="pcaRunPushButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>Go</string>
          </property>
@@ -885,6 +921,9 @@ border-radius:5px;//这个是改变成圆角边框;
        </item>
        <item row="0" column="2">
         <widget class="QPushButton" name="drawQQPushButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>plot</string>
          </property>
@@ -904,6 +943,9 @@ border-radius:5px;//这个是改变成圆角边框;
       <layout class="QGridLayout" name="gridLayout_17">
        <item row="0" column="4">
         <widget class="QPushButton" name="drawManPushButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>plot</string>
          </property>
@@ -1170,7 +1212,7 @@ border-radius:5px;//这个是改变成圆角边框;
         </widget>
        </item>
        <item alignment="Qt::AlignHCenter">
-        <widget class="QToolButton" name="pheFileToolButton">
+        <widget class="MToolButton" name="pheFileToolButton">
          <property name="minimumSize">
           <size>
            <width>64</width>
@@ -1193,7 +1235,7 @@ border-radius:5px;//这个是改变成圆角边框;
           </size>
          </property>
          <property name="autoRaise">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -1230,7 +1272,7 @@ border-radius:5px;//这个是改变成圆角边框;
         </widget>
        </item>
        <item alignment="Qt::AlignHCenter">
-        <widget class="QToolButton" name="mapFileToolButton">
+        <widget class="MToolButton" name="mapFileToolButton">
          <property name="minimumSize">
           <size>
            <width>64</width>
@@ -1300,7 +1342,7 @@ border-radius:5px;//这个是改变成圆角边框;
         </widget>
        </item>
        <item alignment="Qt::AlignHCenter">
-        <widget class="QToolButton" name="genoFileToolButton">
+        <widget class="MToolButton" name="genoFileToolButton">
          <property name="minimumSize">
           <size>
            <width>64</width>
@@ -1370,7 +1412,7 @@ border-radius:5px;//这个是改变成圆角边框;
         </widget>
        </item>
        <item alignment="Qt::AlignHCenter">
-        <widget class="QToolButton" name="covarFileToolButton">
+        <widget class="MToolButton" name="covarFileToolButton">
          <property name="minimumSize">
           <size>
            <width>64</width>
@@ -1440,7 +1482,7 @@ border-radius:5px;//这个是改变成圆角边框;
         </widget>
        </item>
        <item alignment="Qt::AlignHCenter">
-        <widget class="QToolButton" name="kinFileToolButton">
+        <widget class="MToolButton" name="kinFileToolButton">
          <property name="minimumSize">
           <size>
            <width>64</width>
@@ -1508,6 +1550,13 @@ border-radius:5px;//这个是改变成圆角边框;
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MToolButton</class>
+   <extends>QToolButton</extends>
+   <header location="global">mtoolbutton.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

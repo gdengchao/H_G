@@ -13,6 +13,7 @@
 #include <RInside.h>
 #include <iostream>
 #include <cmath>
+#include "mtoolbutton.h"
 #include "filereader.h"
 #include "workdirectory.h"
 #include "phenoselector.h"
@@ -47,10 +48,17 @@ private slots:
     void on_mapFileToolButton_clicked();
     void on_covarFileToolButton_clicked();
     void on_kinFileToolButton_clicked();
+    //  right click
+    void on_pheFileToolButton_rightClicked();
+    void on_genoFileToolButton_rightClicked();
+    void on_mapFileToolButton_rightClicked();
+    void on_kinFileToolButton_rightClicked();
+    void on_covarFileToolButton_rightClicked();
 
     // for WorkDirectory
     void on_outdirBrowButton_clicked();
     void on_projectNameLineEdit_textChanged(const QString &text);
+    void on_projectNameLineEdit_editingFinished();
 
     // for PhenoSelector
     void on_excludeAllPhenoButton_clicked();
@@ -75,11 +83,7 @@ private slots:
     // Plot
     void on_drawManPushButton_clicked();
     void on_drawQQPushButton_clicked();
-
     void on_gwasReultBrowButton_clicked();
-
-    void on_projectNameLineEdit_editingFinished();
-
     void on_pcaRunPushButton_clicked();
 
 private:

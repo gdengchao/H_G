@@ -46,6 +46,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
     connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
     connect(runningMsgWidget, SIGNAL(closeSignal()), this, SLOT(on_closeRunningWidget()));
+
+    // connect MToolButton->rightClick
+    connect(ui->pheFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_pheFileToolButton_rightClicked()));
+    connect(ui->genoFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_genoFileToolButton_rightClicked()));
+    connect(ui->mapFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_mapFileToolButton_rightClicked()));
+    connect(ui->kinFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_kinFileToolButton_rightClicked()));
+    connect(ui->covarFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_covarFileToolButton_rightClicked()));
 }
 
 MainWindow::~MainWindow()
@@ -139,6 +146,15 @@ void MainWindow::on_pheFileToolButton_clicked()
     ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
 }
 
+void MainWindow::on_pheFileToolButton_rightClicked()
+{
+    ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));    // Set plus Icon.
+    ui->pheFileLabel->setText("empty");
+    ui->selectedPhenoListWidget->clear();
+    ui->excludedPhenoListWidget->clear();
+    this->fileReader->setPhenotypeFile("");
+}
+
 void MainWindow::on_genoFileToolButton_clicked()
 {
     QFileDialog *fileDialog = new QFileDialog(this, "Open genotype file", "", "geno(*.vcf *.ped *.tped *.bed);;all(*)");
@@ -160,6 +176,13 @@ void MainWindow::on_genoFileToolButton_clicked()
     QFileInfo  genoFileInfo(fileNames[0]);
     QString fileName = genoFileInfo.fileName(); // Get the file name from a path.
     ui->genoFileLabel->setText(fileName);
+}
+
+void MainWindow::on_genoFileToolButton_rightClicked()
+{
+    ui->genoFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));    // Set plus Icon.
+    ui->genoFileLabel->setText("empty");
+    this->fileReader->setGenotypeFile("");
 }
 
 void MainWindow::on_mapFileToolButton_clicked()
@@ -185,6 +208,13 @@ void MainWindow::on_mapFileToolButton_clicked()
     ui->mapFileLabel->setText(fileName);
 }
 
+void MainWindow::on_mapFileToolButton_rightClicked()
+{
+    ui->mapFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));    // Set plus Icon.
+    ui->mapFileLabel->setText("empty");
+    this->fileReader->setMapFile("");
+}
+
 void MainWindow::on_covarFileToolButton_clicked()
 {
     QFileDialog *fileDialog = new QFileDialog(this, "Open covariate file", "", "covar(*.cov *.covar *.txt);;all(*)");
@@ -208,6 +238,13 @@ void MainWindow::on_covarFileToolButton_clicked()
     ui->covarFileLabel->setText(fileName);
 }
 
+void MainWindow::on_covarFileToolButton_rightClicked()
+{
+    ui->covarFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));    // Set plus Icon.
+    ui->covarFileLabel->setText("empty");
+    this->fileReader->setCovariateFile("");
+}
+
 void MainWindow::on_kinFileToolButton_clicked()
 {
     QFileDialog *fileDialog = new QFileDialog(this, "Open kinship file", "", "pheno(*.kin *.kinf *.txt);;all(*)");
@@ -229,6 +266,13 @@ void MainWindow::on_kinFileToolButton_clicked()
     QFileInfo  kinFileInfo(fileNames[0]);
     QString fileName = kinFileInfo.fileName(); // Get the file name from a path.
     ui->kinFileLabel->setText(fileName);
+}
+
+void MainWindow::on_kinFileToolButton_rightClicked()
+{
+    ui->kinFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));    // Set plus Icon.
+    ui->kinFileLabel->setText("empty");
+    this->fileReader->setKinshipFile("");
 }
 
 void MainWindow::on_outdirBrowButton_clicked()
