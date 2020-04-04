@@ -28,6 +28,7 @@ SOURCES += \
     mtoolbutton.cpp \
     phenoselector.cpp \
     plink.cpp \
+    poplddecay.cpp \
     runningmsgwidget.cpp \
     tool.cpp \
     toolselector.cpp \
@@ -46,6 +47,7 @@ HEADERS += \
     mtoolbutton.h \
     phenoselector.h \
     plink.h \
+    poplddecay.h \
     runningmsgwidget.h \
     tool.h \
     toolselector.h \

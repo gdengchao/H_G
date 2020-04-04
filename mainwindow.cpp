@@ -35,12 +35,18 @@ MainWindow::MainWindow(QWidget *parent)
     emmaxParamWidget = new EmmaxParamWidget;
     process = new QProcess;
     graphViewer = new GraphViewer;
+    ldByFamGroupButton = new QButtonGroup;
 
     // Default output directory setting
     workDirectory->setProjectName("pro1");
     workDirectory->setOutputDirectory("/home/chao/Desktop/test");
     ui->projectNameLineEdit->setText(workDirectory->getProjectName());
     ui->outdirLineEdit->setText(workDirectory->getOutputDirectory()+"/"+workDirectory->getProjectName());
+
+    // LD by family.
+    ldByFamGroupButton->addButton(ui->yesLDByFamRadioButton);
+    ldByFamGroupButton->addButton(ui->noLDByFamRadioButton);
+    ldByFamGroupButton->setExclusive(true);
 
     // connect QProcess->start(tool) and runningMsgWidget.
     connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
@@ -62,14 +68,13 @@ MainWindow::~MainWindow()
     delete fileReader;
     delete workDirectory;
     delete phenoSelector;
-
     runningMsgWidget->close();
     delete runningMsgWidget;
-
     gemmaParamWidget->close();
     delete gemmaParamWidget;
     emmaxParamWidget->close();
     delete emmaxParamWidget;
+    delete ldByFamGroupButton;
 
     if (process)    // QProcess
     {
@@ -515,14 +520,15 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         this->process->start(this->toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
         {
+            QMessageBox::information(nullptr, "Error", "Start plink with error when make binary in callGemmaGwas!  ");
             this->resetWindow();
             return false;
         }
         this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
         if (!this->process->waitForFinished(-1))
         {
-            this->resetWindow();
             QMessageBox::information(nullptr, "Error", "Exit plink with error when make binary in callGemmaGwas!  ");
+            this->resetWindow();
             return false;
         }
         this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
@@ -550,6 +556,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
          this->process->start(this->toolpath + "gemma", gemma.getParamList());
          if (!this->process->waitForStarted())
          {
+             QMessageBox::information(nullptr, "Error", "Start gemma with error when  make kinship!   ");
              this->resetWindow();
              return false;
          }
@@ -557,8 +564,8 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
          this->runningMsgWidget->setTitle("Making kinship");
          if (!this->process->waitForFinished(-1))
          {
-             this->resetWindow();
              QMessageBox::information(nullptr, "Error", "Exit gemma with error when  make kinship!   ");
+             this->resetWindow();
              return false;
          }
          //this->runningMsgWidget->setTitle(genoFileBaseName+"_tmp" + ".cXX.txt is made");
@@ -582,14 +589,15 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         // Running message to display message.
         if (!this->process->waitForStarted())
         {
+            QMessageBox::information(nullptr, "Error", "Start gemma with error when run GWAS! ");
             this->resetWindow();
             return false;
         }
         this->runningMsgWidget->setTitle("Gemma(" + pheFileBaseName+ "): " + name+" is running...");
         if (!this->process->waitForFinished(-1))
         {
-            this->resetWindow();
             QMessageBox::information(nullptr, "Error", "Exit gemma with error when run GWAS! ");
+            this->resetWindow();
             return false;
         }
 
@@ -718,14 +726,15 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
         this->process->start(this->toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
         {
+            QMessageBox::information(nullptr, "Error", "Start plink with error when make transpose in callEmmaxGwas    !");
             this->resetWindow();
             return false;
         }
         this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped/tfam");
         if (!this->process->waitForFinished(-1))
         {
-            this->resetWindow();
             QMessageBox::information(nullptr, "Error", "Exit plink with error when make transpose in callEmmaxGwas    !");
+            this->resetWindow();
             return false;
         }
         this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
@@ -736,11 +745,13 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     {
          if (!emmax.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp", moreParam))
          {
+             this->resetWindow();
              return false;  // Make kinship failed.
          }
          this->process->start(this->toolpath+"emmax-kin", emmax.getParamList());
          if (!this->process->waitForStarted())
          {
+             QMessageBox::information(nullptr, "Error", "Start emmax-kin with error when  make kinship!   ");
              this->resetWindow();
              return false;
          }
@@ -748,8 +759,8 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
          this->runningMsgWidget->setTitle("Making kinship");
          if (!this->process->waitForFinished(-1))
          {
-             this->resetWindow();
              QMessageBox::information(nullptr, "Error", "Exit emmax-kin with error when  make kinship    !");
+             this->resetWindow();
              return false;
          }
          //this->runningMsgWidget->setTitle(genoFileBaseName + ".hBN.kinf is made");
@@ -776,14 +787,15 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
         // Running message to display message.
         if (!this->process->waitForStarted())
         {
+            QMessageBox::information(nullptr, "Error", "Start emmax with error when run GWAS    !");
             this->resetWindow();
             return false;
         }
         this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is running...");
         if (!this->process->waitForFinished(-1))
         {
-            this->resetWindow();
             QMessageBox::information(nullptr, "Error", "Exit emmax with error when run GWAS    !");
+            this->resetWindow();
             return false;
         }
 
@@ -844,14 +856,15 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
         this->process->start(this->toolpath+"plink", plink.getParamList());
         if (!this->process->waitForStarted())
         {
+            QMessageBox::information(nullptr, "Error", "Start plink with error when run GWAS    !");
             this->resetWindow();
             return false;
         }
         this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is running...");
         if (!this->process->waitForFinished(-1))
         {
-            this->resetWindow();
             QMessageBox::information(nullptr, "Error", "Exit plink with error when run GWAS    !");
+            this->resetWindow();
             return false;
         }
 
@@ -947,7 +960,7 @@ void MainWindow::resetWindow()
     if (this->process)
     {
         this->process->terminate();
-        this->process->waitForFinished();
+        this->process->waitForFinished(-1);
     }
     ui->rungwasButton->setText("Run");
     ui->rungwasButton->setEnabled(true);
@@ -1123,8 +1136,11 @@ void MainWindow::on_drawManPushButton_clicked()
         {
             throw -1;
         }
-        this->drawManhattan(qqmanFile, this->workDirectory->getOutputDirectory()
-                         +"/"+this->workDirectory->getProjectName()+"_man.png");
+        if (!this->drawManhattan(qqmanFile, this->workDirectory->getOutputDirectory()
+                                 +"/"+this->workDirectory->getProjectName()+"_man.png"))
+        {
+            throw -1;
+        }
 
         QFile file;
         file.remove(qqmanFile);
@@ -1148,8 +1164,11 @@ void MainWindow::on_drawQQPushButton_clicked()
         {
             throw -1;
         }
-        this->drawQQplot(qqmanFile, this->workDirectory->getOutputDirectory()
-                         +"/"+this->workDirectory->getProjectName()+"_qq.png");
+        if (!this->drawQQplot(qqmanFile, this->workDirectory->getOutputDirectory()
+                              +"/"+this->workDirectory->getProjectName()+"_qq.png"))
+        {
+            throw -1;
+        }
 
         QFile file;
         file.remove(qqmanFile);
@@ -1162,11 +1181,11 @@ void MainWindow::on_drawQQPushButton_clicked()
     qApp->processEvents();
 }
 
-void MainWindow::drawManhattan(QString data, QString out)
+bool MainWindow::drawManhattan(QString data, QString out)
 {
     if (data.isNull() || out.isNull())
     {
-        return;
+        return false;;
     }
 
     int gwBase =  ui->gwBaseLineEdit->text().toInt();
@@ -1184,8 +1203,16 @@ void MainWindow::drawManhattan(QString data, QString out)
     param.append(QString::number(sgBase)+'e'+QString::number(sgExpo));
 
     proc.start("Rscript", param);
-    proc.waitForStarted();
-    proc.waitForFinished(-1);
+    if (!proc.waitForStarted())
+    {
+        QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
+        return false;
+    }
+    if (!proc.waitForFinished(-1))
+    {
+        QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
+        return false;
+    }
 
 
 //    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
@@ -1200,13 +1227,14 @@ void MainWindow::drawManhattan(QString data, QString out)
 
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
+    return true;
 }
 
-void MainWindow::drawQQplot(QString data, QString out)
+bool MainWindow::drawQQplot(QString data, QString out)
 {
     if (data.isNull() || out.isNull())
     {
-        return;
+        return false;;
     }
 
     QProcess proc;
@@ -1217,8 +1245,16 @@ void MainWindow::drawQQplot(QString data, QString out)
     param.append(out);
 
     proc.start("Rscript", param);
-    proc.waitForStarted();
-    proc.waitForFinished(-1);
+    if (!proc.waitForStarted())
+    {
+        QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
+        return false;
+    }
+    if (!proc.waitForFinished(-1))
+    {
+        QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
+        return false;
+    }
 
 //    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
 //    {
@@ -1232,6 +1268,8 @@ void MainWindow::drawQQplot(QString data, QString out)
 
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
+
+    return true;
 }
 
 void MainWindow::on_gwasReultBrowButton_clicked()
@@ -1481,4 +1519,9 @@ void MainWindow::on_pcaRunPushButton_clicked()
 
     ui->pcaRunPushButton->setEnabled(true);
     qApp->processEvents();
+}
+
+void MainWindow::on_ldRunPushButton_clicked()
+{
+
 }

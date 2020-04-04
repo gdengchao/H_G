@@ -17,6 +17,17 @@ int main(int argc, char *argv[])
 //    QString comSuffix = fileInfo.completeSuffix();
 //    QString comBaseName = fileInfo.completeBaseName();
 
+//    QProcess pro;
+//    pro.start("Rscript");
+//    if (pro.waitForStarted(-1))
+//    {
+//        qDebug() << "started." << endl;
+//    }
+//    else
+//    {
+//        qDebug() << "Not started." << endl;
+//    }
+
     MainWindow w;
     w.show();
 

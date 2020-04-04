@@ -1,6 +1,6 @@
 #include "gcta.h"
 
-Gcta::Gcta() : toolpath("/Gcta/")
+Gcta::Gcta() : toolpath("/tools/")
 {
 
 }
