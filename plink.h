@@ -31,8 +31,12 @@ public:
                       QString maf, QString mind, QString geno);
     bool transpose2binary(QString tpedFile, QString tfamFile, QString out,
                           QString maf, QString mind, QString geno);
+    bool transpose2plink(QString tpedFile, QString tfamFile, QString out,
+                          QString maf, QString mind, QString geno);
     bool binary2transpose(QString binaryFile, QString out,
                           QString maf, QString mind, QString geno);
+    bool binary2plink(QString binaryFile, QString out,
+                      QString maf, QString mind, QString geno);
 \
     // Filter data(Quality control)
     void filterVcfFile(QString genotype, QString maf, QString mind, QString geno, QString out);

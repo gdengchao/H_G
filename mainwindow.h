@@ -23,6 +23,7 @@
 #include "emmax.h"
 #include "gemma.h"
 #include "gcta.h"
+#include "poplddecay.h"
 #include "runningmsgwidget.h"
 #include "gemmaparamwidget.h"
 #include "emmaxparamwidget.h"
@@ -81,6 +82,10 @@ private slots:
     void on_pcaRunPushButton_clicked();
 
     void on_ldRunPushButton_clicked();
+
+    void on_ldPlotPushButton_clicked();
+
+    void on_ldReultBrowButton_clicked();
 
 private:
     Ui::MainWindow *ui;

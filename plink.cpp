@@ -234,6 +234,43 @@ bool Plink::transpose2binary(QString tpedFile, QString tfamFile, QString out, QS
     return true;
 }
 
+bool Plink::transpose2plink(QString tpedFile, QString tfamFile, QString out, QString maf, QString mind, QString geno)
+{
+    if (tpedFile.isNull() || tfamFile.isNull() || out.isNull())
+    {
+        return false;
+    }
+
+    // plink --tped .tped --tfam .tfam [--maf maf] [--mind mind] [--geno geno] --recode --out out
+    this->paramlist.clear();
+    this->paramlist.append("--tped");
+    this->paramlist.append(tpedFile);
+    this->paramlist.append("--tfam");
+    this->paramlist.append(tfamFile);
+
+    if (!maf.isNull())
+    {
+        this->paramlist.append("--maf");
+        this->paramlist.append(maf);
+    }
+    if (!mind.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(mind);
+    }
+    if (!geno.isNull())
+    {
+        this->paramlist.append("--geno");
+        this->paramlist.append(geno);
+    }
+
+    this->paramlist.append("--recode");
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+
+    return true;
+}
+
 bool Plink::binary2transpose(QString binaryFile, QString out, QString maf, QString mind, QString geno)
 {
     if (binaryFile.isNull() || out.isNull())
@@ -275,6 +312,50 @@ bool Plink::binary2transpose(QString binaryFile, QString out, QString maf, QStri
     this->paramlist.append("--output-missing-genotype");
     this->paramlist.append("0");
     this->paramlist.append("--transpose");
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+
+    return true;
+}
+
+bool Plink::binary2plink(QString binaryFile, QString out, QString maf, QString mind, QString geno)
+{
+    if (binaryFile.isNull() || out.isNull())
+    {
+        return false;
+    }
+
+    QFile bedFile(binaryFile+".bed");
+    QFile bimFile(binaryFile+".bim");
+    QFile famFile(binaryFile+".fam");
+
+    if (!bedFile.exists() || !bimFile.exists() || !famFile.exists())
+    {
+        return false;
+    }
+
+    // plink --bfile binaryFile [--maf maf] [--geno ms] --recode --out out
+    this->paramlist.clear();            // Clear paramlist before set parameter.
+    this->paramlist.append("--bfile");
+    this->paramlist.append(binaryFile);
+
+    if (!maf.isNull())
+    {
+        this->paramlist.append("--maf");
+        this->paramlist.append(maf);
+    }
+    if (!mind.isNull())
+    {
+        this->paramlist.append("--mind");
+        this->paramlist.append(mind);
+    }
+    if (!geno.isNull())
+    {
+        this->paramlist.append("--geno");
+        this->paramlist.append(geno);
+    }
+
+    this->paramlist.append("--recode");
     this->paramlist.append("--out");
     this->paramlist.append(out);
 

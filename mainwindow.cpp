@@ -460,6 +460,8 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     QString genoFileSuffix = genoFileInfo.suffix();         //
     QString genoFileAbPath = genoFileInfo.absolutePath();
 
+    QString binaryFile = genoFileAbPath+"/"+genoFileBaseName+"_tmp";
+
     // Phenotype file info.
     QFileInfo pheFileInfo = QFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
@@ -468,11 +470,12 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     bool transformFileFlag = false;
     bool filterDataFlag = false;
 
+
     // Need binary files.  Every temp file and a "_tmp" after baseName, and will be deleted after gwas.
     Plink plink;
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
     {
-        if(!plink.vcf2binary(genotype, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
+        if(!plink.vcf2binary(genotype, binaryFile, maf, mind, geno))
         {
             this->resetWindow();
             return false;
@@ -486,7 +489,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         {
             map = genoFileAbPath+"/"+genoFileBaseName+".map";
         }
-        if (!plink.plink2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
+        if (!plink.plink2binary(genotype, map, binaryFile, maf, mind, geno))
         {
             this->resetWindow();
             return false;
@@ -501,7 +504,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         {
             map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
         }
-        if (!plink.transpose2binary(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
+        if (!plink.transpose2binary(genotype, map, binaryFile, maf, mind, geno))
         {
             this->resetWindow();
             return false;
@@ -511,7 +514,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
     if (genotype.split(".")[genotype.split(".").length()-1] == "bed")
     {   // When don't set any QC param, it won't execute.
-        plink.filterBinaryFile(genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno, genoFileAbPath+"/"+genoFileBaseName+"_tmp");
+        plink.filterBinaryFile(genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno, binaryFile);
         filterDataFlag = true;
     }
 
@@ -538,7 +541,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
 
     if (gemmaParamWidget->isFamCompletedAuto()
-            && !gemma.phe_fam_Preparation(phenotype, genoFileAbPath+"/"+genoFileBaseName+"_tmp"+".fam"))
+            && !gemma.phe_fam_Preparation(phenotype, binaryFile+".fam"))
     {   // Replace "NA" to "-9", then complete .fam
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
         this->resetWindow();
@@ -548,7 +551,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
     if (kinship.isNull() && this->gemmaParamWidget->isMakeRelatedMatAuto())
     {
-         if (!gemma.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp", genoFileBaseName+"_tmp", moreParam))
+         if (!gemma.makeKinship(binaryFile, genoFileBaseName+"_tmp", moreParam))
          {
              this->resetWindow();
              return false;  // Make kinship failed.
@@ -603,11 +606,11 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
         QFile file;
         // delete intermidiate file.
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.bed");
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.bim");
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.fam");
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.log");
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.nosex");
+        file.remove(binaryFile+".bed");
+        file.remove(binaryFile+".bim");
+        file.remove(binaryFile+".fam");
+        file.remove(binaryFile+".log");
+        file.remove(binaryFile+".nosex");
         if (moreParam["kinmatrix"] == "1")
         {
             file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.cXX.txt");
@@ -670,6 +673,8 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     QString genoFileSuffix = genoFileInfo.suffix();
     QString genoFileAbPath = genoFileInfo.absolutePath();
 
+    QString transposeFile =genoFileAbPath+"/"+genoFileBaseName+"_tmp";
+
     // Phenotype file info.
     QFileInfo pheFileInfo = QFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
@@ -682,7 +687,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     Plink plink;
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
     {
-        if(!plink.vcf2transpose(genotype, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
+        if(!plink.vcf2transpose(genotype, transposeFile, maf, mind, geno))
         {
             return false;
         }
@@ -695,7 +700,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
             map = genoFileAbPath+"/"+genoFileBaseName+".map";
         }
 
-        if (!plink.plink2transpose(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
+        if (!plink.plink2transpose(genotype, map, transposeFile, maf, mind, geno))
         {
             return false;
         }
@@ -704,7 +709,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     if (genotype.split(".")[genotype.split(".").length()-1] == "bed")  // Transform "binary" to "transpose"
     {
         if (!plink.binary2transpose(genoFileAbPath+"/"+genoFileBaseName,
-                                    genoFileAbPath+"/"+genoFileBaseName+"_tmp", maf, mind, geno))
+                                    transposeFile, maf, mind, geno))
         {
             return false;
         }
@@ -717,7 +722,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
         {
             map = genoFileAbPath + "/" + genoFileBaseName + ".tfam";
         }
-        plink.filterTransposeFile(genotype, map, maf, mind, geno, genoFileAbPath+"/"+genoFileBaseName+"_tmp");
+        plink.filterTransposeFile(genotype, map, maf, mind, geno, transposeFile);
         filterDataFlag = true;
     }
 
@@ -743,7 +748,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     Emmax emmax;
     if (kinship.isNull() && emmaxParamWidget->isMakeKinAuto())
     {
-         if (!emmax.makeKinship(genoFileAbPath+"/"+genoFileBaseName+"_tmp", moreParam))
+         if (!emmax.makeKinship(transposeFile, moreParam))
          {
              this->resetWindow();
              return false;  // Make kinship failed.
@@ -780,7 +785,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
 //        QMessageBox::information(nullptr, "Error", "Making kinship ERROR!   ");
 //        return false;
 //    }
-    if (emmax.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship,
+    if (emmax.runGWAS(transposeFile, phenotype, covar, kinship,
                       out+"/"+name+"_"+pheFileBaseName, moreParam))
     {
         this->process->start(this->toolpath+"emmax", emmax.getParamList());
@@ -1131,6 +1136,10 @@ void MainWindow::on_drawManPushButton_clicked()
 
     try {
         QString gwasResulFile = ui->gwasResultLineEdit->text();
+        if (gwasResulFile.isEmpty())
+        {
+            throw -1;
+        }
         QString qqmanFile = makeQQManInputFile(gwasResulFile);
         if (qqmanFile.isNull() || gwasResulFile.isEmpty())
         {
@@ -1159,6 +1168,10 @@ void MainWindow::on_drawQQPushButton_clicked()
         qApp->processEvents();
 
         QString gwasResulFile = ui->gwasResultLineEdit->text();
+        if (gwasResulFile.isEmpty())
+        {
+            throw -1;
+        }
         QString qqmanFile = makeQQManInputFile(gwasResulFile);
         if (qqmanFile.isNull() || gwasResulFile.isEmpty())
         {
@@ -1289,8 +1302,6 @@ void MainWindow::on_gwasReultBrowButton_clicked()
         return;
     }
     ui->gwasResultLineEdit->setText(fileNames[0]);
-
-    QFileInfo  genoFileInfo(fileNames[0]);
 }
 
 /**
@@ -1523,5 +1534,188 @@ void MainWindow::on_pcaRunPushButton_clicked()
 
 void MainWindow::on_ldRunPushButton_clicked()
 {
+    if (ui->yesLDByFamRadioButton->isChecked())
+    {
+    }
 
+    if (this->fileReader->getGenotypeFile().isNull() || this->fileReader->getGenotypeFile().isEmpty())
+    {
+        QMessageBox::information(nullptr, "Error", "A genotype file is necessary!   ");
+        return;
+    }
+
+    ui->ldRunPushButton->setEnabled(false);
+    qApp->processEvents();
+
+    try {
+        QString genotype = this->fileReader->getGenotypeFile();
+        QFileInfo genoFileInfo(genotype);
+        QString genoFileAbPath = genoFileInfo.absolutePath();
+        QString genoFileBaseName = genoFileInfo.baseName();
+        QString map = this->fileReader->getMapFile();
+        QString out = this->workDirectory->getOutputDirectory();
+        QString name = this->workDirectory->getProjectName();
+        //  binaryFile: Set a default path. Binary geno file with paht without suffix.
+        QString plinkFile = genoFileAbPath+"/"+genoFileBaseName+"_tmp";
+
+        bool transformFileFlag = false;
+        this->runningMsgWidget->show();
+
+        // Need binary files.  Every temp file and a "_tmp" after baseName, and will be deleted after gwas.
+        Plink plink;
+        if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+        {
+            if(!plink.vcf2plink(genotype, plinkFile, nullptr, nullptr, nullptr))
+            {
+                throw -1;
+            }
+
+            transformFileFlag = true;
+        }
+        if (genotype.split(".")[genotype.split(".").length()-1] == "bed")  // Transform "plink" to "binary"
+        {
+            if (!plink.binary2plink(genoFileAbPath+"/"+genoFileBaseName, plinkFile, nullptr, nullptr, nullptr))
+            {
+                throw -1;
+            }
+
+            transformFileFlag = true;
+        }
+
+        if (genotype.split(".")[genotype.split(".").length()-1] == "tped")  // Transform "transpose" to "binary"
+        {
+            if (map.isNull())
+            {
+                map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
+            }
+            if (!plink.transpose2plink(genotype, map, plinkFile, nullptr, nullptr, nullptr))
+            {
+                throw -1;
+            }
+            transformFileFlag = true;
+        }
+
+        if (transformFileFlag)
+        {   // Run plink to transform file or filter data.
+            this->process->start(this->toolpath+"plink", plink.getParamList());
+            if (!this->process->waitForStarted())
+            {
+                throw -1;
+            }
+            if (!this->process->waitForFinished(-1))
+            {
+                this->resetWindow();
+                throw -1;
+            }
+        }
+        else
+        {
+            plinkFile = genoFileAbPath + "/" + genoFileBaseName;
+        }
+
+        PopLDdecay popLDdecay;
+        if (popLDdecay.preGenotype(plinkFile+".ped", plinkFile+".map", plinkFile+".genotype"))
+        {
+            QStringList param;
+            param.append(this->scriptpath+"plink2genotype.pl");
+            this->process->start("perl", param+popLDdecay.getParamList());
+            if (!this->process->waitForStarted())
+            {
+                QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+                throw -1;
+            }
+            if (!this->process->waitForFinished(-1))
+            {
+                throw -1;
+            }
+        }
+
+        if (popLDdecay.runLD(plinkFile+".genotype", out+"/"+name))
+        {
+            this->process->start(this->toolpath+"PopLDdecay", popLDdecay.getParamList());
+            if (!this->process->waitForStarted())
+            {
+                QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+                throw -1;
+            }
+            if (!this->process->waitForFinished(-1))
+            {
+                throw -1;
+            }
+            ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
+        }
+
+        QFile file;
+        if (transformFileFlag)
+        {
+            file.remove(plinkFile+".ped");
+            file.remove(plinkFile+".map");
+            file.remove(plinkFile+".nosex");
+            file.remove(plinkFile+".log");
+            file.remove(plinkFile+".genotype");
+        }
+
+    } catch (...) {
+        ;
+    }
+    ui->ldRunPushButton->setEnabled(true);
+    qApp->processEvents();
+}
+
+void MainWindow::on_ldPlotPushButton_clicked()
+{
+    ui->ldPlotPushButton->setEnabled(false);
+    qApp->processEvents();
+
+    QString ldResultFile = ui->ldResultLineEdit->text();
+    if (ldResultFile.isEmpty())
+    {
+        return;
+    }
+    try {
+        QString out = this->workDirectory->getOutputDirectory();
+        QString name = this->workDirectory->getProjectName();
+        PopLDdecay popLDdecay;
+        if (popLDdecay.plotLD(ldResultFile, out+"/"+name))
+        {
+            QStringList param;
+            param.append(this->scriptpath+"Plot_OnePop.pl");
+            this->process->start("perl", param+popLDdecay.getParamList());
+            if (!this->process->waitForStarted())
+            {
+                QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+                throw -1;
+            }
+            if (!this->process->waitForFinished(-1))
+            {
+                throw -1;
+            }
+            this->graphViewer->setGraph(out+"/"+name+".png");
+            this->graphViewer->show();
+        }
+    } catch (...) {
+        ;
+    }
+
+    ui->ldPlotPushButton->setEnabled(true);
+    qApp->processEvents();
+}
+
+void MainWindow::on_ldReultBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open LD result file", this->workDirectory->getOutputDirectory(),
+                                              "result(*.stat *stat.gz);;all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->ldResultLineEdit->setText(fileNames[0]);
 }
