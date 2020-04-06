@@ -34,6 +34,22 @@ void GraphViewer::setGraph(QString graph)
     }
 }
 
+void GraphViewer::setGraph(QStringList graph)
+{
+    if(image->load(graph[0]))
+    {
+        scene->addPixmap(QPixmap::fromImage(*image));
+        ui->graphicsView->setScene(scene);
+        ui->graphicsView->resize(image->width() + 10, image->height() + 10);
+        this->adjustSize();
+
+        QFileInfo graphInfo(graph[0]);
+        QString baseName = graphInfo.baseName();
+        this->setWindowTitle(baseName);
+        ui->graphicsView->show();
+    }
+}
+
 void GraphViewer::showEvent(QShowEvent *)
 {
     ui->graphicsView->fitInView(scene->sceneRect(),Qt::KeepAspectRatio);

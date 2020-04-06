@@ -19,6 +19,7 @@ public:
     ~GraphViewer();
 
     void setGraph(QString graph);
+    void setGraph(QStringList graph);
 
 private:
     Ui::GraphViewer *ui;

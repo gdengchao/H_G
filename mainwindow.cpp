@@ -1079,7 +1079,7 @@ void MainWindow::on_detailPushButton_clicked()
 }
 
 QString MainWindow::refreshMessage(QString curText, QString newText)
-{
+{   // Remain lots problems, little valid now.
     if (newText.isEmpty())
     {   // newMsg don't have valid message.
         return curText;
@@ -1140,19 +1140,28 @@ void MainWindow::on_drawManPushButton_clicked()
         {
             throw -1;
         }
-        QString qqmanFile = makeQQManInputFile(gwasResulFile);
-        if (qqmanFile.isNull() || gwasResulFile.isEmpty())
-        {
-            throw -1;
-        }
-        if (!this->drawManhattan(qqmanFile, this->workDirectory->getOutputDirectory()
-                                 +"/"+this->workDirectory->getProjectName()+"_man.png"))
+        QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
+        QStringList outList;
+
+         if (qqmanFile.isEmpty() || gwasResulFile.isEmpty())
         {
             throw -1;
         }
 
+        for (auto item:qqmanFile)
+        {
+            outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
+                           +"_"+item.split(".")[item.split(".").length()-1]+"_man.png");
+        }
+        if (!this->drawManhattan(qqmanFile, outList))
+        {
+            throw -1;
+        }
         QFile file;
-        file.remove(qqmanFile);
+        for (auto item:qqmanFile)
+        {
+            file.remove(item);
+        }
     } catch (int) {
         ui->drawManPushButton->setEnabled(true);
         qApp->processEvents();
@@ -1164,27 +1173,34 @@ void MainWindow::on_drawManPushButton_clicked()
 void MainWindow::on_drawQQPushButton_clicked()
 {
     try {
-        ui->drawQQPushButton->setEnabled(false);
-        qApp->processEvents();
-
         QString gwasResulFile = ui->gwasResultLineEdit->text();
         if (gwasResulFile.isEmpty())
         {
             throw -1;
         }
-        QString qqmanFile = makeQQManInputFile(gwasResulFile);
-        if (qqmanFile.isNull() || gwasResulFile.isEmpty())
-        {
-            throw -1;
-        }
-        if (!this->drawQQplot(qqmanFile, this->workDirectory->getOutputDirectory()
-                              +"/"+this->workDirectory->getProjectName()+"_qq.png"))
+        QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
+        QStringList outList;
+
+        if (qqmanFile.isEmpty() || gwasResulFile.isEmpty())
         {
             throw -1;
         }
 
+        for (auto item:qqmanFile)
+        {
+            outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
+                           +"_"+item.split(".")[item.split(".").length()-1]+"_qq.png");
+        }
+
+        if (!this->drawQQplot(qqmanFile, outList))
+        {
+            throw -1;
+        }
         QFile file;
-        file.remove(qqmanFile);
+        for (auto item:qqmanFile)
+        {
+            file.remove(item);
+        }
     } catch (int) {
         ui->drawQQPushButton->setEnabled(true);
         qApp->processEvents();
@@ -1194,9 +1210,9 @@ void MainWindow::on_drawQQPushButton_clicked()
     qApp->processEvents();
 }
 
-bool MainWindow::drawManhattan(QString data, QString out)
+bool MainWindow::drawManhattan(QStringList data, QStringList out)
 {
-    if (data.isNull() || out.isNull())
+    if (data.isEmpty() || out.isEmpty() || data.size() != out.size())
     {
         return false;;
     }
@@ -1208,80 +1224,68 @@ bool MainWindow::drawManhattan(QString data, QString out)
 
     QProcess proc;
     QStringList param;
-    param.append(this->scriptpath+"plot.R");
-    param.append("manhattan");
-    param.append(data);
-    param.append(out);
-    param.append(QString::number(gwBase)+'e'+QString::number(gwExpo));
-    param.append(QString::number(sgBase)+'e'+QString::number(sgExpo));
 
-    proc.start("Rscript", param);
-    if (!proc.waitForStarted())
+    for (int i = 0; i < data.size(); i++)
     {
-        QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
-        return false;
+        param.clear();
+        param.append(this->scriptpath+"plot.R");
+        param.append("manhattan");
+        param.append(data[i]);
+        param.append(out[i]);
+        param.append(QString::number(gwBase)+'e'+QString::number(gwExpo));
+        param.append(QString::number(sgBase)+'e'+QString::number(sgExpo));
+
+        qDebug() << param.join(" ") << endl;
+
+        proc.start("Rscript", param);
+        if (!proc.waitForStarted())
+        {
+            QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
+            return false;
+        }
+        if (!proc.waitForFinished(-1))
+        {
+            QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
+            return false;
+        }
     }
-    if (!proc.waitForFinished(-1))
-    {
-        QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
-        return false;
-    }
-
-
-//    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
-//    {
-//        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
-//    }
-
-//    if (!QString::fromLocal8Bit(proc.readAllStandardOutput().data()).isEmpty())
-//    {
-//        QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
-//    }
-
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
     return true;
 }
 
-bool MainWindow::drawQQplot(QString data, QString out)
+bool MainWindow::drawQQplot(QStringList data, QStringList out)
 {
-    if (data.isNull() || out.isNull())
+    if (data.isEmpty() || out.isEmpty() || data.size() != out.size())
     {
         return false;;
     }
 
     QProcess proc;
     QStringList param;
-    param.append(this->scriptpath+"plot.R");
-    param.append("qqplot");
-    param.append(data);
-    param.append(out);
 
-    proc.start("Rscript", param);
-    if (!proc.waitForStarted())
+    for (int i = 0; i < data.size(); i++)
     {
-        QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
-        return false;
+        param.clear();
+        param.append(this->scriptpath+"plot.R");
+        param.append("qqplot");
+        param.append(data[i]);
+        param.append(out[i]);
+        proc.start("Rscript", param);
+        if (!proc.waitForStarted())
+        {
+            QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
+            return false;
+        }
+        if (!proc.waitForFinished(-1))
+        {
+            QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
+            return false;
+        }
+
     }
-    if (!proc.waitForFinished(-1))
-    {
-        QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
-        return false;
-    }
-
-//    if (!QString::fromLocal8Bit(proc.readAllStandardError().data()).isEmpty())
-//    {
-//        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(proc.readAllStandardError().data()));
-//    }
-
-//    if (!QString::fromLocal8Bit(proc.readAllStandardOutput().data()).isEmpty())
-//    {
-//        QMessageBox::information(nullptr, "Output", QString::fromLocal8Bit(proc.readAllStandardOutput().data()));
-//    }
-
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
-
     return true;
 }
 
@@ -1309,11 +1313,12 @@ void MainWindow::on_gwasReultBrowButton_clicked()
  * @param pvalueFile
  * @return  A file will be a input of manhattan.(header: SNP CHR BP P)
  */
-QString MainWindow::makeQQManInputFile(QString pvalueFile)
+QStringList MainWindow::makeQQManInputFile(QString pvalueFile)
 {
+    QStringList qqmanInFileList;
     if (pvalueFile.isNull() || pvalueFile.isEmpty())
     {
-        return pvalueFile;
+        return qqmanInFileList;
     }
 
     QFileInfo pvalueFileInfo(pvalueFile);
@@ -1324,7 +1329,15 @@ QString MainWindow::makeQQManInputFile(QString pvalueFile)
 
     if ( pvalueFileComSuffix == "assoc.linear" || pvalueFileComSuffix == "assoc.logistic")
     {   // Plink output file don't need to be transformed.
-        return pvalueFile;
+        return qqmanInFileList;
+    }
+
+    QFile gwasResultFile(pvalueFile);
+    QTextStream gwasResultFileStream(&gwasResultFile);
+    if (!gwasResultFile.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::information(nullptr, "Error", "Open gwasResultFile error.  ");
+        return qqmanInFileList;
     }
 
     /* Script(one line):
@@ -1335,16 +1348,6 @@ QString MainWindow::makeQQManInputFile(QString pvalueFile)
      *  $line=join "\t",@F; print $line}'
      *  |sed '1 i\SNP\tCHR\tBP\tP' > phe1_emmax_table
      */
-
-    QFile gwasResultFile(pvalueFile);
-    QFile qqmanInputFile(pvalueFileAbPath+"/"+pvalueFileBaseName+"_"+ui->toolComboBox->currentText()+".qqman");
-    QTextStream gwasResultFileStream(&gwasResultFile);
-    QTextStream qqmanInputFileStream(&qqmanInputFile);
-    if (!gwasResultFile.open(QIODevice::ReadOnly) || !qqmanInputFile.open(QIODevice::ReadWrite))
-    {
-        QMessageBox::information(nullptr, "Error", "Open gwasResultFile error.  ");
-        return nullptr;
-    }
     if (pvalueFileSuffix == "ps")
     {   // Emmax output file.
         /* From: .ps:
@@ -1353,6 +1356,9 @@ QString MainWindow::makeQQManInputFile(QString pvalueFile)
          * To:
          *      SNP CHR BP  P (Header is necessary)
          */
+        QFile qqmanInputFile(pvalueFileAbPath+"/"+pvalueFileBaseName+"."+"emmax");
+        QTextStream qqmanInputFileStream(&qqmanInputFile);
+        qqmanInputFile.open(QIODevice::ReadWrite);
         qqmanInputFileStream << "SNP\tCHR\tBP\tP" << endl; // Write header
         while (!gwasResultFileStream.atEnd())
         {
@@ -1362,15 +1368,17 @@ QString MainWindow::makeQQManInputFile(QString pvalueFile)
             if (SNP.split(":").length() < 2)
             {
                 QMessageBox::information(nullptr, "Error", ".ps file format error(maybe without chr).   ");
-                return nullptr;
+                return qqmanInFileList;
             }
             QString CHR = SNP.split(":")[0].remove(0, 3); // e.g. remove "chr" in "chr12", to get "12"
             QString BP = SNP.split(":")[1];
             QString P = curLine[curLine.length()-1];
             qqmanInputFileStream << SNP << "\t" << CHR << "\t" << BP << "\t" << P << endl;
         }
-
-        return qqmanInputFile.fileName();
+        qqmanInFileList.append(qqmanInputFile.fileName());
+        qqmanInputFile.close();
+        gwasResultFile.close();
+        return qqmanInFileList;
     }
 
     /* Script (one line):
@@ -1385,26 +1393,38 @@ QString MainWindow::makeQQManInputFile(QString pvalueFile)
     if (pvalueFileComSuffix == "assoc.txt")
     {   // Gemma LMM
         /* From:
-         *  chr	rs	ps	n_miss	allele1	allele0	af	beta	se	logl_H1	l_remle	p_wald
+         *  chr	rs	ps	n_miss	allele1	allele0	af	beta	se	logl_H1	l_remle	l_mle	p_wald	p_lrt	p_score
          * To:
          *  SNP CHR BP  P (Header is necessary)
          */
-        gwasResultFileStream.readLine();    // Read header, we don't need it in .qqman file.
-        qqmanInputFileStream << "SNP\tCHR\tBP\tP" << endl; // Write header
-        while (!gwasResultFileStream.atEnd())
+        QStringList header = gwasResultFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);    // Read header, we don't need it in .qqman file.
+        int num = header.length() != 13  ? header.length()-13+1 : 1;  // Multi(3) p-values in file when chosed all tested.
+        for (int i = 1; i <= num; i++)
         {
-            QStringList curLine = gwasResultFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
-            QString SNP = curLine[1];
-            QString CHR = curLine[0];
-            QString BP = curLine[2];
-            QString P = curLine[curLine.length()-1];
-            qqmanInputFileStream << SNP << "\t" << CHR << "\t" << BP << "\t" << P << endl;
+            gwasResultFileStream.seek(0);       // Back to begin of the file.
+            gwasResultFileStream.readLine();    // Read the header in the first line and strip it.
+            QFile qqmanInputFile(pvalueFileAbPath+"/"+pvalueFileBaseName+"."+"gemma"
+                                 +"_"+header[header.length()-i].split("_")[1]);    // out_name.gemma_wald
+            QTextStream qqmanInputFileStream(&qqmanInputFile);
+            qqmanInputFile.open(QIODevice::ReadWrite);
+            qqmanInputFileStream << "SNP\tCHR\tBP\tP" << endl; // Write header
+            while (!gwasResultFileStream.atEnd())
+            {
+                QStringList curLine = gwasResultFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+                QString SNP = curLine[1];
+                QString CHR = curLine[0];
+                QString BP = curLine[2];
+                QString P = curLine[curLine.length()-i];
+                qqmanInputFileStream << SNP << "\t" << CHR << "\t" << BP << "\t" << P << endl;
+            }
+            qqmanInFileList.append(qqmanInputFile.fileName());
+            qqmanInputFile.close();
         }
-
-        return qqmanInputFile.fileName();;
+        gwasResultFile.close();
+        return qqmanInFileList;
     }
 
-    return nullptr;
+    return qqmanInFileList;
 }
 
 void MainWindow::on_pcaRunPushButton_clicked()

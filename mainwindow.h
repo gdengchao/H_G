@@ -122,8 +122,8 @@ private:
                        QString covar, QString kinship, QString out, QString name);
     bool makePheFile(QString const phenotype, QString const selectedPheno);
     QString refreshMessage(QString curMsg, QString newMsg);
-    bool drawManhattan(QString data, QString out);
-    bool drawQQplot(QString data, QString out);
-    QString makeQQManInputFile(QString pvalueFile);
+    bool drawManhattan(QStringList data, QStringList out);
+    bool drawQQplot(QStringList data, QStringList out);
+    QStringList makeQQManInputFile(QString pvalueFile);
 };
 #endif // MAINWINDOW_H
