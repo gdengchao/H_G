@@ -80,12 +80,12 @@ private slots:
     void on_drawQQPushButton_clicked();
     void on_gwasReultBrowButton_clicked();
     void on_pcaRunPushButton_clicked();
-
+    // Linkage disequilibrium
     void on_ldRunPushButton_clicked();
-
     void on_ldPlotPushButton_clicked();
-
     void on_ldReultBrowButton_clicked();
+    // Graph viewer
+    void on_GraphViewer_clicked();
 
 private:
     Ui::MainWindow *ui;

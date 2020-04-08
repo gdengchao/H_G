@@ -52,13 +52,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
     connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
     connect(runningMsgWidget, SIGNAL(closeSignal()), this, SLOT(on_closeRunningWidget()));
-
     // connect MToolButton->rightClick
     connect(ui->pheFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_pheFileToolButton_rightClicked()));
     connect(ui->genoFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_genoFileToolButton_rightClicked()));
     connect(ui->mapFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_mapFileToolButton_rightClicked()));
     connect(ui->kinFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_kinFileToolButton_rightClicked()));
     connect(ui->covarFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_covarFileToolButton_rightClicked()));
+    // Graph Viewer
+    connect(graphViewer, SIGNAL(clicked), this, SLOT(on_GraphViewer_clicked()));
 }
 
 MainWindow::~MainWindow()
@@ -1738,4 +1739,9 @@ void MainWindow::on_ldReultBrowButton_clicked()
         return;
     }
     ui->ldResultLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::on_GraphViewer_clicked()
+{
+    qDebug() << "Graph viewer clicked" << endl;
 }

@@ -31,6 +31,8 @@ void GraphViewer::setGraph(QString graph)
         QString baseName = graphInfo.baseName();
         this->setWindowTitle(baseName);
         ui->graphicsView->show();
+
+        this->curImage = graph;
     }
 }
 
@@ -47,10 +49,52 @@ void GraphViewer::setGraph(QStringList graph)
         QString baseName = graphInfo.baseName();
         this->setWindowTitle(baseName);
         ui->graphicsView->show();
+
+        imgList.clear();
+        imgList.append(graph);
+        curImage = graph[0];
     }
 }
 
 void GraphViewer::showEvent(QShowEvent *)
 {
     ui->graphicsView->fitInView(scene->sceneRect(),Qt::KeepAspectRatio);
+}
+
+void GraphViewer::mousePressEvent(QMouseEvent *e)
+{
+    if(e->button()==Qt::LeftButton)
+    {
+        qDebug() << "Graph clicked" << endl;
+
+        QStringList imgList = this->getImgList();
+        QString curImage = this->getCurrentImg();
+        int index = imgList.indexOf(curImage);
+        if (index == -1)
+        {
+            return;
+        }
+        this->setGraph(imgList[(index+1)%imgList.length()]);
+
+        qDebug() << "imgList: " << imgList << endl;
+        qDebug() << "curImage: " << curImage << endl;
+
+        emit clicked();
+    }
+}
+
+QStringList GraphViewer::getImgList(void)
+{
+    return this->imgList;
+}
+
+QString GraphViewer::getCurrentImg(void)
+{
+    return curImage;
+}
+
+void GraphViewer::setImgList(QStringList imgList)
+{
+    this->imgList.clear();
+    this->imgList.append(imgList);
 }

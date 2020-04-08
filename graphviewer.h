@@ -5,6 +5,8 @@
 #include <QPixmap>
 #include <QGraphicsScene>
 #include <QFileInfo>
+#include <QMouseEvent>
+#include <QDebug>
 
 namespace Ui {
 class GraphViewer;
@@ -20,12 +22,22 @@ public:
 
     void setGraph(QString graph);
     void setGraph(QStringList graph);
+    void setImgList(QStringList imgList);
+    QStringList getImgList(void);
+    QString getCurrentImg(void);
+
+protected slots:
+    void mousePressEvent(QMouseEvent *e);
+
+signals:
+    void clicked();
 
 private:
     Ui::GraphViewer *ui;
     QImage *image;
     QGraphicsScene *scene;
-
+    QStringList imgList;
+    QString curImage;
     void showEvent(QShowEvent *);
 };
 
