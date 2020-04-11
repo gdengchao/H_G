@@ -75,6 +75,8 @@ bool PopLDdecay::runLD(QString _genotype, QString out)
     return true;
 }
 
+
+
 bool PopLDdecay::plotLD(QString in, QString out)
 {
     if (in.isNull() || out.isNull())
@@ -93,4 +95,48 @@ bool PopLDdecay::plotLD(QString in, QString out)
     this->paramlist.append(out);
 
     return true;
+}
+
+QStringList PopLDdecay::makeKeepFromTranspose(QString tfam)
+{
+    QStringList keepList;
+    QStringList fidList;
+    if (tfam.isNull())
+    {
+        return keepList;
+    }
+
+    QFile keepFile;
+    QTextStream keepFileStream(&keepFile);
+    QFile tfile(tfam);
+    QFileInfo tfileInfo(tfile);
+    QString tfileBaseName = tfileInfo.baseName();
+    QString tfileAbPath = tfileInfo.absolutePath();
+
+    QTextStream tfileStream(&tfile);
+
+    if (!tfile.open(QIODevice::ReadOnly))
+    {
+        return keepList;
+    }
+
+    while (!tfileStream.atEnd())
+    {
+        QStringList curLine = tfileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        if (fidList.indexOf(curLine[0]) == -1)
+        {   // The first appearence of the FID.
+            keepFile.setFileName(tfileAbPath+"/"+tfileBaseName+"_"+curLine[0]+".keep");
+            keepFile.open(QIODevice::Append);
+            fidList.append(curLine[0]);
+        }
+        keepFileStream << curLine[0] << "\t" << curLine[1] << "\n";
+    }
+
+    for (auto item:fidList)
+    {
+        keepFile.setFileName(tfileAbPath+"/"+tfileBaseName+"_"+item+".keep");
+        keepFile.close();
+    }
+
+    return keepList;
 }

@@ -2,6 +2,9 @@
 #define POPLDDECAY_H
 
 #include <QStringList>
+#include <QTextStream>
+#include <QFileInfo>
+#include <QFile>
 
 class PopLDdecay
 {
@@ -16,6 +19,9 @@ public:
     bool runLD(QString _genotype, QString out);
     bool preGenotype(QString ped, QString map, QString out);
     bool plotLD(QString in, QString out);
+
+    QStringList makeKeepFromTranspose(QString tfam);
+
 private:
     const QString toolpath;
     QStringList paramlist;

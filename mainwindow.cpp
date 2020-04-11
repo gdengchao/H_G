@@ -1555,19 +1555,41 @@ void MainWindow::on_pcaRunPushButton_clicked()
 
 void MainWindow::on_ldRunPushButton_clicked()
 {
-    if (ui->yesLDByFamRadioButton->isChecked())
-    {
-    }
-
     if (this->fileReader->getGenotypeFile().isNull() || this->fileReader->getGenotypeFile().isEmpty())
     {
         QMessageBox::information(nullptr, "Error", "A genotype file is necessary!   ");
         return;
     }
-
     ui->ldRunPushButton->setEnabled(false);
     qApp->processEvents();
 
+    if (ui->yesLDByFamRadioButton->isChecked())
+    {
+        this->runLDbyFamily();
+    }
+    else
+    {
+        this->runLDSingle();
+    }
+    ui->ldRunPushButton->setEnabled(true);
+    qApp->processEvents();
+}
+
+void MainWindow::runLDbyFamily(void)
+{
+    PopLDdecay popLDdecay;
+    QString mapFile(this->fileReader->getMapFile());
+    QFileInfo mapFileInfo(mapFile);
+    QString mapFileSuffix = mapFileInfo.suffix();
+
+    if (mapFileSuffix == "tfam")
+    {
+        popLDdecay.makeKeepFromTranspose(mapFile);
+    }
+}
+
+void MainWindow::runLDSingle(void)
+{
     try {
         QString genotype = this->fileReader->getGenotypeFile();
         QFileInfo genoFileInfo(genotype);
@@ -1679,8 +1701,6 @@ void MainWindow::on_ldRunPushButton_clicked()
     } catch (...) {
         ;
     }
-    ui->ldRunPushButton->setEnabled(true);
-    qApp->processEvents();
 }
 
 void MainWindow::on_ldPlotPushButton_clicked()

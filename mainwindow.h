@@ -125,5 +125,7 @@ private:
     bool drawManhattan(QStringList data, QStringList out);
     bool drawQQplot(QStringList data, QStringList out);
     QStringList makeQQManInputFile(QString pvalueFile);
+    void runLDSingle(void);
+    void runLDbyFamily(void);
 };
 #endif // MAINWINDOW_H
