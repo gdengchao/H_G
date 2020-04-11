@@ -99,11 +99,11 @@ bool PopLDdecay::plotLD(QString in, QString out)
 
 QStringList PopLDdecay::makeKeepFromTranspose(QString tfam)
 {
-    QStringList keepList;
+    QStringList keepFileList;
     QStringList fidList;
     if (tfam.isNull())
     {
-        return keepList;
+        return keepFileList;
     }
 
     QFile keepFile;
@@ -117,7 +117,7 @@ QStringList PopLDdecay::makeKeepFromTranspose(QString tfam)
 
     if (!tfile.open(QIODevice::ReadOnly))
     {
-        return keepList;
+        return keepFileList;
     }
 
     while (!tfileStream.atEnd())
@@ -127,6 +127,7 @@ QStringList PopLDdecay::makeKeepFromTranspose(QString tfam)
         {   // The first appearence of the FID.
             keepFile.setFileName(tfileAbPath+"/"+tfileBaseName+"_"+curLine[0]+".keep");
             keepFile.open(QIODevice::Append);
+            keepFileList.append(tfileAbPath+"/"+tfileBaseName+"_"+curLine[0]+".keep");
             fidList.append(curLine[0]);
         }
         keepFileStream << curLine[0] << "\t" << curLine[1] << "\n";
@@ -138,5 +139,5 @@ QStringList PopLDdecay::makeKeepFromTranspose(QString tfam)
         keepFile.close();
     }
 
-    return keepList;
+    return keepFileList;
 }

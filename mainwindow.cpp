@@ -1577,14 +1577,37 @@ void MainWindow::on_ldRunPushButton_clicked()
 
 void MainWindow::runLDbyFamily(void)
 {
-    PopLDdecay popLDdecay;
-    QString mapFile(this->fileReader->getMapFile());
-    QFileInfo mapFileInfo(mapFile);
-    QString mapFileSuffix = mapFileInfo.suffix();
+    try {
+        PopLDdecay popLDdecay;
+        QString ped(this->fileReader->getPhenotypeFile());
+        QString map(this->fileReader->getMapFile());
+        QFileInfo mapFileInfo(map);
+        QString mapFileSuffix = mapFileInfo.suffix();
+        QString mapFileAbPath = mapFileInfo.absolutePath();
+        QStringList keepFileList;
 
-    if (mapFileSuffix == "tfam")
-    {
-        popLDdecay.makeKeepFromTranspose(mapFile);
+        if (mapFileSuffix == "tfam")
+        {
+            keepFileList = popLDdecay.makeKeepFromTranspose(map);
+        }
+
+        Plink plink;
+        for (QString keep:keepFileList)
+        {
+            plink.splitPlinkFile(ped, map, keep, mapFileAbPath);
+            this->process->start(this->toolpath+"plink", plink.getParamList());
+            if (!this->process->waitForStarted())
+            {
+                throw -1;
+            }
+            if (!this->process->waitForFinished(-1))
+            {
+                this->resetWindow();
+                throw -1;
+            }
+        }
+    } catch (...) {
+        ;
     }
 }
 

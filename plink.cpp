@@ -639,3 +639,21 @@ bool Plink::isVcfFile(QString file) // Just consider filename.
 
     return false;
 }
+
+void Plink::splitPlinkFile(QString ped, QString map, QString keepFile, QString out)
+{
+    if (ped.isNull() || map.isNull() ||  keepFile.isNull())
+    {
+        return;
+    }
+    this->paramlist.clear();
+    this->paramlist.append("--ped");
+    this->paramlist.append(ped);
+    this->paramlist.append("--map");
+    this->paramlist.append(map);
+    this->paramlist.append("--keep");
+    this->paramlist.append(keepFile);
+    this->paramlist.append("--recode");
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+}

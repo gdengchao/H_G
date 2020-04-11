@@ -45,6 +45,9 @@ public:
     void filterTransposeFile(QString genotype, QString map, QString maf, QString mind, QString geno, QString out);
     void filterData(QString genotype, QString map, QString maf, QString mind, QString geno, QString out);
 
+    // Split plink(ped,map) file.
+    void splitPlinkFile(QString ped, QString map, QString keepFile, QString out);
+
     // Run
     bool runGWAS(QString phenotype, QString genotype, QString map, QString covariate, QString kinship,
                  QString model, QString maf, QString mind, QString geno,QString out);
