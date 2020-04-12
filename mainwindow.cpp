@@ -970,6 +970,10 @@ void MainWindow::resetWindow()
     }
     ui->rungwasButton->setText("Run");
     ui->rungwasButton->setEnabled(true);
+    ui->ldPlotPushButton->setEnabled(true);
+    ui->pcaRunPushButton->setEnabled(true);
+    ui->drawManPushButton->setEnabled(true);
+    ui->drawQQPushButton->setEnabled(true);
 }
 
 void MainWindow::on_projectNameLineEdit_textChanged(const QString &text)
@@ -1163,7 +1167,7 @@ void MainWindow::on_drawManPushButton_clicked()
         {
             file.remove(item);
         }
-    } catch (int) {
+    } catch (...) {
         ui->drawManPushButton->setEnabled(true);
         qApp->processEvents();
     }
@@ -1223,7 +1227,6 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
     int sgBase = ui->sgBaseLineEdit->text().toInt();
     int sgExpo = ui->sgExpoLineEdit->text().toInt();
 
-    QProcess proc;
     QStringList param;
 
     for (int i = 0; i < data.size(); i++)
@@ -1238,13 +1241,13 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
 
         qDebug() << param.join(" ") << endl;
 
-        proc.start("Rscript", param);
-        if (!proc.waitForStarted())
+        this->process->start("Rscript", param);
+        if (!this->process->waitForStarted())
         {
             QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
             return false;
         }
-        if (!proc.waitForFinished(-1))
+        if (!this->process->waitForFinished(-1))
         {
             QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
             return false;
@@ -1262,7 +1265,6 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
         return false;;
     }
 
-    QProcess proc;
     QStringList param;
 
     for (int i = 0; i < data.size(); i++)
@@ -1272,13 +1274,13 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
         param.append("qqplot");
         param.append(data[i]);
         param.append(out[i]);
-        proc.start("Rscript", param);
-        if (!proc.waitForStarted())
+        this->process->start("Rscript", param);
+        if (!this->process->waitForStarted())
         {
             QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
             return false;
         }
-        if (!proc.waitForFinished(-1))
+        if (!this->process->waitForFinished(-1))
         {
             QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
             return false;
@@ -1581,21 +1583,23 @@ void MainWindow::runLDbyFamily(void)
         PopLDdecay popLDdecay;
         QString genotype(this->fileReader->getGenotypeFile());
         QString map(this->fileReader->getMapFile());
-        QFileInfo genoFileInfo(map);
+        QFileInfo genoFileInfo(genotype);
         QString genoFileSuffix = genoFileInfo.suffix();
         QString genoFileBaseName = genoFileInfo.baseName();
         QString genoFileAbPath = genoFileInfo.absolutePath();
-        QStringList keepFileList;
+        QStringList fidList;
+        this->runningMsgWidget->show();
 
         Plink plink;
         // Make keep file.
         if (genoFileSuffix == "ped")
         {
             map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".map" : map;
-            keepFileList = popLDdecay.makeKeepFile(genotype);
-            for (QString keep:keepFileList)
+            fidList = popLDdecay.makeKeepFile(genotype);
+            for (QString fid:fidList)
             {
-                plink.splitPlinkFile(genotype, map, keep, genoFileAbPath);
+                plink.splitPlinkFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
+                        genoFileAbPath+"/"+"_"+fid);
                 this->process->start(this->toolpath+"plink", plink.getParamList());
                 if (!this->process->waitForStarted())
                 {
@@ -1611,10 +1615,11 @@ void MainWindow::runLDbyFamily(void)
         if (genoFileSuffix == "tped")
         {
             map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".tfam" : map;
-            keepFileList = popLDdecay.makeKeepFile(map);
-            for (QString keep:keepFileList)
+            fidList = popLDdecay.makeKeepFile(map);
+            for (QString fid:fidList)
             {
-                plink.splitTransposeFile(genotype, map, keep, genoFileAbPath);
+                plink.splitTransposeFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
+                                         genoFileAbPath+"/"+fid);
                 this->process->start(this->toolpath+"plink", plink.getParamList());
                 if (!this->process->waitForStarted())
                 {
@@ -1629,10 +1634,12 @@ void MainWindow::runLDbyFamily(void)
         }
         if (genoFileSuffix == "bed")
         {
-            keepFileList = popLDdecay.makeKeepFile(map);
-            for (QString keep:keepFileList)
+            fidList = popLDdecay.makeKeepFile(map);
+            for (QString fid:fidList)
             {
-                plink.splitBinaryFile(genoFileAbPath+"/"+genoFileBaseName, keep, genoFileAbPath);
+                plink.splitBinaryFile(genoFileAbPath+"/"+genoFileBaseName,
+                                      genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
+                                      genoFileAbPath+"/"+fid);
                 this->process->start(this->toolpath+"plink", plink.getParamList());
                 if (!this->process->waitForStarted())
                 {
@@ -1646,7 +1653,7 @@ void MainWindow::runLDbyFamily(void)
             }
         }
     } catch (...) {
-        ;
+        this->resetWindow();
     }
 }
 
@@ -1663,6 +1670,7 @@ void MainWindow::runLDSingle(void)
         //  binaryFile: Set a default path. Binary geno file with paht without suffix.
         QString plinkFile = genoFileAbPath+"/"+genoFileBaseName+"_tmp";
 
+        this->runningMsgWidget->show();
         bool transformFileFlag = false;
         this->runningMsgWidget->show();
 
@@ -1709,7 +1717,6 @@ void MainWindow::runLDSingle(void)
             }
             if (!this->process->waitForFinished(-1))
             {
-                this->resetWindow();
                 throw -1;
             }
         }
@@ -1761,7 +1768,7 @@ void MainWindow::runLDSingle(void)
         }
 
     } catch (...) {
-        ;
+        this->resetWindow();
     }
 }
 
@@ -1797,7 +1804,7 @@ void MainWindow::on_ldPlotPushButton_clicked()
             this->graphViewer->show();
         }
     } catch (...) {
-        ;
+        this->resetWindow();
     }
 
     ui->ldPlotPushButton->setEnabled(true);

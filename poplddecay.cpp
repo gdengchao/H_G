@@ -105,11 +105,10 @@ bool PopLDdecay::plotLD(QString in, QString out)
  */
 QStringList PopLDdecay::makeKeepFile(QString src)
 {
-    QStringList keepFileList;
     QStringList fidList;
     if (src.isNull())
     {
-        return keepFileList;
+        return fidList;
     }
 
     QFile keepFile;
@@ -123,7 +122,7 @@ QStringList PopLDdecay::makeKeepFile(QString src)
 
     if (!tfile.open(QIODevice::ReadOnly))
     {
-        return keepFileList;
+        return fidList;
     }
 
     while (!tfileStream.atEnd())
@@ -133,7 +132,6 @@ QStringList PopLDdecay::makeKeepFile(QString src)
         {   // The first appearence of the FID.
             keepFile.setFileName(tfileAbPath+"/"+tfileBaseName+"_"+curLine[0]+".keep");
             keepFile.open(QIODevice::Append);
-            keepFileList.append(tfileAbPath+"/"+tfileBaseName+"_"+curLine[0]+".keep");
             fidList.append(curLine[0]);
         }
         keepFileStream << curLine[0] << "\t" << curLine[1] << "\n";
@@ -145,5 +143,5 @@ QStringList PopLDdecay::makeKeepFile(QString src)
         keepFile.close();
     }
 
-    return keepFileList;
+    return fidList;
 }
