@@ -20,7 +20,7 @@ public:
     bool preGenotype(QString ped, QString map, QString out);
     bool plotLD(QString in, QString out);
 
-    QStringList makeKeepFromTranspose(QString tfam);
+    QStringList makeKeepFile(QString src);
 
 private:
     const QString toolpath;

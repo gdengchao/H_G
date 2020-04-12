@@ -657,3 +657,44 @@ void Plink::splitPlinkFile(QString ped, QString map, QString keepFile, QString o
     this->paramlist.append("--out");
     this->paramlist.append(out);
 }
+
+void Plink::splitBinaryFile(QString binaryFile, QString keepFile, QString out)
+{
+    if (binaryFile.isNull() ||  keepFile.isNull())
+    {
+        return;
+    }
+
+    QFile file;
+    if (!file.exists(binaryFile+".bed") || !file.exists(binaryFile+".bim") || !file.exists(binaryFile+".fam"))
+    {
+        return;
+    }
+
+    this->paramlist.clear();
+    this->paramlist.append("--bfile");
+    this->paramlist.append(binaryFile);
+    this->paramlist.append("--keep");
+    this->paramlist.append(keepFile);
+    this->paramlist.append("--recode");
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+}
+
+void Plink::splitTransposeFile(QString tped, QString tfam, QString keepFile, QString out)
+{
+    if (tped.isNull() || tfam.isNull() ||  keepFile.isNull())
+    {
+        return;
+    }
+    this->paramlist.clear();
+    this->paramlist.append("--tped");
+    this->paramlist.append(tped);
+    this->paramlist.append("--tfam");
+    this->paramlist.append(tfam);
+    this->paramlist.append("--keep");
+    this->paramlist.append(keepFile);
+    this->paramlist.append("--recode");
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+}

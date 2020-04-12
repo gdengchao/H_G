@@ -97,18 +97,24 @@ bool PopLDdecay::plotLD(QString in, QString out)
     return true;
 }
 
-QStringList PopLDdecay::makeKeepFromTranspose(QString tfam)
+/**
+ * @brief PopLDdecay::makeKeepFile
+ *      make keep file for every family according to the first 2 columns of src.
+ * @param src: .ped, .tfam or .fam.
+ * @return  keepFileList
+ */
+QStringList PopLDdecay::makeKeepFile(QString src)
 {
     QStringList keepFileList;
     QStringList fidList;
-    if (tfam.isNull())
+    if (src.isNull())
     {
         return keepFileList;
     }
 
     QFile keepFile;
     QTextStream keepFileStream(&keepFile);
-    QFile tfile(tfam);
+    QFile tfile(src);
     QFileInfo tfileInfo(tfile);
     QString tfileBaseName = tfileInfo.baseName();
     QString tfileAbPath = tfileInfo.absolutePath();

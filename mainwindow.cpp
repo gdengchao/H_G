@@ -1579,31 +1579,70 @@ void MainWindow::runLDbyFamily(void)
 {
     try {
         PopLDdecay popLDdecay;
-        QString ped(this->fileReader->getPhenotypeFile());
+        QString genotype(this->fileReader->getGenotypeFile());
         QString map(this->fileReader->getMapFile());
-        QFileInfo mapFileInfo(map);
-        QString mapFileSuffix = mapFileInfo.suffix();
-        QString mapFileAbPath = mapFileInfo.absolutePath();
+        QFileInfo genoFileInfo(map);
+        QString genoFileSuffix = genoFileInfo.suffix();
+        QString genoFileBaseName = genoFileInfo.baseName();
+        QString genoFileAbPath = genoFileInfo.absolutePath();
         QStringList keepFileList;
 
-        if (mapFileSuffix == "tfam")
-        {
-            keepFileList = popLDdecay.makeKeepFromTranspose(map);
-        }
-
         Plink plink;
-        for (QString keep:keepFileList)
+        // Make keep file.
+        if (genoFileSuffix == "ped")
         {
-            plink.splitPlinkFile(ped, map, keep, mapFileAbPath);
-            this->process->start(this->toolpath+"plink", plink.getParamList());
-            if (!this->process->waitForStarted())
+            map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".map" : map;
+            keepFileList = popLDdecay.makeKeepFile(genotype);
+            for (QString keep:keepFileList)
             {
-                throw -1;
+                plink.splitPlinkFile(genotype, map, keep, genoFileAbPath);
+                this->process->start(this->toolpath+"plink", plink.getParamList());
+                if (!this->process->waitForStarted())
+                {
+                    throw -1;
+                }
+                if (!this->process->waitForFinished(-1))
+                {
+                    this->resetWindow();
+                    throw -1;
+                }
             }
-            if (!this->process->waitForFinished(-1))
+        }
+        if (genoFileSuffix == "tped")
+        {
+            map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".tfam" : map;
+            keepFileList = popLDdecay.makeKeepFile(map);
+            for (QString keep:keepFileList)
             {
-                this->resetWindow();
-                throw -1;
+                plink.splitTransposeFile(genotype, map, keep, genoFileAbPath);
+                this->process->start(this->toolpath+"plink", plink.getParamList());
+                if (!this->process->waitForStarted())
+                {
+                    throw -1;
+                }
+                if (!this->process->waitForFinished(-1))
+                {
+                    this->resetWindow();
+                    throw -1;
+                }
+            }
+        }
+        if (genoFileSuffix == "bed")
+        {
+            keepFileList = popLDdecay.makeKeepFile(map);
+            for (QString keep:keepFileList)
+            {
+                plink.splitBinaryFile(genoFileAbPath+"/"+genoFileBaseName, keep, genoFileAbPath);
+                this->process->start(this->toolpath+"plink", plink.getParamList());
+                if (!this->process->waitForStarted())
+                {
+                    throw -1;
+                }
+                if (!this->process->waitForFinished(-1))
+                {
+                    this->resetWindow();
+                    throw -1;
+                }
             }
         }
     } catch (...) {
