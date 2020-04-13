@@ -5,6 +5,7 @@
 #include <QTextStream>
 #include <QFileInfo>
 #include <QFile>
+#include <QApplication>
 
 class PopLDdecay
 {
@@ -20,6 +21,7 @@ public:
     bool makeGenotype(QString ped, QString map, QString out);
     bool plotLD(QString in, QString out);
 
+    QString makeSingleKeepFile(QString src, QString fid);
     QStringList makeKeepFile(QString src);
 
 private:

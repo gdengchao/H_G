@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QDebug>
+#include <QFileInfo>
+#include <QTextStream>
 
 class FileReader
 {
@@ -18,6 +20,7 @@ public:
     QString getCovariateFile(void);
     void setKinshipFile(QString const dir);
     QString getKinshipFile(void);
+    QStringList getFIDList(QString const src, int col);
 
 private:
     QString phenotypeFile;

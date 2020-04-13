@@ -69,3 +69,37 @@ QString FileReader::getKinshipFile(void)
 {
     return this->kinshipFile;
 }
+
+/**
+ * @brief FileReader::getFIDList
+ * @param src
+ * @param col: the No.col column is the fid in src file.
+ * @return
+ */
+QStringList FileReader::getFIDList(QString const src, int col)
+{
+    QStringList fidList;
+    if (src.isNull() || col < 1)
+    {
+        return fidList;
+    }
+    QFile file(src);
+    QTextStream fileStream(&file);
+    if (file.open(QIODevice::ReadOnly))
+    {
+        return fidList;
+    }
+    while (!fileStream.atEnd())
+    {
+        QStringList curLine = fileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        if (col > curLine.length())
+        {
+            return fidList;
+        }
+        if (fidList.indexOf(curLine[col-1]) == -1)
+        {
+            fidList.append(curLine[col-1]);
+        }
+    }
+    return fidList;
+}

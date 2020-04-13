@@ -97,11 +97,48 @@ bool PopLDdecay::plotLD(QString in, QString out)
     return true;
 }
 
+QString PopLDdecay::makeSingleKeepFile(QString src, QString fid)
+{
+    if (src.isNull() || fid.isNull())
+    {
+        return QString::Null();
+    }
+
+    QFile file(src);
+    QFileInfo fileInfo(file);
+    QString fileBaseName = fileInfo.baseName();
+    QString fileAbPath = fileInfo.absolutePath();
+
+    QTextStream tfileStream(&file);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        return QString::Null();
+    }
+
+    QFile keepFile(fileAbPath+"/"+fileBaseName+"_"+fid+".keep");
+    QTextStream keepFileStream(&keepFile);
+    keepFile.open(QIODevice::Append);
+    while (!tfileStream.atEnd())
+    {
+        QStringList curLine = tfileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        if (fid == curLine[0])
+        {
+            keepFileStream << curLine[0] << "\t" << curLine[1] << "\n";
+        }
+        qApp->processEvents(); // Avoid no responding of MainWindow.
+    }
+
+    keepFile.close();
+
+    return keepFile.fileName();
+}
+
 /**
  * @brief PopLDdecay::makeKeepFile
  *      make keep file for every family according to the first 2 columns of src.
  * @param src: .ped, .tfam or .fam.
- * @return  keepFileList
+ * @return  fidList.
  */
 QStringList PopLDdecay::makeKeepFile(QString src)
 {
@@ -113,14 +150,14 @@ QStringList PopLDdecay::makeKeepFile(QString src)
 
     QFile keepFile;
     QTextStream keepFileStream(&keepFile);
-    QFile tfile(src);
-    QFileInfo tfileInfo(tfile);
-    QString tfileBaseName = tfileInfo.baseName();
-    QString tfileAbPath = tfileInfo.absolutePath();
+    QFile file(src);
+    QFileInfo fileInfo(file);
+    QString fileBaseName = fileInfo.baseName();
+    QString fileAbPath = fileInfo.absolutePath();
 
-    QTextStream tfileStream(&tfile);
+    QTextStream tfileStream(&file);
 
-    if (!tfile.open(QIODevice::ReadOnly))
+    if (!file.open(QIODevice::ReadOnly))
     {
         return fidList;
     }
@@ -130,16 +167,17 @@ QStringList PopLDdecay::makeKeepFile(QString src)
         QStringList curLine = tfileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         if (fidList.indexOf(curLine[0]) == -1)
         {   // The first appearence of the FID.
-            keepFile.setFileName(tfileAbPath+"/"+tfileBaseName+"_"+curLine[0]+".keep");
+            keepFile.setFileName(fileAbPath+"/"+fileBaseName+"_"+curLine[0]+".keep");
             keepFile.open(QIODevice::Append);
             fidList.append(curLine[0]);
         }
         keepFileStream << curLine[0] << "\t" << curLine[1] << "\n";
+        qApp->processEvents();  // Avoid no responding of MainWindow.
     }
 
     for (auto item:fidList)
     {
-        keepFile.setFileName(tfileAbPath+"/"+tfileBaseName+"_"+item+".keep");
+        keepFile.setFileName(fileAbPath+"/"+fileBaseName+"_"+item+".keep");
         keepFile.close();
     }
 

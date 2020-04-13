@@ -1599,45 +1599,53 @@ void MainWindow::runLDbyFamily(void)
         {
             map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".map" : map;
             // Make .keep file.
-            fidList = popLDdecay.makeKeepFile(genotype);
-            for (QString fid:fidList)
-            {
-                // Split ped and map file.
-                plink.splitPlinkFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
-                        genoFileAbPath+"/"+fid);
-                this->process->start(this->toolpath+"plink", plink.getParamList());
-                if (!this->process->waitForStarted())
-                {
-                    throw -1;
-                }
-                if (!this->process->waitForFinished(-1))
-                {
-                    this->resetWindow();
-                    throw -1;
-                }
-                QFile file;
-                file.remove(genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep");
+            this->runningMsgWidget->setText("Make .keep file.\n");
+            qApp->processEvents();
+            QString fid("1");
+            fidList = this->fileReader->getFIDList(genotype, 1);
+            QString keepFile = popLDdecay.makeSingleKeepFile(genotype, "");
+            this->runningMsgWidget->setText(".keep file OK.\n");
+//            for (QString fid:fidList)
+//            {
+//                // Split ped and map file.
+//                plink.splitPlinkFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
+//                        genoFileAbPath+"/"+fid);
+//                this->runningMsgWidget->setText("Make "+genoFileAbPath+"/"+fid+".ped"+" and " +genoFileAbPath+"/"+fid+".map.\n");
+//                qApp->processEvents();
+//                this->process->start(this->toolpath+"plink", plink.getParamList());
+//                if (!this->process->waitForStarted())
+//                {
+//                    throw -1;
+//                }
+//                if (!this->process->waitForFinished(-1))
+//                {
+//                    this->resetWindow();
+//                    throw -1;
+//                }
+//                QFile file;
+//                file.remove(genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep");
 
-                // Make .genotype file.
-                popLDdecay.makeGenotype(genoFileAbPath+"/"+fid+".ped", genoFileAbPath+"/"+fid+".map",
-                                        genoFileAbPath+"/"+fid+".genotype");
-                QStringList param;
-                param.append(this->scriptpath+"plink2genotype.pl");
-                this->process->start("perl", param+popLDdecay.getParamList());
-                if (!this->process->waitForStarted())
-                {
-                    throw -1;
-                }
-                if (!this->process->waitForFinished(-1))
-                {
-                    this->resetWindow();
-                    throw -1;
-                }
-                file.remove(genoFileAbPath+"/"+fid+".ped");
-                file.remove(genoFileAbPath+"/"+fid+".map");
-                file.remove(genoFileAbPath+"/"+fid+".log");
-                file.remove(genoFileAbPath+"/"+fid+".nosex");
-            }
+//                // Make .genotype file.
+//                popLDdecay.makeGenotype(genoFileAbPath+"/"+fid+".ped", genoFileAbPath+"/"+fid+".map",
+//                                        genoFileAbPath+"/"+fid+".genotype");
+//                QStringList param;
+//                param.append(this->scriptpath+"plink2genotype.pl");
+//                this->process->start("perl", param+popLDdecay.getParamList());
+//                if (!this->process->waitForStarted())
+//                {
+//                    throw -1;
+//                }
+//                qDebug() << this->process->pid();
+//                if (!this->process->waitForFinished(-1))
+//                {
+//                    this->resetWindow();
+//                    throw -1;
+//                }
+//                file.remove(genoFileAbPath+"/"+fid+".ped");
+//                file.remove(genoFileAbPath+"/"+fid+".map");
+//                file.remove(genoFileAbPath+"/"+fid+".log");
+//                file.remove(genoFileAbPath+"/"+fid+".nosex");
+//            }
         }
         if (genoFileSuffix == "tped")
         {
