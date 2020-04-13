@@ -1580,7 +1580,6 @@ void MainWindow::on_ldRunPushButton_clicked()
 void MainWindow::runLDbyFamily(void)
 {
     try {
-        PopLDdecay popLDdecay;
         QString genotype(this->fileReader->getGenotypeFile());
         QString map(this->fileReader->getMapFile());
         QFileInfo genoFileInfo(genotype);
@@ -1591,15 +1590,21 @@ void MainWindow::runLDbyFamily(void)
         this->runningMsgWidget->show();
 
         Plink plink;
-        // Make keep file.
+        PopLDdecay popLDdecay;
+        if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+        {
+
+        }
         if (genoFileSuffix == "ped")
         {
             map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".map" : map;
+            // Make .keep file.
             fidList = popLDdecay.makeKeepFile(genotype);
             for (QString fid:fidList)
             {
+                // Split ped and map file.
                 plink.splitPlinkFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
-                        genoFileAbPath+"/"+"_"+fid);
+                        genoFileAbPath+"/"+fid);
                 this->process->start(this->toolpath+"plink", plink.getParamList());
                 if (!this->process->waitForStarted())
                 {
@@ -1610,6 +1615,28 @@ void MainWindow::runLDbyFamily(void)
                     this->resetWindow();
                     throw -1;
                 }
+                QFile file;
+                file.remove(genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep");
+
+                // Make .genotype file.
+                popLDdecay.makeGenotype(genoFileAbPath+"/"+fid+".ped", genoFileAbPath+"/"+fid+".map",
+                                        genoFileAbPath+"/"+fid+".genotype");
+                QStringList param;
+                param.append(this->scriptpath+"plink2genotype.pl");
+                this->process->start("perl", param+popLDdecay.getParamList());
+                if (!this->process->waitForStarted())
+                {
+                    throw -1;
+                }
+                if (!this->process->waitForFinished(-1))
+                {
+                    this->resetWindow();
+                    throw -1;
+                }
+                file.remove(genoFileAbPath+"/"+fid+".ped");
+                file.remove(genoFileAbPath+"/"+fid+".map");
+                file.remove(genoFileAbPath+"/"+fid+".log");
+                file.remove(genoFileAbPath+"/"+fid+".nosex");
             }
         }
         if (genoFileSuffix == "tped")
@@ -1618,8 +1645,9 @@ void MainWindow::runLDbyFamily(void)
             fidList = popLDdecay.makeKeepFile(map);
             for (QString fid:fidList)
             {
+                // Split ped and map file.
                 plink.splitTransposeFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
-                                         genoFileAbPath+"/"+fid);
+                                         genoFileAbPath+"/"+fid+".genotype");
                 this->process->start(this->toolpath+"plink", plink.getParamList());
                 if (!this->process->waitForStarted())
                 {
@@ -1630,6 +1658,27 @@ void MainWindow::runLDbyFamily(void)
                     this->resetWindow();
                     throw -1;
                 }
+
+                QFile file;
+                file.remove(genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep");
+                // Make .genotype file.
+                popLDdecay.makeGenotype(genoFileAbPath+"/"+fid+".ped", genoFileAbPath+"/"+fid+".map", genoFileAbPath+"/"+fid);
+                QStringList param;
+                param.append(this->scriptpath+"plink2genotype.pl");
+                this->process->start("perl", param+popLDdecay.getParamList());
+                if (!this->process->waitForStarted())
+                {
+                    throw -1;
+                }
+                if (!this->process->waitForFinished(-1))
+                {
+                    this->resetWindow();
+                    throw -1;
+                }
+                file.remove(genoFileAbPath+"/"+fid+".ped");
+                file.remove(genoFileAbPath+"/"+fid+".map");
+                file.remove(genoFileAbPath+"/"+fid+".log");
+                file.remove(genoFileAbPath+"/"+fid+".nosex");
             }
         }
         if (genoFileSuffix == "bed")
@@ -1637,9 +1686,10 @@ void MainWindow::runLDbyFamily(void)
             fidList = popLDdecay.makeKeepFile(map);
             for (QString fid:fidList)
             {
+                // Split ped and map file.
                 plink.splitBinaryFile(genoFileAbPath+"/"+genoFileBaseName,
                                       genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
-                                      genoFileAbPath+"/"+fid);
+                                      genoFileAbPath+"/"+fid+".genotype");
                 this->process->start(this->toolpath+"plink", plink.getParamList());
                 if (!this->process->waitForStarted())
                 {
@@ -1650,6 +1700,26 @@ void MainWindow::runLDbyFamily(void)
                     this->resetWindow();
                     throw -1;
                 }
+                QFile file;
+                file.remove(genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep");
+                // Make .genotype file.
+                popLDdecay.makeGenotype(genoFileAbPath+"/"+fid+".ped", genoFileAbPath+"/"+fid+".map", genoFileAbPath+"/"+fid);
+                QStringList param;
+                param.append(this->scriptpath+"plink2genotype.pl");
+                this->process->start("perl", param+popLDdecay.getParamList());
+                if (!this->process->waitForStarted())
+                {
+                    QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+                    throw -1;
+                }
+                if (!this->process->waitForFinished(-1))
+                {
+                    throw -1;
+                }
+                file.remove(genoFileAbPath+"/"+fid+".ped");
+                file.remove(genoFileAbPath+"/"+fid+".map");
+                file.remove(genoFileAbPath+"/"+fid+".log");
+                file.remove(genoFileAbPath+"/"+fid+".nosex");
             }
         }
     } catch (...) {
@@ -1726,7 +1796,7 @@ void MainWindow::runLDSingle(void)
         }
 
         PopLDdecay popLDdecay;
-        if (popLDdecay.preGenotype(plinkFile+".ped", plinkFile+".map", plinkFile+".genotype"))
+        if (popLDdecay.makeGenotype(plinkFile+".ped", plinkFile+".map", plinkFile+".genotype"))
         {
             QStringList param;
             param.append(this->scriptpath+"plink2genotype.pl");

@@ -49,7 +49,6 @@ void RunningMsgWidget::closeEvent(QCloseEvent *event)
     }
     this->clearText();
     emit this->closeSignal();
-    event->ignore();
 }
 
 // Delete the last line and append the new line.
@@ -77,5 +76,4 @@ void RunningMsgWidget::refreshLastLine(QString line)
         curText.append(line);
         this->setText(curText.join("\n"));
     }
-
 }

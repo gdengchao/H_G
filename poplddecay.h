@@ -17,7 +17,7 @@ public:
     QString getToolPath(void);
 
     bool runLD(QString _genotype, QString out);
-    bool preGenotype(QString ped, QString map, QString out);
+    bool makeGenotype(QString ped, QString map, QString out);
     bool plotLD(QString in, QString out);
 
     QStringList makeKeepFile(QString src);

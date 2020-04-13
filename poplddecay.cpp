@@ -37,7 +37,7 @@ QString PopLDdecay::getToolPath()
     return this->toolpath;
 }
 
-bool PopLDdecay::preGenotype(QString ped, QString map, QString out)
+bool PopLDdecay::makeGenotype(QString ped, QString map, QString out)
 {
     if (ped.isNull() || map.isNull() || out.isNull())
     {
