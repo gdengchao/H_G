@@ -1609,30 +1609,32 @@ void MainWindow::runLDbyFamily(void)
             this->runningMsgWidget->appendText(".keep file OK.\n");
             qApp->processEvents();
 
-//            for (QString keepFile:keepFileList)
-//            {
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("Make "+fid+".ped"+" and "+fid+".map, \n");
-//                qApp->processEvents();
+            for (QString keepFile:keepFileList)
+            {
+                QFileInfo keepFileInfo(keepFile);
+                QString keepFileBaseName = keepFileInfo.baseName();
+                QString keepFileAbPath = keepFileInfo.absolutePath();
 
-//                // Split ped and map file.
-//                plink.splitPlinkFile(genotype, map, keepFile,
-//                        genoFileAbPath+"/"+fid);\
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText("Make "+keepFileBaseName+".ped"+" and "+keepFileBaseName+".map, \n");
+                qApp->processEvents();
 
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText(fid+".ped and "+fid+".map OK.\n");
-//                qApp->processEvents();
-
-//                this->process->start(this->toolpath+"plink", plink.getParamList());
-//                if (!this->process->waitForStarted())
-//                {
-//                    throw -1;
-//                }
-//                if (!this->process->waitForFinished(-1))
-//                {
-//                    this->resetWindow();
-//                    throw -1;
-//                }
+                // Split ped and map file.
+                plink.splitPlinkFile(genotype, map, keepFile,
+                        genoFileAbPath+"/"+keepFileBaseName);
+                this->process->start(this->toolpath+"plink", plink.getParamList());
+                if (!this->process->waitForStarted())
+                {
+                    throw -1;
+                }
+                if (!this->process->waitForFinished(-1))
+                {
+                    this->resetWindow();
+                    throw -1;
+                }
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText(keepFileBaseName+".ped and "+keepFileBaseName+".map OK.\n");
+                qApp->processEvents();
 
 //                QFile file;
 //                file.remove(keepFile);
@@ -1665,7 +1667,7 @@ void MainWindow::runLDbyFamily(void)
 //                file.remove(genoFileAbPath+"/"+fid+".map");
 //                file.remove(genoFileAbPath+"/"+fid+".log");
 //                file.remove(genoFileAbPath+"/"+fid+".nosex");
-//            }
+            }
         }
         if (genoFileSuffix == "tped")
         {

@@ -153,9 +153,10 @@ QStringList PopLDdecay::makeKeepFile(QString src)
     QFileInfo fileInfo(file);
     QString fileBaseName = fileInfo.baseName();
     QString fileAbPath = fileInfo.absolutePath();
-
     QTextStream fileStream(&file);
 
+    QFile keepFile;
+    QTextStream keepFileStream(&keepFile);
     if (!file.open(QIODevice::ReadOnly))
     {
         return keepList;
@@ -164,14 +165,15 @@ QStringList PopLDdecay::makeKeepFile(QString src)
     while (!fileStream.atEnd())
     {
         QStringList curLine = fileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
-        QFile keepFile(fileAbPath+"/"+fileBaseName+"_"+curLine[0]+".keep");
+        keepFile.setFileName(fileAbPath+"/"+fileBaseName+"_"+curLine[0]+".keep");
         QTextStream keepFileStream(&keepFile);
         if (fidList.indexOf(curLine[0]) == -1)
         {   // The first appearence of the FID.
-            keepFile.open(QIODevice::Append);
+            keepFile.remove();
             fidList.append(curLine[0]);
             keepList.append(fileAbPath+"/"+fileBaseName+"_"+curLine[0]+".keep");
         }
+        keepFile.open(QIODevice::Append);
         keepFileStream << curLine[0] << "\t" << curLine[1] << "\n";
         qApp->processEvents();  // Avoid no responding of MainWindow.
     }
