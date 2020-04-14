@@ -971,6 +971,7 @@ void MainWindow::resetWindow()
     ui->rungwasButton->setText("Run");
     ui->rungwasButton->setEnabled(true);
     ui->ldPlotPushButton->setEnabled(true);
+    ui->ldRunPushButton->setEnabled(true);
     ui->pcaRunPushButton->setEnabled(true);
     ui->drawManPushButton->setEnabled(true);
     ui->drawQQPushButton->setEnabled(true);
@@ -1586,32 +1587,42 @@ void MainWindow::runLDbyFamily(void)
         QString genoFileSuffix = genoFileInfo.suffix();
         QString genoFileBaseName = genoFileInfo.baseName();
         QString genoFileAbPath = genoFileInfo.absolutePath();
-        QStringList fidList;
+        QStringList keepFileList;
         this->runningMsgWidget->show();
 
         Plink plink;
         PopLDdecay popLDdecay;
-        if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
-        {
+        if (isVcfFile(genotype)){} // Transform "vcf" to "transpose"
 
-        }
         if (genoFileSuffix == "ped")
         {
             map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".map" : map;
+
             // Make .keep file.
-            this->runningMsgWidget->setText("Make .keep file.\n");
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Make .keep file, \n");
             qApp->processEvents();
-            QString fid("1");
-            fidList = this->fileReader->getFIDList(genotype, 1);
-            QString keepFile = popLDdecay.makeSingleKeepFile(genotype, "");
-            this->runningMsgWidget->setText(".keep file OK.\n");
-//            for (QString fid:fidList)
+
+            keepFileList = popLDdecay.makeKeepFile(genotype);
+
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText(".keep file OK.\n");
+            qApp->processEvents();
+
+//            for (QString keepFile:keepFileList)
 //            {
-//                // Split ped and map file.
-//                plink.splitPlinkFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
-//                        genoFileAbPath+"/"+fid);
-//                this->runningMsgWidget->setText("Make "+genoFileAbPath+"/"+fid+".ped"+" and " +genoFileAbPath+"/"+fid+".map.\n");
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("Make "+fid+".ped"+" and "+fid+".map, \n");
 //                qApp->processEvents();
+
+//                // Split ped and map file.
+//                plink.splitPlinkFile(genotype, map, keepFile,
+//                        genoFileAbPath+"/"+fid);\
+
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText(fid+".ped and "+fid+".map OK.\n");
+//                qApp->processEvents();
+
 //                this->process->start(this->toolpath+"plink", plink.getParamList());
 //                if (!this->process->waitForStarted())
 //                {
@@ -1622,9 +1633,13 @@ void MainWindow::runLDbyFamily(void)
 //                    this->resetWindow();
 //                    throw -1;
 //                }
-//                QFile file;
-//                file.remove(genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep");
 
+//                QFile file;
+//                file.remove(keepFile);
+
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("Make "+fid+".genotype.\n");
+//                qApp->processEvents();
 //                // Make .genotype file.
 //                popLDdecay.makeGenotype(genoFileAbPath+"/"+fid+".ped", genoFileAbPath+"/"+fid+".map",
 //                                        genoFileAbPath+"/"+fid+".genotype");
@@ -1641,6 +1656,11 @@ void MainWindow::runLDbyFamily(void)
 //                    this->resetWindow();
 //                    throw -1;
 //                }
+
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText(fid+".genotype OK.\n");
+//                qApp->processEvents();
+
 //                file.remove(genoFileAbPath+"/"+fid+".ped");
 //                file.remove(genoFileAbPath+"/"+fid+".map");
 //                file.remove(genoFileAbPath+"/"+fid+".log");
@@ -1650,8 +1670,8 @@ void MainWindow::runLDbyFamily(void)
         if (genoFileSuffix == "tped")
         {
             map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".tfam" : map;
-            fidList = popLDdecay.makeKeepFile(map);
-            for (QString fid:fidList)
+            keepFileList = popLDdecay.makeKeepFile(map);
+            for (QString fid:keepFileList)
             {
                 // Split ped and map file.
                 plink.splitTransposeFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
@@ -1691,8 +1711,8 @@ void MainWindow::runLDbyFamily(void)
         }
         if (genoFileSuffix == "bed")
         {
-            fidList = popLDdecay.makeKeepFile(map);
-            for (QString fid:fidList)
+            keepFileList = popLDdecay.makeKeepFile(map);
+            for (QString fid:keepFileList)
             {
                 // Split ped and map file.
                 plink.splitBinaryFile(genoFileAbPath+"/"+genoFileBaseName,

@@ -85,7 +85,7 @@ QStringList FileReader::getFIDList(QString const src, int col)
     }
     QFile file(src);
     QTextStream fileStream(&file);
-    if (file.open(QIODevice::ReadOnly))
+    if (!file.open(QIODevice::ReadOnly))
     {
         return fidList;
     }
@@ -100,6 +100,7 @@ QStringList FileReader::getFIDList(QString const src, int col)
         {
             fidList.append(curLine[col-1]);
         }
+        qApp->processEvents();
     }
     return fidList;
 }

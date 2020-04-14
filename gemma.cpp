@@ -130,12 +130,14 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
         QStringList famCurLineList = famCurLine.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
         while (famCurLineList.length() > 5)
-        {
+        {   // Only hold the first 5 columns.(FID IIF PID MID Sex)
             famCurLineList.removeLast();
         }
 
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
         tmpFamStream << famCurLineList.join("\t") << /*"\t1\t"*/ "\t" << pheCurLineList[pheCurLineList.length()-1] << "\n";
+
+        qApp->processEvents();  // Avoid no responding of MainWindow.
     }
 
     if (!pheStream.atEnd() || !famStream.atEnd())

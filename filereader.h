@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QTextStream>
+#include <QApplication>
 
 class FileReader
 {

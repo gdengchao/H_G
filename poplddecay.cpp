@@ -138,48 +138,49 @@ QString PopLDdecay::makeSingleKeepFile(QString src, QString fid)
  * @brief PopLDdecay::makeKeepFile
  *      make keep file for every family according to the first 2 columns of src.
  * @param src: .ped, .tfam or .fam.
- * @return  fidList.
+ * @return  keepList.
  */
 QStringList PopLDdecay::makeKeepFile(QString src)
 {
-    QStringList fidList;
+    QStringList keepList;
     if (src.isNull())
     {
-        return fidList;
+        return keepList;
     }
 
-    QFile keepFile;
-    QTextStream keepFileStream(&keepFile);
+    QStringList fidList;
     QFile file(src);
     QFileInfo fileInfo(file);
     QString fileBaseName = fileInfo.baseName();
     QString fileAbPath = fileInfo.absolutePath();
 
-    QTextStream tfileStream(&file);
+    QTextStream fileStream(&file);
 
     if (!file.open(QIODevice::ReadOnly))
     {
-        return fidList;
+        return keepList;
     }
 
-    while (!tfileStream.atEnd())
+    while (!fileStream.atEnd())
     {
-        QStringList curLine = tfileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        QStringList curLine = fileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        QFile keepFile(fileAbPath+"/"+fileBaseName+"_"+curLine[0]+".keep");
+        QTextStream keepFileStream(&keepFile);
         if (fidList.indexOf(curLine[0]) == -1)
         {   // The first appearence of the FID.
-            keepFile.setFileName(fileAbPath+"/"+fileBaseName+"_"+curLine[0]+".keep");
             keepFile.open(QIODevice::Append);
             fidList.append(curLine[0]);
+            keepList.append(fileAbPath+"/"+fileBaseName+"_"+curLine[0]+".keep");
         }
         keepFileStream << curLine[0] << "\t" << curLine[1] << "\n";
         qApp->processEvents();  // Avoid no responding of MainWindow.
     }
 
-    for (auto item:fidList)
+    for (auto item:keepList)
     {
-        keepFile.setFileName(fileAbPath+"/"+fileBaseName+"_"+item+".keep");
-        keepFile.close();
+        QFile file(item);
+        file.close();
     }
 
-    return fidList;
+    return keepList;
 }

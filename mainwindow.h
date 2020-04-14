@@ -11,6 +11,7 @@
 #include <QThread>
 #include <QMap>
 #include <QButtonGroup>
+#include <QDateTime>
 #include <RInside.h>
 #include <iostream>
 #include <cmath>

@@ -8,6 +8,7 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QMessageBox>
+#include <QApplication>
 #include <tool.h>
 
 class Gemma : public Tool
