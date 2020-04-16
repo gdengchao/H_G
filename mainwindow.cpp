@@ -1686,6 +1686,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                     this->resetWindow();
                     throw -1;
                 }
+
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
                 this->runningMsgWidget->appendText(keepFileBaseName+".genotype OK.\n");
                 qApp->processEvents();
@@ -1697,6 +1698,11 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 qApp->processEvents();
                 throw -1;
             }
+
+            file.remove(genoFileAbPath+"/"+keepFileBaseName+".ped");
+            file.remove(genoFileAbPath+"/"+keepFileBaseName+".map");
+            file.remove(genoFileAbPath+"/"+keepFileBaseName+".log");
+            file.remove(genoFileAbPath+"/"+keepFileBaseName+".nosex");
 
             // Run LD.
             // keepFileName:fileAbPath+"/"+fileBaseName+"_"+fid+".keep"
@@ -1728,13 +1734,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 qApp->processEvents();
                 throw -1;
             }
-
-
-
-            file.remove(genoFileAbPath+"/"+keepFileBaseName+".ped");
-            file.remove(genoFileAbPath+"/"+keepFileBaseName+".map");
-            file.remove(genoFileAbPath+"/"+keepFileBaseName+".log");
-            file.remove(genoFileAbPath+"/"+keepFileBaseName+".nosex");
+            file.remove(genoFileAbPath+"/"+keepFileBaseName+".genotype");
         }
         /*
         if (genoFileSuffix == "ped")
@@ -1925,12 +1925,6 @@ void MainWindow::runPopLDdecaySingle(void)
                 throw -1;
             }
 
-            QFile file;
-            file.remove(plinkFile+".ped");
-            file.remove(plinkFile+".map");
-            file.remove(plinkFile+".nosex");
-            file.remove(plinkFile+".log");
-
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText(plinkFile + ".genotype OK.\n");
             qApp->processEvents();
@@ -1940,7 +1934,14 @@ void MainWindow::runPopLDdecaySingle(void)
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText(plinkFile + ".genotype ERROR.\n");
             qApp->processEvents();
+            throw -1;
         }
+
+        QFile file;
+        file.remove(plinkFile+".ped");
+        file.remove(plinkFile+".map");
+        file.remove(plinkFile+".nosex");
+        file.remove(plinkFile+".log");
 
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Run LD, \n");
@@ -1958,10 +1959,6 @@ void MainWindow::runPopLDdecaySingle(void)
                 throw -1;
             }
             ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
-
-            QFile file;
-            file.remove(plinkFile+".genotype");
-
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("LD OK.\n");
             qApp->processEvents();
@@ -1971,7 +1968,9 @@ void MainWindow::runPopLDdecaySingle(void)
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("LD ERROR.\n");
             qApp->processEvents();
+            throw -1;
         }
+        file.remove(plinkFile+".genotype");
     } catch (...) {
         this->resetWindow();
     }
