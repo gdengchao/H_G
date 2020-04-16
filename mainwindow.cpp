@@ -1568,17 +1568,17 @@ void MainWindow::on_ldRunPushButton_clicked()
 
     if (ui->yesLDByFamRadioButton->isChecked())
     {
-        this->runLDbyFamily();
+        this->runPopLDdecaybyFamily();
     }
     else
     {
-        this->runLDSingle();
+        this->runPopLDdecaySingle();
     }
     ui->ldRunPushButton->setEnabled(true);
     qApp->processEvents();
 }
 
-void MainWindow::runLDbyFamily(void)
+void MainWindow::runPopLDdecaybyFamily(void)
 {
     try {
         QString out(this->workDirectory->getOutputDirectory());
@@ -1596,6 +1596,147 @@ void MainWindow::runLDbyFamily(void)
         PopLDdecay popLDdecay;
         if (isVcfFile(genotype)){} // Transform "vcf" to "transpose"
 
+        // Make .keep file.
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Make .keep file, \n");
+        qApp->processEvents();
+
+        if (genoFileSuffix == "ped")
+        {
+            keepFileList = popLDdecay.makeKeepFile(genotype);
+        }
+        if (genoFileSuffix == "tped")
+        {
+            map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".tfam" : map;
+            keepFileList = popLDdecay.makeKeepFile(map);
+        }
+        if (genoFileSuffix == "bed")
+        {
+            map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".fam" : map;
+            keepFileList = popLDdecay.makeKeepFile(map);
+        }
+
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText(".keep file OK.\n");
+        qApp->processEvents();
+
+        for (QString keepFile:keepFileList)
+        {
+            QFileInfo keepFileInfo(keepFile);
+            QString keepFileBaseName = keepFileInfo.baseName();
+            QString keepFileAbPath = keepFileInfo.absolutePath();
+
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Make "+keepFileBaseName+".ped"+" and "+keepFileBaseName+".map, \n");
+            qApp->processEvents();
+
+            // Split ped and map file.
+            if (genoFileSuffix == "ped")
+            {
+                map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".map" : map;
+                plink.splitPlinkFile(genotype, map, keepFile,
+                        genoFileAbPath+"/"+keepFileBaseName);
+            }
+            if (genoFileSuffix == "tped")
+            {
+                map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".tfam" : map;
+                plink.splitTransposeFile(genotype, map, keepFile,
+                        genoFileAbPath+"/"+keepFileBaseName);
+            }
+            if (genoFileSuffix == "bed")
+            {
+                plink.splitBinaryFile(genoFileAbPath+"/"+genoFileBaseName, keepFile, genoFileAbPath+"/"+keepFileBaseName);
+            }
+
+            this->process->start(this->toolpath+"plink", plink.getParamList());
+            if (!this->process->waitForStarted())
+            {
+                throw -1;
+            }
+            if (!this->process->waitForFinished(-1))
+            {
+                this->resetWindow();
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText(keepFileBaseName+".ped and "+keepFileBaseName+".map OK.\n");
+            qApp->processEvents();
+
+            QFile file;
+            file.remove(keepFile);
+
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype.\n");
+            qApp->processEvents();
+            // Make .genotype file.
+            if (popLDdecay.makeGenotype(genoFileAbPath+"/"+keepFileBaseName+".ped",
+                                    genoFileAbPath+"/"+keepFileBaseName+".map",
+                                    genoFileAbPath+"/"+keepFileBaseName+".genotype"))
+            {
+                QStringList param;
+                param.append(this->scriptpath+"plink2genotype.pl");
+                this->process->start("perl", param+popLDdecay.getParamList());
+                if (!this->process->waitForStarted())
+                {
+                    throw -1;
+                }
+                qDebug() << this->process->pid();
+                if (!this->process->waitForFinished(-1))
+                {
+                    this->resetWindow();
+                    throw -1;
+                }
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText(keepFileBaseName+".genotype OK.\n");
+                qApp->processEvents();
+            }
+            else
+            {
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype ERROR.\n");
+                qApp->processEvents();
+                throw -1;
+            }
+
+            // Run LD.
+            // keepFileName:fileAbPath+"/"+fileBaseName+"_"+fid+".keep"
+            if (popLDdecay.runLD(genoFileAbPath+"/"+keepFileBaseName+".genotype",
+                                 out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]))
+            {
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText("Run LD,\n");
+                qApp->processEvents();
+                this->process->start(this->toolpath+"PopLDdecay", popLDdecay.getParamList());
+                if (!this->process->waitForStarted())
+                {
+                    QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+                    throw -1;
+                }
+                if (!this->process->waitForFinished(-1))
+                {
+                    throw -1;
+                }
+                ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText("LD OK. \n");
+                qApp->processEvents();
+            }
+            else
+            {
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText("LD ERROR. \n");
+                qApp->processEvents();
+                throw -1;
+            }
+
+
+
+            file.remove(genoFileAbPath+"/"+keepFileBaseName+".ped");
+            file.remove(genoFileAbPath+"/"+keepFileBaseName+".map");
+            file.remove(genoFileAbPath+"/"+keepFileBaseName+".log");
+            file.remove(genoFileAbPath+"/"+keepFileBaseName+".nosex");
+        }
+        /*
         if (genoFileSuffix == "ped")
         {
             map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".map" : map;
@@ -1686,102 +1827,18 @@ void MainWindow::runLDbyFamily(void)
                 this->runningMsgWidget->appendText("LD OK, \n");
                 qApp->processEvents();
 
-//                file.remove(genoFileAbPath+"/"+fid+".ped");
-//                file.remove(genoFileAbPath+"/"+fid+".map");
+                file.remove(genoFileAbPath+"/"+fid+".ped");
+                file.remove(genoFileAbPath+"/"+fid+".map");
                 file.remove(genoFileAbPath+"/"+keepFileBaseName+".log");
                 file.remove(genoFileAbPath+"/"+keepFileBaseName+".nosex");
-            }
-        }
-        if (genoFileSuffix == "tped")
-        {
-            map = map.isNull() ? genoFileAbPath+"/"+genoFileBaseName+".tfam" : map;
-            keepFileList = popLDdecay.makeKeepFile(map);
-            for (QString fid:keepFileList)
-            {
-                // Split ped and map file.
-                plink.splitTransposeFile(genotype, map, genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
-                                         genoFileAbPath+"/"+fid+".genotype");
-                this->process->start(this->toolpath+"plink", plink.getParamList());
-                if (!this->process->waitForStarted())
-                {
-                    throw -1;
-                }
-                if (!this->process->waitForFinished(-1))
-                {
-                    this->resetWindow();
-                    throw -1;
-                }
-
-                QFile file;
-                file.remove(genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep");
-                // Make .genotype file.
-                popLDdecay.makeGenotype(genoFileAbPath+"/"+fid+".ped", genoFileAbPath+"/"+fid+".map", genoFileAbPath+"/"+fid);
-                QStringList param;
-                param.append(this->scriptpath+"plink2genotype.pl");
-                this->process->start("perl", param+popLDdecay.getParamList());
-                if (!this->process->waitForStarted())
-                {
-                    throw -1;
-                }
-                if (!this->process->waitForFinished(-1))
-                {
-                    this->resetWindow();
-                    throw -1;
-                }
-                file.remove(genoFileAbPath+"/"+fid+".ped");
-                file.remove(genoFileAbPath+"/"+fid+".map");
-                file.remove(genoFileAbPath+"/"+fid+".log");
-                file.remove(genoFileAbPath+"/"+fid+".nosex");
-            }
-        }
-        if (genoFileSuffix == "bed")
-        {
-            keepFileList = popLDdecay.makeKeepFile(map);
-            for (QString fid:keepFileList)
-            {
-                // Split ped and map file.
-                plink.splitBinaryFile(genoFileAbPath+"/"+genoFileBaseName,
-                                      genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep",
-                                      genoFileAbPath+"/"+fid+".genotype");
-                this->process->start(this->toolpath+"plink", plink.getParamList());
-                if (!this->process->waitForStarted())
-                {
-                    throw -1;
-                }
-                if (!this->process->waitForFinished(-1))
-                {
-                    this->resetWindow();
-                    throw -1;
-                }
-                QFile file;
-                file.remove(genoFileAbPath+"/"+genoFileBaseName+"_"+fid+".keep");
-                // Make .genotype file.
-                popLDdecay.makeGenotype(genoFileAbPath+"/"+fid+".ped", genoFileAbPath+"/"+fid+".map", genoFileAbPath+"/"+fid);
-                QStringList param;
-                param.append(this->scriptpath+"plink2genotype.pl");
-                this->process->start("perl", param+popLDdecay.getParamList());
-                if (!this->process->waitForStarted())
-                {
-                    QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
-                    throw -1;
-                }
-                if (!this->process->waitForFinished(-1))
-                {
-                    throw -1;
-                }
-                file.remove(genoFileAbPath+"/"+fid+".ped");
-                file.remove(genoFileAbPath+"/"+fid+".map");
-                file.remove(genoFileAbPath+"/"+fid+".log");
-                file.remove(genoFileAbPath+"/"+fid+".nosex");
-            }
-        }
+            } */
     } catch (...) {
         this->resetWindow();
     }
     this->resetWindow();
 }
 
-void MainWindow::runLDSingle(void)
+void MainWindow::runPopLDdecaySingle(void)
 {
     try {
         QString genotype = this->fileReader->getGenotypeFile();
@@ -1849,6 +1906,9 @@ void MainWindow::runLDSingle(void)
             plinkFile = genoFileAbPath + "/" + genoFileBaseName;
         }
 
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Make" + plinkFile + ".genotype.\n");
+        qApp->processEvents();
         PopLDdecay popLDdecay;
         if (popLDdecay.makeGenotype(plinkFile+".ped", plinkFile+".map", plinkFile+".genotype"))
         {
@@ -1864,8 +1924,21 @@ void MainWindow::runLDSingle(void)
             {
                 throw -1;
             }
+
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText(plinkFile + ".genotype OK.\n");
+            qApp->processEvents();
+        }
+        else
+        {
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText(plinkFile + ".genotype ERROR.\n");
+            qApp->processEvents();
         }
 
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Run LD, \n");
+        qApp->processEvents();
         if (popLDdecay.runLD(plinkFile+".genotype", out+"/"+name))
         {
             this->process->start(this->toolpath+"PopLDdecay", popLDdecay.getParamList());
@@ -1879,6 +1952,16 @@ void MainWindow::runLDSingle(void)
                 throw -1;
             }
             ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
+
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("LD OK.\n");
+            qApp->processEvents();
+        }
+        else
+        {
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("LD ERROR.\n");
+            qApp->processEvents();
         }
 
         QFile file;
@@ -1890,7 +1973,6 @@ void MainWindow::runLDSingle(void)
             file.remove(plinkFile+".log");
             file.remove(plinkFile+".genotype");
         }
-
     } catch (...) {
         this->resetWindow();
     }

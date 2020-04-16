@@ -1384,6 +1384,9 @@ border-radius:5px;//这个是改变成圆角边框;
          <property name="text">
           <string>empty</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
       </layout>
@@ -1440,6 +1443,9 @@ border-radius:5px;//这个是改变成圆角边框;
          </property>
          <property name="text">
           <string>empty</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -1511,6 +1517,9 @@ border-radius:5px;//这个是改变成圆角边框;
          <property name="text">
           <string>empty</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
        <item>
@@ -1581,6 +1590,9 @@ border-radius:5px;//这个是改变成圆角边框;
          <property name="text">
           <string>empty</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
       </layout>
@@ -1650,6 +1662,9 @@ border-radius:5px;//这个是改变成圆角边框;
          </property>
          <property name="text">
           <string>empty</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
