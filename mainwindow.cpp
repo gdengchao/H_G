@@ -1925,6 +1925,12 @@ void MainWindow::runPopLDdecaySingle(void)
                 throw -1;
             }
 
+            QFile file;
+            file.remove(plinkFile+".ped");
+            file.remove(plinkFile+".map");
+            file.remove(plinkFile+".nosex");
+            file.remove(plinkFile+".log");
+
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText(plinkFile + ".genotype OK.\n");
             qApp->processEvents();
@@ -1953,6 +1959,9 @@ void MainWindow::runPopLDdecaySingle(void)
             }
             ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
 
+            QFile file;
+            file.remove(plinkFile+".genotype");
+
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("LD OK.\n");
             qApp->processEvents();
@@ -1962,16 +1971,6 @@ void MainWindow::runPopLDdecaySingle(void)
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("LD ERROR.\n");
             qApp->processEvents();
-        }
-
-        QFile file;
-        if (transformFileFlag)
-        {
-            file.remove(plinkFile+".ped");
-            file.remove(plinkFile+".map");
-            file.remove(plinkFile+".nosex");
-            file.remove(plinkFile+".log");
-            file.remove(plinkFile+".genotype");
         }
     } catch (...) {
         this->resetWindow();
