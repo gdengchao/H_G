@@ -1657,7 +1657,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
             qApp->processEvents();
 
             QFile file;
-            file.remove(keepFile);
+//            file.remove(keepFile);
 
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype.\n");
@@ -1693,8 +1693,8 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 throw -1;
             }
 
-            file.remove(genoFileAbPath+"/"+keepFileBaseName+".ped");
-            file.remove(genoFileAbPath+"/"+keepFileBaseName+".map");
+//            file.remove(genoFileAbPath+"/"+keepFileBaseName+".ped");
+//            file.remove(genoFileAbPath+"/"+keepFileBaseName+".map");
             file.remove(genoFileAbPath+"/"+keepFileBaseName+".log");
             file.remove(genoFileAbPath+"/"+keepFileBaseName+".nosex");
 
@@ -1712,9 +1712,9 @@ void MainWindow::runPopLDdecaybyFamily(void)
                     QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
                     throw -1;
                 }
-                if (!this->process->waitForFinished(-1))
+                while (!this->process->waitForFinished(-1))
                 {
-                    throw -1;
+                    qApp->processEvents();
                 }
                 ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
@@ -1728,7 +1728,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 qApp->processEvents();
                 throw -1;
             }
-            file.remove(genoFileAbPath+"/"+keepFileBaseName+".genotype");
+//            file.remove(genoFileAbPath+"/"+keepFileBaseName+".genotype");
         }
     } catch (...) {
         ;
@@ -1817,9 +1817,9 @@ void MainWindow::runPopLDdecaySingle(void)
                 QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
                 throw -1;
             }
-            if (!this->process->waitForFinished(-1))
+            while (!this->process->waitForFinished(-1))
             {
-                throw -1;
+                qApp->processEvents();
             }
 
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
