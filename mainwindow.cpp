@@ -1149,7 +1149,7 @@ void MainWindow::on_drawManPushButton_clicked()
         QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
         QStringList outList;
 
-         if (qqmanFile.isEmpty() || gwasResulFile.isEmpty())
+        if (qqmanFile.isEmpty())
         {
             throw -1;
         }
@@ -1176,6 +1176,8 @@ void MainWindow::on_drawManPushButton_clicked()
 
 void MainWindow::on_drawQQPushButton_clicked()
 {
+    ui->drawQQPushButton->setEnabled(false);
+    qApp->processEvents();
     try {
         QString gwasResulFile = ui->gwasResultLineEdit->text();
         if (gwasResulFile.isEmpty())
@@ -1398,7 +1400,7 @@ QStringList MainWindow::makeQQManInputFile(QString pvalueFile)
          *  SNP CHR BP  P (Header is necessary)
          */
         QStringList header = gwasResultFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);    // Read header, we don't need it in .qqman file.
-        int num = header.length() != 13  ? header.length()-13+1 : 1;  // Multi(3) p-values in file when chosed all tested.
+        int num = (header.length() != 12)  ? (header.length()-13+1) : 1;  // Multi(3) p-values in file when chosed all tested.
         for (int i = 1; i <= num; i++)
         {
             gwasResultFileStream.seek(0);       // Back to begin of the file.
