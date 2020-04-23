@@ -88,6 +88,8 @@ private slots:
     // Graph viewer
     void on_GraphViewer_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 

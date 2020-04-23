@@ -1524,7 +1524,7 @@ void MainWindow::on_pcaRunPushButton_clicked()
         }
 
         if (gcta.runPCA(binaryFile, ui->nPCsLineEdit->text().toInt(),
-                        ui->nThreadsLineEdit->text().toInt(), genoFileAbPath+"/"+genoFileBaseName))
+                        ui->nThreadsLineEdit->text().toInt(), out+"/"+genoFileBaseName))
         {
             this->process->start(this->toolpath+"gcta64", gcta.getParamList());
             this->process->waitForStarted();
@@ -1899,9 +1899,9 @@ void MainWindow::on_ldPlotPushButton_clicked()
                 QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
                 throw -1;
             }
-            if (!this->process->waitForFinished(-1))
+            while (!this->process->waitForFinished(-1))
             {
-                throw -1;
+                qApp->processEvents();
             }
             this->graphViewer->setGraph(out+"/"+name+".png");
             this->graphViewer->show();
