@@ -43,12 +43,20 @@ QString RunningMsgWidget::getText(void)
 
 void RunningMsgWidget::closeEvent(QCloseEvent *event)
 {
-    if (this->isVisible())
+    qDebug() << "RunningMsgWidget::closeEvent";
+    QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
+        "The association will be terminated if close the widget!   ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    if (ret == QMessageBox::Yes)
     {
-        this->hide();
+        emit this->closeSignal();
+        this->clearText();
+        event->accept();
     }
-    this->clearText();
-    emit this->closeSignal();
+    else
+    {
+        event->ignore();
+        event->setAccepted(true);
+    }
 }
 
 // Delete the last line and append the new line.

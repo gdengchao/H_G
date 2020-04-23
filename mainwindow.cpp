@@ -916,6 +916,7 @@ void MainWindow::on_readerror()
 
 void MainWindow::on_closeRunningWidget()
 {
+    qDebug() << "MainWindow::on_closeRunningWidget";
     this->resetWindow();
     qApp->processEvents();
 }
@@ -1331,6 +1332,7 @@ QStringList MainWindow::makeQQManInputFile(QString pvalueFile)
 
     if ( pvalueFileComSuffix == "assoc.linear" || pvalueFileComSuffix == "assoc.logistic")
     {   // Plink output file don't need to be transformed.
+        qqmanInFileList.append(pvalueFile);
         return qqmanInFileList;
     }
 
@@ -1889,7 +1891,7 @@ void MainWindow::on_ldPlotPushButton_clicked()
         QString out = this->workDirectory->getOutputDirectory();
         QString name = this->workDirectory->getProjectName();
         PopLDdecay popLDdecay;
-        if (popLDdecay.plotLD(ldResultFile, out+"/"+name))
+        if (popLDdecay.plotLD(ldResultFile, out+"/"+name+"_ld"))
         {
             QStringList param;
             param.append(this->scriptpath+"Plot_OnePop.pl");
@@ -1903,7 +1905,8 @@ void MainWindow::on_ldPlotPushButton_clicked()
             {
                 qApp->processEvents();
             }
-            this->graphViewer->setGraph(out+"/"+name+".png");
+            QStringList graphList(out+"/"+name+"_ld.png");
+            this->graphViewer->setGraph(graphList);
             this->graphViewer->show();
         }
     } catch (...) {
@@ -1935,4 +1938,23 @@ void MainWindow::on_ldReultBrowButton_clicked()
 void MainWindow::on_GraphViewer_clicked()
 {
     qDebug() << "Graph viewer clicked" << endl;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    qDebug() << "MainWindow::closeEvent";
+    this->resetWindow();
+    if (this->runningMsgWidget->isVisible())
+    {
+        runningMsgWidget->close();
+    }
+    if (this->isVisible())
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+        event->setAccepted(true);
+    }
 }

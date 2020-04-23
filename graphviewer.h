@@ -20,14 +20,15 @@ public:
     explicit GraphViewer(QWidget *parent = nullptr);
     ~GraphViewer();
 
-    void setGraph(QString graph);
     void setGraph(QStringList graph);
     void setImgList(QStringList imgList);
     QStringList getImgList(void);
     QString getCurrentImg(void);
 
+private:
+    void loopChangeGraphInList(void);
 protected slots:
-    void mousePressEvent(QMouseEvent *e);
+    void mouseDoubleClickEvent(QMouseEvent *e);
 
 signals:
     void clicked();

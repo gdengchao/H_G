@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QCloseEvent>
 #include <QTextCursor>
+#include <QMessageBox>
 
 namespace Ui {
 class RunningMsgWidget;
@@ -24,11 +25,11 @@ public:
     void refreshLastLine(QString line);
     QString getText(void);
 
-    // To stop process.
-    void closeEvent(QCloseEvent *event);
 
 private:
     Ui::RunningMsgWidget *ui;
+    // To stop process.
+    void closeEvent(QCloseEvent *event);
 
 signals :
     void closeSignal(void);

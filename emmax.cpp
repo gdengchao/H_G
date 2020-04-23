@@ -47,6 +47,12 @@ bool Emmax::runGWAS(QString genotype, QString phenotype, QString covariate, QStr
         }
         return false;
     }
+
+    if (!moreParam.isEmpty())
+    {
+
+    }
+
     // emmax -v -d 10 -t 222_filter1_rec12 -p phe1_fall_time -k 222_filter1_rec12.hBN.kinf -o 222_filter1_phe1_BN
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("-v");

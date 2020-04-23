@@ -88,10 +88,10 @@ private slots:
     // Graph viewer
     void on_GraphViewer_clicked();
 
-    void on_pushButton_clicked();
-
 private:
     Ui::MainWindow *ui;
+
+    void closeEvent(QCloseEvent *event);
 
     //  Tool and script path;
     QString toolpath = "/home/chao/Documents/code/H_G/tools/";

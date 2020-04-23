@@ -18,14 +18,24 @@ GraphViewer::~GraphViewer()
     delete scene;
 }
 
-void GraphViewer::setGraph(QString graph)
+void GraphViewer::loopChangeGraphInList(void)
 {
+    int index = imgList.indexOf(this->getCurrentImg());
+    if (imgList.length() <= 1 || index == -1)
+    {
+        return;
+    }
+    QString graph = imgList[(index+1)%imgList.length()];
     if(image->load(graph))
     {
+        scene->clear();
         scene->addPixmap(QPixmap::fromImage(*image));
-        ui->graphicsView->setScene(scene);
         ui->graphicsView->resize(image->width() + 10, image->height() + 10);
-        this->adjustSize();
+        ui->graphicsView->setScene(scene);
+        //this->resize(image->width() + 15, image->height() + 15);
+        updateGeometry();
+        this->resize(image->width() + 10, image->height() + 10);
+        qApp->processEvents();
 
         QFileInfo graphInfo(graph);
         QString baseName = graphInfo.baseName();
@@ -36,10 +46,12 @@ void GraphViewer::setGraph(QString graph)
     }
 }
 
+// graph must in imgList.
 void GraphViewer::setGraph(QStringList graph)
 {
     if(image->load(graph[0]))
     {
+        scene->clear();
         scene->addPixmap(QPixmap::fromImage(*image));
         ui->graphicsView->setScene(scene);
         ui->graphicsView->resize(image->width() + 10, image->height() + 10);
@@ -50,7 +62,7 @@ void GraphViewer::setGraph(QStringList graph)
         this->setWindowTitle(baseName);
         ui->graphicsView->show();
 
-        imgList.clear();
+        this->imgList.clear();
         imgList.append(graph);
         curImage = graph[0];
     }
@@ -61,20 +73,13 @@ void GraphViewer::showEvent(QShowEvent *)
     ui->graphicsView->fitInView(scene->sceneRect(),Qt::KeepAspectRatio);
 }
 
-void GraphViewer::mousePressEvent(QMouseEvent *e)
+void GraphViewer::mouseDoubleClickEvent(QMouseEvent *e)
 {
     if(e->button()==Qt::LeftButton)
     {
         qDebug() << "Graph clicked" << endl;
 
-        QStringList imgList = this->getImgList();
-        QString curImage = this->getCurrentImg();
-        int index = imgList.indexOf(curImage);
-        if (index == -1)
-        {
-            return;
-        }
-        this->setGraph(imgList[(index+1)%imgList.length()]);
+        this->loopChangeGraphInList();
 
         qDebug() << "imgList: " << imgList << endl;
         qDebug() << "curImage: " << curImage << endl;
