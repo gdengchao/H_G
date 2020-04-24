@@ -18,10 +18,10 @@ drawManhattan <- function(args)
     genomewide = -log10(getDataFromSciNotation(gwline))
     suggest = -log10(getDataFromSciNotation(sgline))
     
-    write(inData, stderr())
-    write(out, stderr())
-    write(gwline, stderr())
-    write(sgline, stderr())
+#    write(inData, stderr())
+#    write(out, stderr())
+#    write(gwline, stderr())
+#    write(sgline, stderr())
 
     data <- read.table(inData, header = T)
     
@@ -36,8 +36,9 @@ drawManhattan <- function(args)
     newData<-na.omit(data)
     
     ### NOTICE the path of manhattan.R
-    source("/home/chao/Documents/code/H_G/script/manhattan.R") #/home/chao/Documents/code/H_G/script/manhattan.R
-    manhattan(newData, output = out, suggestiveline = suggest, genomewideline = genomewide)
+#    source("/home/chao/Documents/code/H_G/script/manhattan.R") #/home/chao/Documents/code/H_G/script/manhattan.R
+	source("./manhattan.R")
+	manhattan(newData, output = out, suggestiveline = suggest, genomewideline = genomewide)
 }
 
 drawQQplot <- function(args)
@@ -45,8 +46,8 @@ drawQQplot <- function(args)
     inData = args[1]
     output =args[2]
     
-    write(inData, stdout())
-    write(output, stdout())
+#   write(inData, stdout())
+#    write(output, stdout())
     
     data <- read.table(inData, header = T)
     data <- unlist(c(data)) 
@@ -54,8 +55,9 @@ drawQQplot <- function(args)
     newData<-na.omit(data)
     
     ### NOTICE the path of manhattan.R
-    source("/home/chao/Documents/code/H_G/script/qq.R")
-    qq(newData, output)
+#    source("/home/chao/Documents/code/H_G/script/qq.R")
+	source("./qq.R")
+	qq(newData, output)
 }
 
 main <- function()
