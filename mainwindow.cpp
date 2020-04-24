@@ -1671,18 +1671,18 @@ void MainWindow::runPopLDdecaybyFamily(void)
                                     genoFileAbPath+"/"+keepFileBaseName+".map",
                                     genoFileAbPath+"/"+keepFileBaseName+".genotype"))
             {
-                QStringList param;
-                param.append(this->scriptpath+"plink2genotype.pl");
-                this->process->start("perl", param+popLDdecay.getParamList());
+//                QStringList param;
+//                param.append(this->scriptpath+"plink2genotype.pl");
+//                this->process->start("perl", param+popLDdecay.getParamList());
+                this->process->start(this->scriptpath+"plink2genotype", popLDdecay.getParamList());
                 if (!this->process->waitForStarted())
                 {
                     throw -1;
                 }
                 qDebug() << this->process->pid();
-                if (!this->process->waitForFinished(-1))
+                while (!this->process->waitForFinished(-1))
                 {
-                    this->resetWindow();
-                    throw -1;
+                    qApp->processEvents();
                 }
 
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
@@ -1713,7 +1713,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 this->process->start(this->toolpath+"PopLDdecay", popLDdecay.getParamList());
                 if (!this->process->waitForStarted())
                 {
-                    QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+//                    QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
                     throw -1;
                 }
                 while (!this->process->waitForFinished(-1))
@@ -1813,12 +1813,14 @@ void MainWindow::runPopLDdecaySingle(void)
         PopLDdecay popLDdecay;
         if (popLDdecay.makeGenotype(plinkFile+".ped", plinkFile+".map", plinkFile+".genotype"))
         {
-            QStringList param;
-            param.append(this->scriptpath+"plink2genotype.pl");
-            this->process->start("perl", param+popLDdecay.getParamList());
+//            QStringList param;
+//            param.append(this->scriptpath+"plink2genotype.pl");
+//            this->process->start("perl", param+popLDdecay.getParamList());
+            this->process->start(this->scriptpath+"plink2genotype", popLDdecay.getParamList());
+
             if (!this->process->waitForStarted())
             {
-                QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+//                QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
                 throw -1;
             }
             while (!this->process->waitForFinished(-1))
@@ -1855,9 +1857,9 @@ void MainWindow::runPopLDdecaySingle(void)
                 QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
                 throw -1;
             }
-            if (!this->process->waitForFinished(-1))
+            while (!this->process->waitForFinished(-1))
             {
-                throw -1;
+                qApp->processEvents();
             }
             ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
@@ -1893,12 +1895,14 @@ void MainWindow::on_ldPlotPushButton_clicked()
         PopLDdecay popLDdecay;
         if (popLDdecay.plotLD(ldResultFile, out+"/"+name+"_ld"))
         {
-            QStringList param;
-            param.append(this->scriptpath+"Plot_OnePop.pl");
-            this->process->start("perl", param+popLDdecay.getParamList());
+//            QStringList param;
+//            param.append(this->scriptpath+"Plot_OnePop.pl");
+//            this->process->start("perl", param+popLDdecay.getParamList());
+            this->process->start(this->scriptpath+"Plot_OnePop", popLDdecay.getParamList());
+            this->process->waitForStarted();
             if (!this->process->waitForStarted())
             {
-                QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+//                QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
                 throw -1;
             }
             while (!this->process->waitForFinished(-1))
