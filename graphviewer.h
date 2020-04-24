@@ -37,6 +37,7 @@ private:
     Ui::GraphViewer *ui;
     QImage *image;
     QGraphicsScene *scene;
+    QGraphicsView* view;
     QStringList imgList;
     QString curImage;
     void showEvent(QShowEvent *);

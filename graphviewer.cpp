@@ -9,6 +9,7 @@ GraphViewer::GraphViewer(QWidget *parent) :
 
     image = new QImage;
     scene = new QGraphicsScene;
+    view = new QGraphicsView;
 }
 
 GraphViewer::~GraphViewer()
@@ -16,6 +17,7 @@ GraphViewer::~GraphViewer()
     delete ui;
     delete image;
     delete scene;
+    delete view;
 }
 
 void GraphViewer::loopChangeGraphInList(void)
@@ -28,14 +30,10 @@ void GraphViewer::loopChangeGraphInList(void)
     QString graph = imgList[(index+1)%imgList.length()];
     if(image->load(graph))
     {
-        scene->clear();
         scene->addPixmap(QPixmap::fromImage(*image));
-        ui->graphicsView->resize(image->width() + 10, image->height() + 10);
         ui->graphicsView->setScene(scene);
-        //this->resize(image->width() + 15, image->height() + 15);
-        updateGeometry();
-        this->resize(image->width() + 10, image->height() + 10);
-        qApp->processEvents();
+        ui->graphicsView->resize(image->width() + 10, image->height() + 10);
+        this->resize(image->width() + 32, image->height() + 32);
 
         QFileInfo graphInfo(graph);
         QString baseName = graphInfo.baseName();
@@ -51,12 +49,12 @@ void GraphViewer::setGraph(QStringList graph)
 {
     if(image->load(graph[0]))
     {
-        scene->clear();
+        delete scene;
+        scene = new QGraphicsScene;
         scene->addPixmap(QPixmap::fromImage(*image));
         ui->graphicsView->setScene(scene);
         ui->graphicsView->resize(image->width() + 10, image->height() + 10);
-        this->adjustSize();
-
+        this->resize(image->width() + 32, image->height() + 32);
         QFileInfo graphInfo(graph[0]);
         QString baseName = graphInfo.baseName();
         this->setWindowTitle(baseName);

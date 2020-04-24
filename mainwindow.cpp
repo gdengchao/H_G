@@ -60,8 +60,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->covarFileToolButton, SIGNAL(rightClicked()), this, SLOT(on_covarFileToolButton_rightClicked()));
     // Graph Viewer
     connect(graphViewer, SIGNAL(clicked), this, SLOT(on_GraphViewer_clicked()));
-
-    this->runningMsgWidget->show();
 }
 
 MainWindow::~MainWindow()
