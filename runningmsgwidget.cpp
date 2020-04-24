@@ -6,6 +6,7 @@ RunningMsgWidget::RunningMsgWidget(QWidget *parent) :
     ui(new Ui::RunningMsgWidget)
 {
     ui->setupUi(this);
+    this->installEventFilter(this);
     this->setTitle("Running Messages");
 }
 
@@ -44,20 +45,32 @@ QString RunningMsgWidget::getText(void)
 void RunningMsgWidget::closeEvent(QCloseEvent *event)
 {
     qDebug() << "RunningMsgWidget::closeEvent";
-    QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
-        "The association will be terminated if close the widget!   ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-    if (ret == QMessageBox::Yes)
+    if (this->isVisible())
     {
-        emit this->closeSignal();
-        this->clearText();
-        event->accept();
-    }
-    else
-    {
-        event->ignore();
-        event->setAccepted(true);
+        QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
+            "The association will be terminated if close the widget!   ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        if (ret == QMessageBox::Yes)
+        {
+            emit this->closeSignal();
+            this->clearText();
+            event->accept();
+        }
+        else
+        {
+            event->ignore();
+        }
     }
 }
+
+//bool RunningMsgWidget::eventFilter(QObject *object, QEvent *event)
+//{
+//    if (event->type() == QEvent::Close)
+//    if (object != this)
+//    {
+//        return true;
+//    }
+//    return false;
+//}
 
 // Delete the last line and append the new line.
 void RunningMsgWidget::refreshLastLine(QString line)

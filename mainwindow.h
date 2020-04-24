@@ -92,7 +92,7 @@ private:
     Ui::MainWindow *ui;
 
     void closeEvent(QCloseEvent *event);
-
+//    bool eventFilter(QObject *obj, QEvent *ev) override;
     //  Tool and script path;
     QString toolpath = "/home/chao/Documents/code/H_G/tools/";
     QString scriptpath = "/home/chao/Documents/code/H_G/script/";
