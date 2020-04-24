@@ -27,6 +27,24 @@ public:
 
 private:
     void loopChangeGraphInList(void);
+//    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+//    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+//    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+//    void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+//    void zoom(float scaleFactor);
+//    void zoomIn();
+//    void zoomOut();
+//    void translate(QPointF delta);
+//    void setTranslateSpeed(qreal speed);
+//    void setZoomDelta(qreal delta);
+
+//    Qt::MouseButton translateButton;
+//    qreal translateSpeed;
+//    bool isMouseTranslate;
+//    QPoint lastMousePos;
+//    qreal zoomDelta;
+//    qreal scaleData;
+
 protected slots:
     void mouseDoubleClickEvent(QMouseEvent *e);
 

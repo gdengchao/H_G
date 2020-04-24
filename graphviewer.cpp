@@ -7,9 +7,18 @@ GraphViewer::GraphViewer(QWidget *parent) :
 {
     ui->setupUi(this);
 
+//    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    ui->graphicsView->setCursor(Qt::PointingHandCursor);
+//    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
+
+//    this->zoomDelta = 0.1;  // Intiate data.
+//    this->scaleData = 1.0;
+//    this->translateSpeed = 1.0;
+//    this->translateButton = Qt::LeftButton;
+
     image = new QImage;
     scene = new QGraphicsScene;
-    view = new QGraphicsView;
 }
 
 GraphViewer::~GraphViewer()
@@ -17,7 +26,6 @@ GraphViewer::~GraphViewer()
     delete ui;
     delete image;
     delete scene;
-    delete view;
 }
 
 void GraphViewer::loopChangeGraphInList(void)
@@ -44,7 +52,6 @@ void GraphViewer::loopChangeGraphInList(void)
     }
 }
 
-// graph must in imgList.
 void GraphViewer::setGraph(QStringList graph)
 {
     if(image->load(graph[0]))
@@ -101,3 +108,72 @@ void GraphViewer::setImgList(QStringList imgList)
     this->imgList.clear();
     this->imgList.append(imgList);
 }
+
+//void GraphViewer::mouseMoveEvent(QMouseEvent *event)
+//{
+//    if (this->isMouseTranslate){
+//        QPointF mouseDelta = ui->graphicsView->mapToScene(event->pos()) - ui->graphicsView->mapToScene(this->lastMousePos);
+//        translate(mouseDelta);
+//    }
+
+//    this->lastMousePos = event->pos();
+//}
+
+//void GraphViewer::translate(QPointF delta)
+//{
+//    delta *= this->scaleData;
+//    delta *= this->translateSpeed;
+
+//    ui->graphicsView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+//    QPoint newCenter(ui->graphicsView->viewport()->rect().width() / 2 - delta.x(),
+//                     ui->graphicsView->viewport()->rect().height() / 2 - delta.y());
+//    ui->graphicsView->centerOn(ui->graphicsView->mapToScene(newCenter));
+
+//    ui->graphicsView->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+//}
+
+//void GraphViewer::mousePressEvent(QMouseEvent *event)
+//{
+//    if (event->button() == this->translateButton) {
+//        // 当光标底下没有 item 时才能移动
+//        QPointF point = ui->graphicsView->mapToScene(event->pos());
+//        if (ui->graphicsView->scene()->itemAt(point, ui->graphicsView->transform()) == NULL)  {
+//            this->isMouseTranslate = true;
+//            this->lastMousePos = event->pos();
+//        }
+//    }
+//}
+
+//void GraphViewer::mouseReleaseEvent(QMouseEvent *event)
+//{
+//    if (event->button() == this->translateButton)
+//    {
+//        this->isMouseTranslate = false;
+//    }
+//}
+
+//void GraphViewer::zoom(float scaleFactor)
+//{
+//    qreal factor = ui->graphicsView->transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
+//    if (factor < 0.07 || factor > 100)
+//        return;
+
+//    ui->graphicsView->scale(scaleFactor, scaleFactor);
+//    this->scaleData *= scaleFactor;
+//}
+
+//void GraphViewer::zoomIn()
+//{
+//    zoom(1 + this->zoomDelta);
+//}
+
+//void GraphViewer::zoomOut()
+//{
+//    zoom(1 - zoomDelta);
+//}
+
+//void GraphViewer::wheelEvent(QWheelEvent *event)
+//{
+//    QPoint scrollAmount = event->angleDelta();
+//    scrollAmount.y() > 0 ? zoomIn() : zoomOut();
+//}
