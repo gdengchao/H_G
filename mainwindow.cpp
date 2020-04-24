@@ -535,6 +535,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
             this->resetWindow();
             return false;
         }
+        this->process->close();
         this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
     }
 
@@ -572,6 +573,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
              this->resetWindow();
              return false;
          }
+         this->process->close();
          //this->runningMsgWidget->setTitle(genoFileBaseName+"_tmp" + ".cXX.txt is made");
          this->runningMsgWidget->setTitle("Kinship is made");
          //kinship = genoFileAbPath + "/output/" + genoFileBaseName + ".cXX.txt";    // Attention
@@ -604,6 +606,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
             this->resetWindow();
             return false;
         }
+        this->process->close();
 
         QFile file;
         // delete intermidiate file.
@@ -743,6 +746,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
             this->resetWindow();
             return false;
         }
+        this->process->close();
         this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
     }
 
@@ -769,6 +773,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
              this->resetWindow();
              return false;
          }
+         this->process->close();
          //this->runningMsgWidget->setTitle(genoFileBaseName + ".hBN.kinf is made");
          this->runningMsgWidget->setTitle("Kinship is made");
 
@@ -804,7 +809,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
             this->resetWindow();
             return false;
         }
-
+        this->process->close();
         ui->gwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
 
         QFile file;
@@ -873,6 +878,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
             this->resetWindow();
             return false;
         }
+        this->process->close();
 
         ui->gwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
 
@@ -917,8 +923,29 @@ void MainWindow::on_readerror()
 void MainWindow::on_closeRunningWidget()
 {
     qDebug() << "MainWindow::on_closeRunningWidget";
-    this->resetWindow();
-    qApp->processEvents();
+
+    if (!this->runningMsgWidget->isVisible())
+    {
+        return;
+    }
+
+    if (this->process->isOpen())
+    {
+        QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
+           "The association will be terminated if close the widget!   ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        if (ret == QMessageBox::Yes)
+        {
+            this->process->close();
+            this->runningMsgWidget->clearText();
+            this->runningMsgWidget->hide();
+            this->resetWindow();
+        }
+    }
+    else
+    {
+        this->runningMsgWidget->clearText();
+        this->runningMsgWidget->hide();
+    }
 }
 
 //void MainWindow::on_mafSlider_valueChanged(int value)
@@ -1252,6 +1279,7 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
             QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
             return false;
         }
+        this->process->close();
     }
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
@@ -1285,6 +1313,7 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
             QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
             return false;
         }
+        this->process->close();
 
     }
     this->graphViewer->setGraph(out);
@@ -1507,6 +1536,7 @@ void MainWindow::on_pcaRunPushButton_clicked()
                 this->resetWindow();
                 throw -1;
             }
+            this->process->close();
         }
         else
         {
@@ -1523,6 +1553,7 @@ void MainWindow::on_pcaRunPushButton_clicked()
             {
                 throw -1;
             }
+            this->process->close();
         }
 
         if (gcta.runPCA(binaryFile, ui->nPCsLineEdit->text().toInt(),
@@ -1534,6 +1565,7 @@ void MainWindow::on_pcaRunPushButton_clicked()
             {
                 throw -1;
             }
+            this->process->close();
         }
 
         QFile file;
@@ -1656,6 +1688,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 this->resetWindow();
                 throw -1;
             }
+            this->process->close();
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText(keepFileBaseName+".ped and "+keepFileBaseName+".map OK.\n");
             qApp->processEvents();
@@ -1684,6 +1717,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 {
                     qApp->processEvents();
                 }
+                this->process->close();
 
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
                 this->runningMsgWidget->appendText(keepFileBaseName+".genotype OK.\n");
@@ -1720,6 +1754,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 {
                     qApp->processEvents();
                 }
+                this->process->close();
                 ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
                 this->runningMsgWidget->appendText("LD OK. \n");
@@ -1801,6 +1836,7 @@ void MainWindow::runPopLDdecaySingle(void)
             {
                 throw -1;
             }
+            this->process->close();
         }
         else
         {
@@ -1827,6 +1863,7 @@ void MainWindow::runPopLDdecaySingle(void)
             {
                 qApp->processEvents();
             }
+            this->process->close();
 
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText(plinkFile + ".genotype OK.\n");
@@ -1854,13 +1891,14 @@ void MainWindow::runPopLDdecaySingle(void)
             this->process->start(this->toolpath+"PopLDdecay", popLDdecay.getParamList());
             if (!this->process->waitForStarted())
             {
-                QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+//                QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
                 throw -1;
             }
             while (!this->process->waitForFinished(-1))
             {
                 qApp->processEvents();
             }
+            this->process->close();
             ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("LD OK.\n");
@@ -1909,6 +1947,7 @@ void MainWindow::on_ldPlotPushButton_clicked()
             {
                 qApp->processEvents();
             }
+            this->process->close();
             QStringList graphList(out+"/"+name+"_ld.png");
             this->graphViewer->setGraph(graphList);
             this->graphViewer->show();

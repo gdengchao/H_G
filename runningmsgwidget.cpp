@@ -45,21 +45,27 @@ QString RunningMsgWidget::getText(void)
 void RunningMsgWidget::closeEvent(QCloseEvent *event)
 {
     qDebug() << "RunningMsgWidget::closeEvent";
+
     if (this->isVisible())
     {
-        QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
-            "The association will be terminated if close the widget!   ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-        if (ret == QMessageBox::Yes)
-        {
-            emit this->closeSignal();
-            this->clearText();
-            event->accept();
-        }
-        else
-        {
-            event->ignore();
-        }
+        emit this->closeSignal();
     }
+    event->ignore();
+//    if (this->isVisible())
+//    {
+//        QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
+//            "The association will be terminated if close the widget!   ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+//        if (ret == QMessageBox::Yes)
+//        {
+//            emit this->closeSignal();
+//            this->clearText();
+//            event->accept();
+//        }
+//        else
+//        {
+//            event->ignore();
+//        }
+//    }
 }
 
 //bool RunningMsgWidget::eventFilter(QObject *object, QEvent *event)
