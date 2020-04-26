@@ -52,11 +52,11 @@ private slots:
     void on_covarFileToolButton_clicked();
     void on_kinFileToolButton_clicked();
     //  right click
-    void on_pheFileToolButton_rightClicked();
-    void on_genoFileToolButton_rightClicked();
-    void on_mapFileToolButton_rightClicked();
-    void on_kinFileToolButton_rightClicked();
-    void on_covarFileToolButton_rightClicked();
+    void on_pheFileToolButton_closeFileSig();
+    void on_genoFileToolButton_closeFileSig();
+    void on_mapFileToolButton_closeFileSig();
+    void on_kinFileToolButton_closeFileSig();
+    void on_covarFileToolButton_closeFileSig();
     // for WorkDirectory
     void on_outdirBrowButton_clicked();
     void on_projectNameLineEdit_textChanged(const QString &text);
@@ -91,6 +91,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
+//    QThread workThread;
     void closeEvent(QCloseEvent *event);
 //    bool eventFilter(QObject *obj, QEvent *ev) override;
     //  Tool and script path;

@@ -183,6 +183,5 @@ QStringList PopLDdecay::makeKeepFile(QString src)
         QFile file(item);
         file.close();
     }
-
     return keepList;
 }
