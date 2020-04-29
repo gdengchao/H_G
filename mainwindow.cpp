@@ -229,7 +229,7 @@ void MainWindow::on_mapFileToolButton_closeFileSig()
 
 void MainWindow::on_covarFileToolButton_clicked()
 {
-    QFileDialog *fileDialog = new QFileDialog(this, "Open covariate file", "", "covar(*.cov *.covar *.txt);;all(*)");
+    QFileDialog *fileDialog = new QFileDialog(this, "Open covariate file", "", "covar(*.eigenvec *eigenval *.cov *.covar *.txt);;all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
     QStringList fileNames;

@@ -1,4 +1,3 @@
-
 getDataFromSciNotation <- function(scinota = "1E2")
 {
     vec = as.vector(unlist(strsplit(tolower(scinota), "", fixed = T)))
