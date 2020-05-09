@@ -1182,25 +1182,52 @@ void MainWindow::on_drawManPushButton_clicked()
         QString gwasResulFile = ui->gwasResultLineEdit->text();
         if (gwasResulFile.isEmpty())
         {
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("A GWAS result file is necessary.");
+            qApp->processEvents();
             throw -1;
         }
+
+        this->runningMsgWidget->show();
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Make qqman input file, ");
+        qApp->processEvents();
         QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
         QStringList outList;
 
         if (qqmanFile.isEmpty())
         {
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
+            qApp->processEvents();
             throw -1;
         }
+
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Make qqman input file OK. ");
+        qApp->processEvents();
 
         for (auto item:qqmanFile)
         {
             outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
                            +"_"+item.split(".")[item.split(".").length()-1]+"_man.png");
         }
+
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Draw manhattan plot, ");
+        qApp->processEvents();
         if (!this->drawManhattan(qqmanFile, outList))
         {
             throw -1;
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Draw manhattan plot ERROR. ");
+            qApp->processEvents();
         }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Draw manhattan plot OK.");
+        this->runningMsgWidget->appendText("\nanhattan plot: \n" + outList.join("\n"));
+        qApp->processEvents();
+
         QFile file;
         for (auto item:qqmanFile)
         {
@@ -1220,15 +1247,30 @@ void MainWindow::on_drawQQPushButton_clicked()
         QString gwasResulFile = ui->gwasResultLineEdit->text();
         if (gwasResulFile.isEmpty())
         {
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("A GWAS result file is necessary.");
+            qApp->processEvents();
             throw -1;
         }
+
+        this->runningMsgWidget->show();
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Make qqman input file, ");
+        qApp->processEvents();
         QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
         QStringList outList;
 
-        if (qqmanFile.isEmpty() || gwasResulFile.isEmpty())
+        if (qqmanFile.isEmpty())
         {
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
+            qApp->processEvents();
             throw -1;
         }
+
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Make qqman input file OK. ");
+        qApp->processEvents();
 
         for (auto item:qqmanFile)
         {
@@ -1236,10 +1278,21 @@ void MainWindow::on_drawQQPushButton_clicked()
                            +"_"+item.split(".")[item.split(".").length()-1]+"_qq.png");
         }
 
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Draw QQ plot, ");
+        qApp->processEvents();
         if (!this->drawQQplot(qqmanFile, outList))
         {
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Draw QQ plot ERROR. ");
+            qApp->processEvents();
             throw -1;
         }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Draw QQ OK. ");
+        this->runningMsgWidget->appendText("\nQQ plot: \n" + outList.join("\n"));
+        qApp->processEvents();
+
         QFile file;
         for (auto item:qqmanFile)
         {
@@ -1269,7 +1322,7 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
     for (int i = 0; i < data.size(); i++)
     {
         param.clear();
-        param.append(this->scriptpath+"plot.R");
+        param.append(this->scriptpath+"qqman/plot.R");
         param.append("manhattan");
         param.append(data[i]);
         param.append(out[i]);
@@ -1284,10 +1337,14 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
             QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
             return false;
         }
-        if (!this->process->waitForFinished(-1))
+//        if (!this->process->waitForFinished(-1))
+//        {
+//            QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
+//            return false;
+//        }
+        while (!this->process->waitForFinished(-1))
         {
-            QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
-            return false;
+            qApp->processEvents();  // In order to figure out no responding.
         }
         this->process->close();
     }
@@ -1308,7 +1365,7 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
     for (int i = 0; i < data.size(); i++)
     {
         param.clear();
-        param.append(this->scriptpath+"plot.R");
+        param.append(this->scriptpath+"qqman/plot.R");
         param.append("qqplot");
         param.append(data[i]);
         param.append(out[i]);
@@ -1318,10 +1375,14 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
             QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
             return false;
         }
-        if (!this->process->waitForFinished(-1))
+//        if (!this->process->waitForFinished(-1))
+//        {
+//            QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
+//            return false;
+//        }
+        while (!this->process->waitForFinished(-1))
         {
-            QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
-            return false;
+            qApp->processEvents();
         }
         this->process->close();
 
@@ -1604,6 +1665,7 @@ void MainWindow::on_ldRunPushButton_clicked()
         QMessageBox::information(nullptr, "Error", "A genotype file is necessary!   ");
         return;
     }
+
     ui->ldRunPushButton->setEnabled(false);
     qApp->processEvents();
 
@@ -1715,9 +1777,9 @@ void MainWindow::runPopLDdecaybyFamily(void)
                                     genoFileAbPath+"/"+keepFileBaseName+".genotype"))
             {
 //                QStringList param;
-//                param.append(this->scriptpath+"plink2genotype.pl");
+//                param.append(this->scriptpath+"poplddecay/plink2genotype.pl");
 //                this->process->start("perl", param+popLDdecay.getParamList());
-                this->process->start(this->scriptpath+"plink2genotype", popLDdecay.getParamList());
+                this->process->start(this->scriptpath+"poplddecay/plink2genotype", popLDdecay.getParamList());
                 if (!this->process->waitForStarted())
                 {
                     throw -1;
@@ -1860,9 +1922,9 @@ void MainWindow::runPopLDdecaySingle(void)
         if (popLDdecay.makeGenotype(plinkFile+".ped", plinkFile+".map", plinkFile+".genotype"))
         {
 //            QStringList param;
-//            param.append(this->scriptpath+"plink2genotype.pl");
+//            param.append(this->scriptpath+"poplddecay/plink2genotype.pl");
 //            this->process->start("perl", param+popLDdecay.getParamList());
-            this->process->start(this->scriptpath+"plink2genotype", popLDdecay.getParamList());
+            this->process->start(this->scriptpath+"poplddecay/plink2genotype", popLDdecay.getParamList());
 
             if (!this->process->waitForStarted())
             {
@@ -1944,9 +2006,9 @@ void MainWindow::on_ldPlotPushButton_clicked()
         if (popLDdecay.plotLD(ldResultFile, out+"/"+name+"_ld"))
         {
 //            QStringList param;
-//            param.append(this->scriptpath+"Plot_OnePop.pl");
+//            param.append(this->scriptpath+"poplddecay/Plot_OnePop.pl");
 //            this->process->start("perl", param+popLDdecay.getParamList());
-            this->process->start(this->scriptpath+"Plot_OnePop", popLDdecay.getParamList());
+            this->process->start(this->scriptpath+"poplddecay/Plot_OnePop", popLDdecay.getParamList());
             this->process->waitForStarted();
             if (!this->process->waitForStarted())
             {

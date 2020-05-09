@@ -71,11 +71,11 @@ bool Gemma::runGWAS(QString binGenoBaseName, QString phenotype, QString covariat
         this->paramlist.append(moreParam["lmmtest"]);   // wald:1   likelihood:2    score:3     all:4
 //        this->paramlist.append("-n");
 //        this->paramlist.append("2");
-//        if (!covariate.isNull())    // Can't for BSLMM
-//        {
+        if (!covariate.isNull())    // Can't for BSLMM
+        {
 //            this->paramlist.append("-c");
 //            this->paramlist.append(covariate);
-//        }
+        }
     }
 
     if (model == "BSLMM")
