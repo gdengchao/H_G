@@ -27,10 +27,10 @@ drawManhattan <- function(args)
     data$SNP<-as.character(data$SNP)
     data$CHR<-as.integer(data$CHR)
     
-    if (data$P)
-    {
-        data$P <- as.numeric(data$P)    
-    }
+#if (data$P)
+#   {
+#       data$P <- as.numeric(data$P)    
+#   }
     
     newData<-na.omit(data)
     

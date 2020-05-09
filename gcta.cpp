@@ -1,39 +1,8 @@
 #include "gcta.h"
 
-Gcta::Gcta() : toolpath("/tools/")
+Gcta::Gcta()
 {
 
-}
-
-QStringList Gcta::getParamList(void)
-{
-    return this->paramlist;
-}
-
-QString Gcta::getParamString(void)
-{
-    QString ret;
-    for (QString item:this->paramlist)
-    {
-        ret += item + " ";
-    }
-    return ret;
-}
-
-void Gcta::setParam(QStringList param)
-{
-    this->paramlist = param;
-}
-
-void Gcta::setParam(QString param)
-{
-    this->paramlist = param.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-}
-
-
-QString Gcta::getToolPath()
-{
-    return this->toolpath;
 }
 
 bool Gcta::makeGRM(QString binGenoBaseName, QString out)

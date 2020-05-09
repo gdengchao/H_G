@@ -4,9 +4,9 @@
 #include <QString>
 #include <QMap>
 #include <QMessageBox>
-#include "tool.h"
+#include "assoctool.h"
 
-class Emmax : public Tool
+class Emmax : public AssocTool
 {
 public:
     Emmax();

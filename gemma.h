@@ -9,9 +9,9 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QApplication>
-#include <tool.h>
+#include <assoctool.h>
 
-class Gemma : public Tool
+class Gemma : public AssocTool
 {
 public:
     Gemma();

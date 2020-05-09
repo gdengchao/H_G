@@ -92,7 +92,7 @@ private:
     Ui::MainWindow *ui;
 
 //    QThread workThread;
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 //    bool eventFilter(QObject *obj, QEvent *ev) override;
     //  Tool and script path;
     QString toolpath = "/home/chao/Documents/code/H_G/tools/";

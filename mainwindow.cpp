@@ -1627,6 +1627,7 @@ void MainWindow::on_pcaRunPushButton_clicked()
             this->process->close();
         }
 
+        // Run PCA
         if (gcta.runPCA(binaryFile, ui->nPCsLineEdit->text().toInt(),
                         ui->nThreadsLineEdit->text().toInt(), out+"/"+genoFileBaseName))
         {
@@ -1722,6 +1723,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
         this->runningMsgWidget->appendText(".keep file OK.\n");
         qApp->processEvents();
 
+        bool isLD_OK = true;
         for (QString keepFile:keepFileList)
         {
             QFileInfo keepFileInfo(keepFile);
@@ -1753,11 +1755,13 @@ void MainWindow::runPopLDdecaybyFamily(void)
             this->process->start(this->toolpath+"plink", plink.getParamList());
             if (!this->process->waitForStarted())
             {
+                isLD_OK = false;
                 throw -1;
             }
             if (!this->process->waitForFinished(-1))
             {
                 this->resetWindow();
+                isLD_OK = false;
                 throw -1;
             }
             this->process->close();
@@ -1782,6 +1786,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 this->process->start(this->scriptpath+"poplddecay/plink2genotype", popLDdecay.getParamList());
                 if (!this->process->waitForStarted())
                 {
+                    isLD_OK = false;
                     throw -1;
                 }
                 qDebug() << this->process->pid();
@@ -1800,6 +1805,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
                 this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype ERROR.\n");
                 qApp->processEvents();
+                isLD_OK = false;
                 throw -1;
             }
 
@@ -1820,6 +1826,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 if (!this->process->waitForStarted())
                 {
 //                    QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
+                    isLD_OK = false;
                     throw -1;
                 }
                 while (!this->process->waitForFinished(-1))
@@ -1829,17 +1836,25 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 this->process->close();
                 ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText("LD OK. \n");
+                this->runningMsgWidget->appendText("LD OK. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
                 qApp->processEvents();
             }
             else
             {
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText("LD ERROR. \n");
+                this->runningMsgWidget->appendText("LD ERROR. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
                 qApp->processEvents();
+                isLD_OK = false;
                 throw -1;
             }
 //            file.remove(genoFileAbPath+"/"+keepFileBaseName+".genotype");
+        }
+
+        if (isLD_OK)
+        {
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("LD by family done. \n");
+            qApp->processEvents();
         }
     } catch (...) {
         ;
@@ -1973,7 +1988,7 @@ void MainWindow::runPopLDdecaySingle(void)
             this->process->close();
             ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("LD OK.\n");
+            this->runningMsgWidget->appendText("LD OK.\n"+out+"/"+name+".stat.gz" + "\n");
             qApp->processEvents();
         }
         else

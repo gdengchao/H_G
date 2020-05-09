@@ -17,6 +17,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     annovar.cpp \
+    assoctool.cpp \
     emmax.cpp \
     emmaxparamwidget.cpp \
     filereader.cpp \
@@ -38,6 +39,7 @@ SOURCES += \
 
 HEADERS += \
     annovar.h \
+    assoctool.h \
     emmax.h \
     emmaxparamwidget.h \
     filereader.h \

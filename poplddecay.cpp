@@ -1,40 +1,8 @@
 #include "poplddecay.h"
 
-PopLDdecay::PopLDdecay() : toolpath("/tools/")
+PopLDdecay::PopLDdecay()
 {
 
-}
-
-
-QStringList PopLDdecay::getParamList(void)
-{
-    return this->paramlist;
-}
-
-QString PopLDdecay::getParamString(void)
-{
-    QString ret;
-    for (QString item:this->paramlist)
-    {
-        ret += item + " ";
-    }
-    return ret;
-}
-
-void PopLDdecay::setParam(QStringList param)
-{
-    this->paramlist = param;
-}
-
-void PopLDdecay::setParam(QString param)
-{
-    this->paramlist = param.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-}
-
-
-QString PopLDdecay::getToolPath()
-{
-    return this->toolpath;
 }
 
 bool PopLDdecay::makeGenotype(QString ped, QString map, QString out)

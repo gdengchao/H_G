@@ -768,7 +768,7 @@ border-radius:5px;//这个是改变成圆角边框;
     </widget>
     <widget class="QWidget" name="pca_ld">
      <attribute name="title">
-      <string>PCA/LD</string>
+      <string>PCA/LD/ANNO</string>
      </attribute>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
@@ -1009,6 +1009,26 @@ border-radius:5px;//这个是改变成圆角边框;
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QLabel" name="label_30">
+      <property name="geometry">
+       <rect>
+        <x>41</x>
+        <y>291</y>
+        <width>101</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>ANNOTATION</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="plot">

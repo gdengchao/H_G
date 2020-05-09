@@ -46,7 +46,7 @@ private:
 //    qreal scaleData;
 
 protected slots:
-    void mouseDoubleClickEvent(QMouseEvent *e);
+    void mouseDoubleClickEvent(QMouseEvent *e) override;
 
 signals:
     void clicked();
@@ -58,7 +58,7 @@ private:
     QGraphicsView* view;
     QStringList imgList;
     QString curImage;
-    void showEvent(QShowEvent *);
+    void showEvent(QShowEvent *) override;
 };
 
 #endif // GRAPHVIEWER_H

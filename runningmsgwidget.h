@@ -29,7 +29,7 @@ public:
 private:
     Ui::RunningMsgWidget *ui;
     // To stop process.
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 //    bool eventFilter(QObject *object, QEvent *event);
 
 signals :

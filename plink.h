@@ -9,9 +9,9 @@
 #include <QMessageBox>
 #include <QFile>
 #include "useros.h"
-#include "tool.h"
+#include "assoctool.h"
 
-class Plink : public Tool
+class Plink : public AssocTool
 {
 public:
     Plink();

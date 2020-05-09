@@ -3,22 +3,20 @@
 
 #include <QStringList>
 
-// Just for Association.
 class Tool
 {
 public:
-    Tool();
+    Tool() {}
+    virtual ~Tool() {}
 
     QStringList getParamList(void);    // Every param can't have any space.
     QString getParamString(void);
     void setParam(QStringList param);
     void setParam(QString param);
-    QStringList getSupportedModel(void);
     QString getToolPath(void);
 
 protected:
     const QString toolpath;
-    QStringList model;
     QStringList paramlist;
 };
 
