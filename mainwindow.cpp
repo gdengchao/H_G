@@ -1013,6 +1013,7 @@ void MainWindow::resetWindow()
     ui->pcaRunPushButton->setEnabled(true);
     ui->drawManPushButton->setEnabled(true);
     ui->drawQQPushButton->setEnabled(true);
+    ui->annoRunPushButton->setEnabled(true);
 }
 
 void MainWindow::on_projectNameLineEdit_textChanged(const QString &text)
@@ -2006,8 +2007,6 @@ void MainWindow::runPopLDdecaySingle(void)
 
 void MainWindow::on_ldPlotPushButton_clicked()
 {
-    ui->ldPlotPushButton->setEnabled(false);
-    qApp->processEvents();
 
     QString ldResultFile = ui->ldResultLineEdit->text();
     if (ldResultFile.isNull() || ldResultFile.isEmpty())
@@ -2015,6 +2014,8 @@ void MainWindow::on_ldPlotPushButton_clicked()
         return;
     }
     try {
+        ui->ldPlotPushButton->setEnabled(false);
+        qApp->processEvents();
         QString out = this->workDirectory->getOutputDirectory();
         QString name = this->workDirectory->getProjectName();
         PopLDdecay popLDdecay;
@@ -2086,4 +2087,91 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         event->ignore();
     }
+}
+
+void MainWindow::on_gffFileBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open GFF file file", this->workDirectory->getOutputDirectory(),
+                                              "gff(*.gff *.gff2 *.gff3 *gff.txt);;all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->gffFileLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::on_annoRunPushButton_clicked()
+{
+    QString gffFile = ui->gffFileLineEdit->text();
+    if (gffFile.isEmpty() || gffFile.isNull())
+    {
+        qDebug() << "on_annoRunPushButton_clicked()";
+        return;
+    }
+
+    try
+    {
+        this->runningMsgWidget->show();
+        ui->annoRunPushButton->setEnabled(false);
+        qApp->processEvents();
+
+        QFileInfo gffFileInfo(gffFile);
+        QString gffFileBaseName = gffFileInfo.baseName();
+        QString gffFileCompBaseName = gffFileInfo.completeBaseName();
+        QString gffFileSuffix = gffFileInfo.suffix();
+        QString gffFileAbPath = gffFileInfo.absolutePath();
+
+        QString gtfFile =gffFileAbPath+"/"+gffFileCompBaseName+".gtf";
+
+        // gffTogtf
+        Annovar annovar;
+        if (!annovar.gffTogtf(gffFile, gtfFile))
+        {
+            throw -1;
+        }
+        this->process->start(this->toolpath+"gffread", annovar.getParamList());
+        if (!this->process->waitForStarted())
+        {
+            throw -1;
+        }
+        while (!this->process->waitForFinished(-1))
+        {
+            qApp->processEvents();
+        }
+
+        // gtfToGenePred
+        QString refGeneFile = gtfFile =gffFileAbPath+"/"+gffFileBaseName+"_refGene.txt";
+        if (!annovar.gtfToGenePred(gtfFile, refGeneFile))
+        {
+            throw -1;
+        }
+        this->process->start(this->toolpath+"gtfToGenePred", annovar.getParamList());
+        if (!this->process->waitForStarted())
+        {
+            throw -1;
+        }
+        while (!this->process->waitForFinished(-1))
+        {
+            qApp->processEvents();
+        }
+
+        // retrieve_seq_from_fasta
+        QString inFastaFile;
+        QString outFastaFile;
+
+        this->process->close();
+
+    } catch(...)
+    {
+        this->resetWindow();
+    }
+    this->resetWindow();
 }

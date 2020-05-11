@@ -25,6 +25,7 @@
 #include "gemma.h"
 #include "gcta.h"
 #include "poplddecay.h"
+#include "annovar.h"
 #include "runningmsgwidget.h"
 #include "gemmaparamwidget.h"
 #include "emmaxparamwidget.h"
@@ -87,6 +88,10 @@ private slots:
     void on_ldReultBrowButton_clicked();
     // Graph viewer
     void on_GraphViewer_clicked();
+
+    void on_gffFileBrowButton_clicked();
+
+    void on_annoRunPushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
