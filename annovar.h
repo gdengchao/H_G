@@ -9,7 +9,7 @@ public:
     Annovar();
     bool gffTogtf(QString gffFile, QString outFile);
     bool gtfToGenePred(QString gtfFile, QString outFile);
-    bool retrieveSeqFromFasta(QString refGene, QString seqFile, QString outFile);
+    bool retrieveSeqFromFasta(QString refGeneFile, QString seqFile, QString outFile);
 };
 
 #endif // ANNOVAR_H

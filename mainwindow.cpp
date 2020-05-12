@@ -1124,7 +1124,7 @@ void MainWindow::on_detailPushButton_clicked()
 }
 
 QString MainWindow::refreshMessage(QString curText, QString newText)
-{   // Remain lots problems, little valid now.
+{   // Remain lots of problems, little validance now.
     if (newText.isEmpty())
     {   // newMsg don't have valid message.
         return curText;
@@ -2091,7 +2091,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_gffFileBrowButton_clicked()
 {
-    QFileDialog *fileDialog = new QFileDialog(this, "Open GFF file file", this->workDirectory->getOutputDirectory(),
+    QFileDialog *fileDialog = new QFileDialog(this, "Open GFF file file", "",
                                               "gff(*.gff *.gff2 *.gff3 *gff.txt);;all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
@@ -2111,7 +2111,8 @@ void MainWindow::on_gffFileBrowButton_clicked()
 void MainWindow::on_annoRunPushButton_clicked()
 {
     QString gffFile = ui->gffFileLineEdit->text();
-    if (gffFile.isEmpty() || gffFile.isNull())
+    QString fastaFile = ui->fastaFileLineEdit->text();
+    if (gffFile.isNull() || gffFile.isEmpty() || fastaFile.isNull() || fastaFile.isEmpty())
     {
         qDebug() << "on_annoRunPushButton_clicked()";
         return;
@@ -2132,6 +2133,9 @@ void MainWindow::on_annoRunPushButton_clicked()
         QString gtfFile =gffFileAbPath+"/"+gffFileCompBaseName+".gtf";
 
         // gffTogtf
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Gff to gtf, \n");
+        qApp->processEvents();
         Annovar annovar;
         if (!annovar.gffTogtf(gffFile, gtfFile))
         {
@@ -2146,9 +2150,15 @@ void MainWindow::on_annoRunPushButton_clicked()
         {
             qApp->processEvents();
         }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Gff to gtf OK.\n");
+        qApp->processEvents();
 
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Gtf to genePred, \n");
+        qApp->processEvents();
         // gtfToGenePred
-        QString refGeneFile = gtfFile =gffFileAbPath+"/"+gffFileBaseName+"_refGene.txt";
+        QString refGeneFile = gffFileAbPath+"/"+gffFileBaseName+"_refGene.txt";
         if (!annovar.gtfToGenePred(gtfFile, refGeneFile))
         {
             throw -1;
@@ -2162,10 +2172,32 @@ void MainWindow::on_annoRunPushButton_clicked()
         {
             qApp->processEvents();
         }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Gtf to genePred OK.\n");
+        qApp->processEvents();
 
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Retrieve seq from fasta,\n");
+        qApp->processEvents();
         // retrieve_seq_from_fasta
-        QString inFastaFile;
-        QString outFastaFile;
+        QString name = this->workDirectory->getProjectName();
+        QString outFastaFile = name + "_" + gffFileBaseName + "_refGeneMrna.fa";
+        if (!annovar.retrieveSeqFromFasta(refGeneFile, fastaFile, outFastaFile))
+        {
+            throw -1;
+        }
+        this->process->start(this->scriptpath+"annovar/retrieve_seq_from_fasta", annovar.getParamList());
+        if (!this->process->waitForStarted())
+        {
+            throw -1;
+        }
+        while (!this->process->waitForFinished(-1))
+        {
+            qApp->processEvents();
+        }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Retrieve seq from fasta OK.\n");
+        qApp->processEvents();
 
         this->process->close();
 
@@ -2174,4 +2206,23 @@ void MainWindow::on_annoRunPushButton_clicked()
         this->resetWindow();
     }
     this->resetWindow();
+}
+
+void MainWindow::on_fastaFileBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open fasta file file", "",
+                                              "fasta(*.fa *.Fa *.fasta *.Fasta);;all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->fastaFileLineEdit->setText(fileNames[0]);
 }

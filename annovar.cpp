@@ -38,9 +38,9 @@ bool Annovar::gtfToGenePred(QString gtfFile, QString outFile)
     return true;
 }
 
-bool Annovar::retrieveSeqFromFasta(QString refGene, QString seqFile, QString outFile)
+bool Annovar::retrieveSeqFromFasta(QString refGeneFile, QString seqFile, QString outFile)
 {
-    if (refGene.isNull() || seqFile.isNull() || outFile.isNull())
+    if (refGeneFile.isNull() || seqFile.isNull() || outFile.isNull())
     {
         return false;
     }
@@ -51,10 +51,11 @@ bool Annovar::retrieveSeqFromFasta(QString refGene, QString seqFile, QString out
     */
     this->paramlist.clear();
     this->paramlist.append("--format");
-    this->paramlist.append(refGene);
+    this->paramlist.append("refGene");
     this->paramlist.append("--seqfile");
     this->paramlist.append(seqFile);
-    this->paramlist.append("--ourfile");
+    this->paramlist.append(refGeneFile);
+    this->paramlist.append("--outfile");
     this->paramlist.append(outFile);
 
     return true;

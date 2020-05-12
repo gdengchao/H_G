@@ -93,6 +93,8 @@ private slots:
 
     void on_annoRunPushButton_clicked();
 
+    void on_fastaFileBrowButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
