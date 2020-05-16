@@ -2180,8 +2180,9 @@ void MainWindow::on_annoRunPushButton_clicked()
         this->runningMsgWidget->appendText("Retrieve seq from fasta,\n");
         qApp->processEvents();
         // retrieve_seq_from_fasta
+        QString out = this->workDirectory->getOutputDirectory();
         QString name = this->workDirectory->getProjectName();
-        QString outFastaFile = name + "_" + gffFileBaseName + "_refGeneMrna.fa";
+        QString outFastaFile = out + "/" + name + "_" + gffFileBaseName + "_refGeneMrna.fa";
         if (!annovar.retrieveSeqFromFasta(refGeneFile, fastaFile, outFastaFile))
         {
             throw -1;

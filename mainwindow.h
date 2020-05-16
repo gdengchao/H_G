@@ -88,11 +88,9 @@ private slots:
     void on_ldReultBrowButton_clicked();
     // Graph viewer
     void on_GraphViewer_clicked();
-
+    // Annotation
     void on_gffFileBrowButton_clicked();
-
     void on_annoRunPushButton_clicked();
-
     void on_fastaFileBrowButton_clicked();
 
 private:
