@@ -2227,3 +2227,22 @@ void MainWindow::on_fastaFileBrowButton_clicked()
     }
     ui->fastaFileLineEdit->setText(fileNames[0]);
 }
+
+void MainWindow::on_avinFileBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open annovar input file file", "",
+                                              "avinput(*.avinput *.txt *.);;all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->avinFileLineEdit->setText(fileNames[0]);
+}

@@ -60,3 +60,39 @@ bool Annovar::retrieveSeqFromFasta(QString refGeneFile, QString seqFile, QString
 
     return true;
 }
+
+bool Annovar::tableAnnovar(QString avinput, QString refGeneDir, QString refGene, QString out)
+{
+    if (avinput.isNull() || refGeneDir.isNull() || refGene.isNull() || out.isNull())
+    {
+        return false;
+    }
+
+    QFile file;
+    file.setFileName(refGeneDir + "/" + refGene + "_refGeneMrna.fa");
+    if (!file.exists())
+    {
+        return false;
+    }
+    file.setFileName(refGeneDir + "/" + refGene + "_refGene.txt");
+
+    if (!file.exists())
+    {
+        return false;
+    }
+
+    // perl ../table_annovar.pl  test.avinput sp/ --buildver SP --outfile myanno --protocol refGene --operation g
+    this->paramlist.clear();
+    this->paramlist.append(avinput);
+    this->paramlist.append(refGeneDir);
+    this->paramlist.append("--buildver");
+    this->paramlist.append(refGene);
+    this->paramlist.append("--outfile");
+    this->paramlist.append(out);
+    this->paramlist.append("--prototocol");
+    this->paramlist.append("refGene");
+    this->paramlist.append("--operation");
+    this->paramlist.append("g");
+
+    return true;
+}
