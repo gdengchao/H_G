@@ -11,7 +11,7 @@ public:
     bool gffTogtf(QString gffFile, QString outFile);
     bool gtfToGenePred(QString gtfFile, QString outFile);
     bool retrieveSeqFromFasta(QString refGeneFile, QString seqFile, QString outFile);
-    bool tableAnnovar(QString avinput, QString refGeneDir, QString refGene, QString out);
+    bool tableAnnovar(QString avinput, QString refGeneDir, QString refGenePrefix, QString out);
 };
 
 #endif // ANNOVAR_H

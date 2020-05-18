@@ -61,20 +61,20 @@ bool Annovar::retrieveSeqFromFasta(QString refGeneFile, QString seqFile, QString
     return true;
 }
 
-bool Annovar::tableAnnovar(QString avinput, QString refGeneDir, QString refGene, QString out)
+bool Annovar::tableAnnovar(QString avinput, QString refGeneDir, QString refGenePrefix, QString out)
 {
-    if (avinput.isNull() || refGeneDir.isNull() || refGene.isNull() || out.isNull())
+    if (avinput.isNull() || refGeneDir.isNull() || refGenePrefix.isNull() || out.isNull())
     {
         return false;
     }
 
     QFile file;
-    file.setFileName(refGeneDir + "/" + refGene + "_refGeneMrna.fa");
+    file.setFileName(refGeneDir + "/" + refGenePrefix + "_refGeneMrna.fa");
     if (!file.exists())
     {
         return false;
     }
-    file.setFileName(refGeneDir + "/" + refGene + "_refGene.txt");
+    file.setFileName(refGeneDir + "/" + refGenePrefix + "_refGene.txt");
 
     if (!file.exists())
     {
@@ -86,10 +86,10 @@ bool Annovar::tableAnnovar(QString avinput, QString refGeneDir, QString refGene,
     this->paramlist.append(avinput);
     this->paramlist.append(refGeneDir);
     this->paramlist.append("--buildver");
-    this->paramlist.append(refGene);
+    this->paramlist.append(refGenePrefix);
     this->paramlist.append("--outfile");
     this->paramlist.append(out);
-    this->paramlist.append("--prototocol");
+    this->paramlist.append("--protocol");
     this->paramlist.append("refGene");
     this->paramlist.append("--operation");
     this->paramlist.append("g");

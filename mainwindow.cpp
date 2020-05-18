@@ -1001,6 +1001,10 @@ bool MainWindow::isVcfFile(QString file) // Just consider filename.
 
 void MainWindow::resetWindow()
 {
+    if (this->process->isOpen())
+    {
+        this->process->close();
+    }
     if (this->process)
     {
         this->process->terminate();
@@ -2133,9 +2137,6 @@ void MainWindow::on_annoRunPushButton_clicked()
         QString gtfFile =gffFileAbPath+"/"+gffFileCompBaseName+".gtf";
 
         // gffTogtf
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Gff to gtf, \n");
-        qApp->processEvents();
         Annovar annovar;
         if (!annovar.gffTogtf(gffFile, gtfFile))
         {
@@ -2146,6 +2147,9 @@ void MainWindow::on_annoRunPushButton_clicked()
         {
             throw -1;
         }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Gff to gtf, \n");
+        qApp->processEvents();
         while (!this->process->waitForFinished(-1))
         {
             qApp->processEvents();
@@ -2154,9 +2158,6 @@ void MainWindow::on_annoRunPushButton_clicked()
         this->runningMsgWidget->appendText("Gff to gtf OK.\n");
         qApp->processEvents();
 
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Gtf to genePred, \n");
-        qApp->processEvents();
         // gtfToGenePred
         QString refGeneFile = gffFileAbPath+"/"+gffFileBaseName+"_refGene.txt";
         if (!annovar.gtfToGenePred(gtfFile, refGeneFile))
@@ -2168,6 +2169,9 @@ void MainWindow::on_annoRunPushButton_clicked()
         {
             throw -1;
         }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Gtf to genePred, \n");
+        qApp->processEvents();
         while (!this->process->waitForFinished(-1))
         {
             qApp->processEvents();
@@ -2176,28 +2180,54 @@ void MainWindow::on_annoRunPushButton_clicked()
         this->runningMsgWidget->appendText("Gtf to genePred OK.\n");
         qApp->processEvents();
 
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Retrieve seq from fasta,\n");
-        qApp->processEvents();
         // retrieve_seq_from_fasta
-        QString out = this->workDirectory->getOutputDirectory();
-        QString name = this->workDirectory->getProjectName();
-        QString outFastaFile = out + "/" + name + "_" + gffFileBaseName + "_refGeneMrna.fa";
+        QString outFastaFile = gffFileAbPath + "/" + gffFileBaseName + "_refGeneMrna.fa";
         if (!annovar.retrieveSeqFromFasta(refGeneFile, fastaFile, outFastaFile))
         {
             throw -1;
         }
+
         this->process->start(this->scriptpath+"annovar/retrieve_seq_from_fasta", annovar.getParamList());
         if (!this->process->waitForStarted())
         {
             throw -1;
         }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Retrieve seq from fasta,\n");
+        qApp->processEvents();
         while (!this->process->waitForFinished(-1))
         {
             qApp->processEvents();
         }
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Retrieve seq from fasta OK.\n");
+        qApp->processEvents();
+
+        QString out = this->workDirectory->getOutputDirectory();
+        QString name = this->workDirectory->getProjectName();
+        QString outFile = out + "/" + name + "_" + gffFileBaseName;
+        QString avinput = ui->avinFileLineEdit->text();
+        QString refGeneDir = gffFileAbPath;
+        QString refGenePrefix = gffFileBaseName;
+        if (!annovar.tableAnnovar(avinput, refGeneDir, refGenePrefix, outFile))
+        {
+            throw -1;
+        }
+
+        this->process->start(this->scriptpath+"annovar/table_annovar", annovar.getParamList());
+        if (!this->process->waitForStarted())
+        {
+            throw -1;
+        }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Annotation,\n");
+        qApp->processEvents();
+        while (!this->process->waitForFinished(-1))
+        {
+            qApp->processEvents();
+        }
+        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+        this->runningMsgWidget->appendText("Annotation OK.\n");
         qApp->processEvents();
 
         this->process->close();
