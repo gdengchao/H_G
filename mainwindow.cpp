@@ -2203,18 +2203,27 @@ void MainWindow::on_annoRunPushButton_clicked()
         this->runningMsgWidget->appendText("Retrieve seq from fasta OK.\n");
         qApp->processEvents();
 
+        // annotation
         QString out = this->workDirectory->getOutputDirectory();
         QString name = this->workDirectory->getProjectName();
         QString outFile = out + "/" + name + "_" + gffFileBaseName;
         QString avinput = ui->avinFileLineEdit->text();
         QString refGeneDir = gffFileAbPath;
         QString refGenePrefix = gffFileBaseName;
-        if (!annovar.tableAnnovar(avinput, refGeneDir, refGenePrefix, outFile))
+
+        // table_annovar
+//        if (!annovar.tableAnnovar(avinput, refGeneDir, refGenePrefix, outFile))
+//        {
+//            throw -1;
+//        }
+//        this->process->start(this->scriptpath+"annovar/table_annovar", annovar.getParamList());
+
+        // annotate_variation
+        if (!annovar.annotateVariation(avinput, refGeneDir, refGenePrefix, outFile))
         {
             throw -1;
         }
-
-        this->process->start(this->scriptpath+"annovar/table_annovar", annovar.getParamList());
+        this->process->start(this->scriptpath+"annovar/annotate_variation", annovar.getParamList());
         if (!this->process->waitForStarted())
         {
             throw -1;
@@ -2229,6 +2238,8 @@ void MainWindow::on_annoRunPushButton_clicked()
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Annotation OK.\n");
         qApp->processEvents();
+
+        // annotate_variation
 
         this->process->close();
 

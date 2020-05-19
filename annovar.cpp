@@ -96,3 +96,35 @@ bool Annovar::tableAnnovar(QString avinput, QString refGeneDir, QString refGeneP
 
     return true;
 }
+
+bool Annovar::annotateVariation(QString avinput, QString refGeneDir, QString refGenePrefix, QString out)
+{
+    if (avinput.isNull() || refGeneDir.isNull() || refGenePrefix.isNull() || out.isNull())
+    {
+        return false;
+    }
+
+    QFile file;
+    file.setFileName(refGeneDir + "/" + refGenePrefix + "_refGeneMrna.fa");
+    if (!file.exists())
+    {
+        return false;
+    }
+    file.setFileName(refGeneDir + "/" + refGenePrefix + "_refGene.txt");
+
+    if (!file.exists())
+    {
+        return false;
+    }
+
+    // ../annotate_variation -out hdhdb/anno -build Hdhv3 input_for_annovar hdhdb
+    this->paramlist.clear();
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+    this->paramlist.append("--build");
+    this->paramlist.append(refGenePrefix);
+    this->paramlist.append(avinput);
+    this->paramlist.append(refGeneDir);
+
+    return true;
+}

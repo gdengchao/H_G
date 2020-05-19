@@ -12,7 +12,7 @@ public:
     bool gtfToGenePred(QString gtfFile, QString outFile);
     bool retrieveSeqFromFasta(QString refGeneFile, QString seqFile, QString outFile);
     bool tableAnnovar(QString avinput, QString refGeneDir, QString refGenePrefix, QString out);
-    bool annotateVariation();
+    bool annotateVariation(QString avinput, QString refGeneDir, QString refGenePrefix, QString out);
 };
 
 #endif // ANNOVAR_H

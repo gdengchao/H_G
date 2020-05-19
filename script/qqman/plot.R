@@ -36,7 +36,8 @@ drawManhattan <- function(args)
     
     ### NOTICE the path of manhattan.R
     source("/home/chao/Documents/code/H_G/script/qqman/manhattan.R") #/home/chao/Documents/code/H_G/script/qqman/manhattan.R
-#	source("./manhattan.R")
+#	path = paste0(getwd(), "/script/qqman/manhattan.R")
+#	source(path)
 	manhattan(newData, output = out, suggestiveline = suggest, genomewideline = genomewide)
 }
 
@@ -55,13 +56,15 @@ drawQQplot <- function(args)
     
     ### NOTICE the path of manhattan.R
     source("/home/chao/Documents/code/H_G/script/qqman/qq.R")
-#	source("./qq.R")
+#	path = paste0(getwd(), "/script/qqman/qq.R")
+#	source(path)
 	qq(newData, output)
 }
 
 main <- function()
 {
-	write(getwd(), stdout())
+#	curDir = paste("\nwork directory:", getwd())
+#	write(curDir, stdout())
 
 	# Get parameter from args.
     args = commandArgs(T)
