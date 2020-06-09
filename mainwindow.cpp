@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Default output directory setting
     workDirectory->setProjectName("pro1");
-    workDirectory->setOutputDirectory("/home/chao/Desktop/test");
+    workDirectory->setOutputDirectory("/home/dengchao/Desktop/test");
     ui->projectNameLineEdit->setText(workDirectory->getProjectName());
     ui->outdirLineEdit->setText(workDirectory->getOutputDirectory()+"/"+workDirectory->getProjectName());
 
@@ -476,7 +476,6 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     // Phenotype file info.
     QFileInfo pheFileInfo = QFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
-\
     // Necessary to transform file ?
     bool transformFileFlag = false;
     bool filterDataFlag = false;
@@ -932,17 +931,16 @@ void MainWindow::on_readerror()
 
 void MainWindow::on_closeRunningWidget()
 {
-    qDebug() << "MainWindow::on_closeRunningWidget";
-
     if (!this->runningMsgWidget->isVisible())
     {
         return;
     }
 
     if (this->process->isOpen())
-    {
+    {   // Jusge there are any tools running now.
         QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
-           "The association will be terminated if close the widget!   ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+           "The association will be terminated if close the widget!   ",
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
         if (ret == QMessageBox::Yes)
         {
             this->process->close();
@@ -2287,3 +2285,4 @@ void MainWindow::on_avinFileBrowButton_clicked()
     }
     ui->avinFileLineEdit->setText(fileNames[0]);
 }
+

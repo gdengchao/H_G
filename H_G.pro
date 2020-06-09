@@ -33,7 +33,6 @@ SOURCES += \
     poplddecay.cpp \
     runningmsgwidget.cpp \
     tool.cpp \
-    toolselector.cpp \
     useros.cpp \
     workdirectory.cpp
 
@@ -54,7 +53,6 @@ HEADERS += \
     poplddecay.h \
     runningmsgwidget.h \
     tool.h \
-    toolselector.h \
     useros.h \
     workdirectory.h
 

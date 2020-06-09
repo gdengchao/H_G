@@ -12,7 +12,6 @@
 #include <QMap>
 #include <QButtonGroup>
 #include <QDateTime>
-#include <RInside.h>
 #include <iostream>
 #include <cmath>
 #include "mtoolbutton.h"
@@ -30,8 +29,6 @@
 #include "gemmaparamwidget.h"
 #include "emmaxparamwidget.h"
 #include "graphviewer.h"
-
-using namespace Rcpp;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -102,8 +99,8 @@ private:
     void closeEvent(QCloseEvent *event) override;
 //    bool eventFilter(QObject *obj, QEvent *ev) override;
     //  Tool and script path;
-    QString toolpath = "/home/chao/Documents/code/H_G/tools/";
-    QString scriptpath = "/home/chao/Documents/code/H_G/script/";
+    QString toolpath = "/home/dengchao/Documents/code/H_G/tools/";
+    QString scriptpath = "/home/dengchao/Documents/code/H_G/script/";
 //    QString toolpath = "tools/";  // Realease
 //    QString scriptpath = "script/";
 
