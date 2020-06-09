@@ -56,7 +56,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <property name="iconSize">
      <size>
@@ -862,7 +862,7 @@ border-radius:5px;//这个是改变成圆角边框;
        <rect>
         <x>41</x>
         <y>151</y>
-        <width>403</width>
+        <width>412</width>
         <height>91</height>
        </rect>
       </property>
@@ -1046,7 +1046,7 @@ border-radius:5px;//这个是改变成圆角边框;
        <string>Go</string>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>40</x>
