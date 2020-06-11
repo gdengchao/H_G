@@ -5,6 +5,11 @@ PhenoSelector::PhenoSelector()
 
 }
 
+/**
+ * @brief PhenoSelector::PhenoSelector      constructor function
+ * @param selectedPheno
+ * @param excludedPheno
+ */
 PhenoSelector::PhenoSelector(QStringList const selectedPheno, QStringList const excludedPheno)
 {
     if (!selectedPheno.isEmpty())
@@ -18,11 +23,15 @@ PhenoSelector::PhenoSelector(QStringList const selectedPheno, QStringList const 
     }
 }
 
-void PhenoSelector::setSelectedPheno(QStringList const list)
+/**
+ * @brief PhenoSelector::setSelectedPheno
+ * @param phenoList  selected phenotype list.
+ */
+void PhenoSelector::setSelectedPheno(QStringList const phenoList)
 {
-    if (!list.isEmpty())
+    if (!phenoList.isEmpty())
     {
-        this->selectedPhenoList = list;
+        this->selectedPhenoList = phenoList;
     }
     else
     {
@@ -30,16 +39,24 @@ void PhenoSelector::setSelectedPheno(QStringList const list)
     }
 }
 
+/**
+ * @brief PhenoSelector::getSelectedPheno
+ * @return selected phenotype list.
+ */
 QStringList PhenoSelector::getSelectedPheno(void)
 {
     return this->selectedPhenoList;
 }
 
-void PhenoSelector::setExcludedPheno(QStringList const list)
+/**
+ * @brief PhenoSelector::setExcludedPheno
+ * @param phenoList  Excluded phenotype list.
+ */
+void PhenoSelector::setExcludedPheno(QStringList const phenoList)
 {
-    if (!list.isEmpty())
+    if (!phenoList.isEmpty())
     {
-        this->excludedPhenoList = list;
+        this->excludedPhenoList = phenoList;
     }
     else
     {
@@ -47,29 +64,41 @@ void PhenoSelector::setExcludedPheno(QStringList const list)
     }
 }
 
+/**
+ * @brief PhenoSelector::getExcludedPheno
+ * @return  Excluded phenotype list.
+ */
 QStringList PhenoSelector::getExcludedPheno(void)
 {
     return this->excludedPhenoList;
 }
 
+/**
+ * @brief PhenoSelector::selectPheno
+ * @param phenoItems    selected phenotype list.
+ */
 void PhenoSelector::selectPheno(QList<QListWidgetItem *> phenoItems)
 {
     if (!phenoItems.isEmpty())
     {
         for (auto item : phenoItems)
-        {
+        {   // Move current item from selected list to excluded list.
             this->selectedPhenoList.append(item->text());
             this->excludedPhenoList.removeOne(item->text());
         }
     }
 }
 
+/**
+ * @brief PhenoSelector::excludePheno
+ * @param phenoItems    exclued phenotype list.
+ */
 void PhenoSelector::excludePheno(QList<QListWidgetItem *> phenoItems)
 {
     if (!phenoItems.isEmpty())
     {
         for (auto item : phenoItems)
-        {
+        {   // Move current from excluded list to selected list.
             this->selectedPhenoList.removeOne(item->text());
             this->excludedPhenoList.append(item->text());
         }
@@ -79,7 +108,7 @@ void PhenoSelector::excludePheno(QList<QListWidgetItem *> phenoItems)
 void PhenoSelector::selectAllPheno(void)
 {
     if (!this->excludedPhenoList.isEmpty())
-    {
+    {   // Move all item from selected list to excluded list.
         this->selectedPhenoList.append(excludedPhenoList);
         this->excludedPhenoList.clear();
     }
@@ -88,7 +117,7 @@ void PhenoSelector::selectAllPheno(void)
 void PhenoSelector::excludeAllPheno(void)
 {
     if (!this->selectedPhenoList.isEmpty())
-    {
+    {   // Move all from excluded list to selected list.
         this->excludedPhenoList.append(this->selectedPhenoList);
         this->selectedPhenoList.clear();
     }

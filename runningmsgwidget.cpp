@@ -15,12 +15,22 @@ RunningMsgWidget::~RunningMsgWidget()
     delete ui;
 }
 
+/**
+ * @brief RunningMsgWidget::setText
+ *          (Will clear original data)
+ * @param text
+ */
 void RunningMsgWidget::setText(QString text)
 {
     ui->textBrowser->setText(text);
-    ui->textBrowser->moveCursor(QTextCursor::End);
+    ui->textBrowser->moveCursor(QTextCursor::End);  // Move cursor to end.
 }
 
+/**
+ * @brief RunningMsgWidget::appendText
+ *          (Will not clear original text)
+ * @param text: new text
+ */
 void RunningMsgWidget::appendText(QString text)
 {
     ui->textBrowser->append(text);
@@ -37,11 +47,20 @@ void RunningMsgWidget::setTitle(QString title)
     this->setWindowTitle(title);
 }
 
+/**
+ * @brief RunningMsgWidget::getText
+ * @return current text in widget.
+ */
 QString RunningMsgWidget::getText(void)
 {
     return ui->textBrowser->toPlainText();
 }
 
+/**
+ * @brief RunningMsgWidget::closeEvent
+ *          overrider closeEvent function.
+ * @param event
+ */
 void RunningMsgWidget::closeEvent(QCloseEvent *event)
 {
     qDebug() << "RunningMsgWidget::closeEvent";
@@ -51,44 +70,23 @@ void RunningMsgWidget::closeEvent(QCloseEvent *event)
         emit this->closeSignal();
     }
     event->ignore();
-//    if (this->isVisible())
-//    {
-//        QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
-//            "The association will be terminated if close the widget!   ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-//        if (ret == QMessageBox::Yes)
-//        {
-//            emit this->closeSignal();
-//            this->clearText();
-//            event->accept();
-//        }
-//        else
-//        {
-//            event->ignore();
-//        }
-//    }
 }
 
-//bool RunningMsgWidget::eventFilter(QObject *object, QEvent *event)
-//{
-//    if (event->type() == QEvent::Close)
-//    if (object != this)
-//    {
-//        return true;
-//    }
-//    return false;
-//}
-
-// Delete the last line and append the new line.
+/**
+ * @brief RunningMsgWidget::refreshLastLine
+ *          Deal with last line of text.
+ * @param line:new message.
+ */
 void RunningMsgWidget::refreshLastLine(QString line)
 {
     if (line.isNull())
-    {
+    {   // There no new message.
         return;
     }
 
     int index = line.length();
     if (line[index-1] == '\n' || line[index-1] == '\r')
-    {
+    {   //
         index --;
     }
 

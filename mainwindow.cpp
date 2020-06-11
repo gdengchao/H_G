@@ -87,7 +87,10 @@ MainWindow::~MainWindow()
     delete graphViewer;
 }
 
-
+/**
+ * @brief MainWindow::on_pheFileToolButton_clicked
+ *          Open phenotype file
+ */
 void MainWindow::on_pheFileToolButton_clicked()
 {
     // Basic display
@@ -113,7 +116,7 @@ void MainWindow::on_pheFileToolButton_clicked()
     QStringList phenoList = phenoFirstLine.split(QRegExp("\\s+"), QString::SkipEmptyParts);;
 
     if (phenoList.length() < 3)
-    {
+    {   // Basic cotent: FID IIF PHE.
         QMessageBox::information(nullptr, "Error", "Phenotype file format error!    ");
         ui->selectedPhenoListWidget->clear();
         ui->excludedPhenoListWidget->clear();
@@ -153,6 +156,10 @@ void MainWindow::on_pheFileToolButton_clicked()
     ui->selectedPhenoListWidget->insertItems(0, phenoSelector->getSelectedPheno());
 }
 
+/**
+ * @brief MainWindow::on_pheFileToolButton_closeFileSig
+ *          Close phenotype file
+ */
 void MainWindow::on_pheFileToolButton_closeFileSig()
 {
     ui->pheFileToolButton->setShowMenuFlag(false);
@@ -291,6 +298,10 @@ void MainWindow::on_kinFileToolButton_closeFileSig()
     this->fileReader->setKinshipFile("");
 }
 
+/**
+ * @brief MainWindow::on_outdirBrowButton_clicked
+ *          Choose output directory.
+ */
 void MainWindow::on_outdirBrowButton_clicked()
 {
     QString dir = QFileDialog::getExistingDirectory(this, "Choose directory");
@@ -346,6 +357,10 @@ void MainWindow::on_excludePhenoButton_clicked()
     ui->excludedPhenoListWidget->insertItems(0, phenoSelector->getExcludedPheno());
 }
 
+/**
+ * @brief MainWindow::on_rungwasButton_clicked
+ *          Run GWAS
+ */
 void MainWindow::on_rungwasButton_clicked()
 {
     QString tool = ui->toolComboBox->currentText();
@@ -379,7 +394,7 @@ void MainWindow::on_rungwasButton_clicked()
     QString pheFileSuffix = pheFileInfo.suffix();
 
     if (pheFileSuffix == "phe")
-    {
+    {   // Only one phenotype data.
         if (tool == "emmax")
         {
             if (!this->callEmmaxGwas(phenotype, genotype, map, covar, kinship, out, name))
@@ -408,9 +423,9 @@ void MainWindow::on_rungwasButton_clicked()
         }
     }
     else
-    {
+    {   // There several phenotype data.
         for (int i = 0; i < ui->selectedPhenoListWidget->count(); i++)
-        {
+        {   // Make .phe file then run GWAS one by one.
             QListWidgetItem *item = ui->selectedPhenoListWidget->item(i);
 
             if (!this->makePheFile(phenotype, item->text()))
@@ -452,6 +467,18 @@ void MainWindow::on_rungwasButton_clicked()
     this->resetWindow();
 }
 
+/**
+ * @brief MainWindow::callGemmaGwas
+ *      Call gemma to GWAS(Whole process of gemma are implemeted here)
+ * @param phenotype
+ * @param genotype
+ * @param map
+ * @param covar
+ * @param kinship
+ * @param out
+ * @param name
+ * @return
+ */
 bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
                                QString covar, QString kinship, QString out, QString name)
 {
@@ -667,6 +694,18 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     return true;
 }
 
+/**
+ * @brief MainWindow::callEmmaxGwas
+ *      Call gemma to GWAS(Whole process of gemma are implemeted here)
+ * @param phenotype
+ * @param genotype
+ * @param map
+ * @param covar
+ * @param kinship
+ * @param out
+ * @param name
+ * @return
+ */
 bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
                                QString covar, QString kinship, QString out, QString name)
 {
@@ -847,6 +886,18 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     return true;
 }
 
+/**
+ * @brief MainWindow::callPlinkGwas
+ *      Call gemma to GWAS(Whole process of gemma are implemeted here)
+ * @param phenotype
+ * @param genotype
+ * @param map
+ * @param covar
+ * @param kinship
+ * @param out
+ * @param name
+ * @return
+ */
 bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
                                QString covar, QString kinship, QString out, QString name)
 {
@@ -901,6 +952,10 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
     return true;
 }
 
+/**
+ * @brief MainWindow::on_readoutput
+ *      Read data from standard ouput stream, generated from tool which is running, to show in RunningMsgWidget
+ */
 void MainWindow::on_readoutput()
 {
     QString text = QString::fromLocal8Bit(this->process->readAllStandardOutput().data());
@@ -910,6 +965,10 @@ void MainWindow::on_readoutput()
     QThread::msleep(10);
 }
 
+/**
+ * @brief MainWindow::on_readerror
+ *      Read data from standard error stream, generated from tool which is running, to show in RunningMsgWidget
+ */
 void MainWindow::on_readerror()
 {
     QString tool = ui->toolComboBox->currentText();
@@ -927,8 +986,12 @@ void MainWindow::on_readerror()
     this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
     this->runningMsgWidget->repaint();
     qApp->processEvents();
+    QThread::msleep(10);
 }
 
+/**
+ * @brief MainWindow::on_closeRunningWidget
+ */
 void MainWindow::on_closeRunningWidget()
 {
     if (!this->runningMsgWidget->isVisible())
@@ -937,7 +1000,7 @@ void MainWindow::on_closeRunningWidget()
     }
 
     if (this->process->isOpen())
-    {   // Jusge there are any tools running now.
+    {   // Juage there are any tools running now.
         QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
            "The association will be terminated if close the widget!   ",
             QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
@@ -950,7 +1013,7 @@ void MainWindow::on_closeRunningWidget()
         }
     }
     else
-    {
+    {   // Close widget directly while no tool running.
         this->runningMsgWidget->clearText();
         this->runningMsgWidget->hide();
     }
@@ -976,6 +1039,12 @@ void MainWindow::on_closeRunningWidget()
 //    ui->msDoubleSpinBox->setValue(value/100.0);
 //}
 
+/**
+ * @brief MainWindow::isVcfFile
+ *      Judge the file whether a VCF file from file name.
+ * @param file
+ * @return
+ */
 bool MainWindow::isVcfFile(QString file) // Just consider filename.
 {
     if (file.isNull() || file.isEmpty())
@@ -997,6 +1066,10 @@ bool MainWindow::isVcfFile(QString file) // Just consider filename.
     return false;
 }
 
+/**
+ * @brief MainWindow::resetWindow
+ *      Reset MainWindow.
+ */
 void MainWindow::resetWindow()
 {
     if (this->process->isOpen())
@@ -1027,6 +1100,11 @@ void MainWindow::on_projectNameLineEdit_textChanged(const QString &text)
     }
 }
 
+/**
+ * @brief MainWindow::on_toolComboBox_currentTextChanged
+ *      Select a new tool and get supported model of tool.
+ * @param tool
+ */
 void MainWindow::on_toolComboBox_currentTextChanged(const QString &tool)
 {
     ui->modelComboBox->clear();
@@ -1048,6 +1126,13 @@ void MainWindow::on_toolComboBox_currentTextChanged(const QString &tool)
     }
 }
 
+/**
+ * @brief MainWindow::makePheFile
+ *      Make phenotype file according selected phenotype.
+ * @param phenotype     phenotype file path
+ * @param selectedPheno
+ * @return
+ */
 bool MainWindow::makePheFile(QString const phenotype, QString const selectedPheno)
 {
     if (phenotype.isNull() || selectedPheno.isEmpty())
@@ -1101,6 +1186,10 @@ bool MainWindow::makePheFile(QString const phenotype, QString const selectedPhen
     return true;
 }
 
+/**
+ * @brief MainWindow::on_detailPushButton_clicked
+ *      Set and show paramWidget
+ */
 void MainWindow::on_detailPushButton_clicked()
 {
     if (ui->toolComboBox->currentText() == "gemma")
@@ -1125,6 +1214,13 @@ void MainWindow::on_detailPushButton_clicked()
     }
 }
 
+/**
+ * @brief MainWindow::refreshMessage
+ *      To mananage running message.
+ * @param curText
+ * @param newText
+ * @return
+ */
 QString MainWindow::refreshMessage(QString curText, QString newText)
 {   // Remain lots of problems, little validance now.
     if (newText.isEmpty())
@@ -1169,7 +1265,7 @@ QString MainWindow::refreshMessage(QString curText, QString newText)
 }
 
 void MainWindow::on_projectNameLineEdit_editingFinished()
-{
+{   // Edit is finised but current text is empty.
     if (ui->projectNameLineEdit->text().isEmpty())
     {
         ui->projectNameLineEdit->setText("pro1");
@@ -1184,7 +1280,7 @@ void MainWindow::on_drawManPushButton_clicked()
     try {
         QString gwasResulFile = ui->gwasResultLineEdit->text();
         if (gwasResulFile.isEmpty())
-        {
+        {   // Gwas result file is necessary.
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("A GWAS result file is necessary.");
             qApp->processEvents();
@@ -1195,11 +1291,13 @@ void MainWindow::on_drawManPushButton_clicked()
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Make qqman input file, ");
         qApp->processEvents();
+
+        // Transform gwas result file type to input file type of qqman.
         QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
         QStringList outList;
 
         if (qqmanFile.isEmpty())
-        {
+        {   // makeQQManInputFile error.
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
             qApp->processEvents();
@@ -1211,7 +1309,7 @@ void MainWindow::on_drawManPushButton_clicked()
         qApp->processEvents();
 
         for (auto item:qqmanFile)
-        {
+        {   // Multiple result, multiple output plot, append to list.
             outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
                            +"_"+item.split(".")[item.split(".").length()-1]+"_man.png");
         }
@@ -1220,11 +1318,11 @@ void MainWindow::on_drawManPushButton_clicked()
         this->runningMsgWidget->appendText("Draw manhattan plot, ");
         qApp->processEvents();
         if (!this->drawManhattan(qqmanFile, outList))
-        {
-            throw -1;
+        {   // drawManhattan error
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("Draw manhattan plot ERROR. ");
             qApp->processEvents();
+            throw -1;
         }
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Draw manhattan plot OK.");
@@ -1233,11 +1331,11 @@ void MainWindow::on_drawManPushButton_clicked()
 
         QFile file;
         for (auto item:qqmanFile)
-        {
+        {   // Remove intermediate file.
             file.remove(item);
         }
     } catch (...) {
-        this->resetWindow();
+        this->resetWindow();    // reset MainWindow
     }
     this->resetWindow();
 }
@@ -1249,7 +1347,7 @@ void MainWindow::on_drawQQPushButton_clicked()
     try {
         QString gwasResulFile = ui->gwasResultLineEdit->text();
         if (gwasResulFile.isEmpty())
-        {
+        {   // Gwas result file is necessary.
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("A GWAS result file is necessary.");
             qApp->processEvents();
@@ -1260,6 +1358,7 @@ void MainWindow::on_drawQQPushButton_clicked()
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Make qqman input file, ");
         qApp->processEvents();
+        // Transform gwasResultFile to input file type of qqman.
         QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
         QStringList outList;
 
@@ -1276,7 +1375,7 @@ void MainWindow::on_drawQQPushButton_clicked()
         qApp->processEvents();
 
         for (auto item:qqmanFile)
-        {
+        {   // Multiple result, multiple output plot.
             outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
                            +"_"+item.split(".")[item.split(".").length()-1]+"_qq.png");
         }
@@ -1298,7 +1397,7 @@ void MainWindow::on_drawQQPushButton_clicked()
 
         QFile file;
         for (auto item:qqmanFile)
-        {
+        {   // Remove intermediate file.
             file.remove(item);
         }
     } catch (int) {
@@ -1308,6 +1407,13 @@ void MainWindow::on_drawQQPushButton_clicked()
     this->resetWindow();
 }
 
+/**
+ * @brief MainWindow::drawManhattan
+ *          Set parameter and call plot.R to draw manhattan plot.
+ * @param data  input data file
+ * @param out   output file
+ * @return
+ */
 bool MainWindow::drawManhattan(QStringList data, QStringList out)
 {
     if (data.isEmpty() || out.isEmpty() || data.size() != out.size())
@@ -1315,6 +1421,7 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
         return false;;
     }
 
+    // Threshold value
     int gwBase =  ui->gwBaseLineEdit->text().toInt();
     int gwExpo = ui->gwExpoLineEdit->text().toInt();
     int sgBase = ui->sgBaseLineEdit->text().toInt();
@@ -1332,8 +1439,7 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
         param.append(QString::number(gwBase)+'e'+QString::number(gwExpo));
         param.append(QString::number(sgBase)+'e'+QString::number(sgExpo));
 
-        qDebug() << param.join(" ") << endl;
-
+        // R in environment path is necessary.
         this->process->start("Rscript", param);
         if (!this->process->waitForStarted())
         {
@@ -1351,11 +1457,19 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
         }
         this->process->close();
     }
+    // Show plot
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
     return true;
 }
 
+/**
+ * @brief MainWindow::drawQQplot
+ *      Set parameter and call plot.R to draw QQ plot.
+ * @param data  input data file
+ * @param out   out file
+ * @return
+ */
 bool MainWindow::drawQQplot(QStringList data, QStringList out)
 {
     if (data.isEmpty() || out.isEmpty() || data.size() != out.size())
@@ -1372,6 +1486,7 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
         param.append("qqplot");
         param.append(data[i]);
         param.append(out[i]);
+        // R in environment path is necessary.
         this->process->start("Rscript", param);
         if (!this->process->waitForStarted())
         {
@@ -1390,11 +1505,16 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
         this->process->close();
 
     }
+    // Show plot
     this->graphViewer->setGraph(out);
     this->graphViewer->show();
     return true;
 }
 
+/**
+ * @brief MainWindow::on_gwasReultBrowButton_clicked
+ *      To select gwas result file.
+ */
 void MainWindow::on_gwasReultBrowButton_clicked()
 {
     QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", this->workDirectory->getOutputDirectory(),
@@ -1416,7 +1536,7 @@ void MainWindow::on_gwasReultBrowButton_clicked()
 
 /**
  * @brief MainWindow::makeQQmanFile
- * @param pvalueFile
+ * @param pvalueFile(generated by association tool)
  * @return  A file will be a input of manhattan.(header: SNP CHR BP P)
  */
 QStringList MainWindow::makeQQManInputFile(QString pvalueFile)
@@ -1468,7 +1588,7 @@ QStringList MainWindow::makeQQManInputFile(QString pvalueFile)
         qqmanInputFile.open(QIODevice::ReadWrite);
         qqmanInputFileStream << "SNP\tCHR\tBP\tP" << endl; // Write header
         while (!gwasResultFileStream.atEnd())
-        {
+        {   // Read data line by line.
             QStringList curLine = gwasResultFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
             QString SNP = curLine[0];
 

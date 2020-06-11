@@ -5,6 +5,9 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    /*
+     * To know file info
+     */
 //    QString file = "/home/chao/Desktop/test/output/a.b.assoc.txt";
 //    QFileInfo fileInfo(file);
 //    QString baseName = fileInfo.baseName();
@@ -15,6 +18,9 @@ int main(int argc, char *argv[])
 //    QString comSuffix = fileInfo.completeSuffix();
 //    QString comBaseName = fileInfo.completeBaseName();
 
+    /*
+     *  To test open external tool
+     */
 //    QProcess pro;
 //    pro.start("Rscript");
 //    if (pro.waitForStarted(-1))

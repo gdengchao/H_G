@@ -92,6 +92,12 @@ bool Gemma::runGWAS(QString binGenoBaseName, QString phenotype, QString covariat
     return true;
 }
 
+/**
+ * @brief Gemma::phe_fam_Preparation
+ * @param phe                           phenotype file path
+ * @param fam                           .fam file path
+ * @return
+ */
 bool Gemma::phe_fam_Preparation(QString phe, QString fam)
 {   // Replace "NA" to "-9", then complete .fam
     // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
@@ -117,19 +123,20 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
     if (!pheFile.open(QIODevice::ReadOnly) ||
         !famFile.open(QIODevice::ReadOnly) ||
         !tmpFamFile.open(QIODevice::ReadWrite))
-    {
+    {   // Open file error.
         return false;
     }
     while (!pheStream.atEnd() && !famStream.atEnd())
-    {
+    {   // Read file line by line respectively.
         QString famCurLine = famStream.readLine();
         QString pheCurLine = pheStream.readLine();
         // Replace "NA" to "-9"
         QStringList pheCurLineList = pheCurLine.replace("NA", "-9").split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        // Split by space(s)
         QStringList famCurLineList = famCurLine.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
         while (famCurLineList.length() > 5)
-        {   // Only hold the first 5 columns.(FID IIF PID MID Sex)
+        {   // Only retain the first 5 columns.(FID IIF PID MID Sex)
             famCurLineList.removeLast();
         }
 
@@ -140,14 +147,17 @@ bool Gemma::phe_fam_Preparation(QString phe, QString fam)
     }
 
     if (!pheStream.atEnd() || !famStream.atEnd())
-    {
+    {   // Not end synchronously.
         return false;
     }
+
+    // Close file finally.
     pheFile.close();
     famFile.close();
     tmpFamFile.close();
 
-    famFile.remove();
+    famFile.remove();   // remove original file.
+    // Rename new file to original file name.
     tmpFamFile.rename(tmpFamFileAbFilePath, famFileAbPath+"/"+famFileName);
 
     return true;

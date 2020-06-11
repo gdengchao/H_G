@@ -49,7 +49,7 @@ protected slots:
     void mouseDoubleClickEvent(QMouseEvent *e) override;
 
 signals:
-    void clicked();
+    void doubleClicked();
 
 private:
     Ui::GraphViewer *ui;

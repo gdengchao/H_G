@@ -31,6 +31,10 @@ EmmaxParamWidget::~EmmaxParamWidget()
     delete kinMatrixBtnGroup;
 }
 
+/**
+ * @brief EmmaxParamWidget::isMakeKinAuto
+ * @return
+ */
 bool EmmaxParamWidget::isMakeKinAuto(void)
 {
     if (!ui->yesKinRadioButton->isChecked())
@@ -90,12 +94,20 @@ QMap<QString, QString> EmmaxParamWidget::getCurrentParam(void)
     return retParam;
 }
 
+/**
+ * @brief EmmaxParamWidget::on_noKinRadioButton_clicked
+ *          Disable radioButton to choose type of kinship matrix.
+ */
 void EmmaxParamWidget::on_noKinRadioButton_clicked()
 {
     ui->ibsRadioButton->setEnabled(false);
     ui->bnRadioButton->setEnabled(false);
 }
 
+/**
+ * @brief EmmaxParamWidget::on_yesKinRadioButton_clicked
+ *          Enable radioButton to choose type of kinship matrix.
+ */
 void EmmaxParamWidget::on_yesKinRadioButton_clicked()
 {
     ui->ibsRadioButton->setEnabled(true);

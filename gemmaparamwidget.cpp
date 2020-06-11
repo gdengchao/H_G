@@ -56,6 +56,11 @@ GemmaParamWidget::~GemmaParamWidget()
     delete famCompleteBtnGroup;
 }
 
+/**
+ * @brief GemmaParamWidget::setLmmParamEnabled
+ *          Enable/Disable to set parameters of LMM.
+ * @param boolean
+ */
 void GemmaParamWidget::setLmmParamEnabled(bool boolean)
 {
     ui->waldTestRadioButton->setEnabled(boolean);
@@ -65,6 +70,11 @@ void GemmaParamWidget::setLmmParamEnabled(bool boolean)
     ui->lmmTestLabel->setEnabled(boolean);
 }
 
+/**
+ * @brief GemmaParamWidget::setBslmmParamEnabled
+ *           Enable/Disable to set parameters of BSLMM.
+ * @param boolean
+ */
 void GemmaParamWidget::setBslmmParamEnabled(bool boolean)
 {
     ui->stdLinearBslmmRadioButton->setEnabled(boolean);
@@ -73,6 +83,10 @@ void GemmaParamWidget::setBslmmParamEnabled(bool boolean)
     ui->bslmmModelLabel->setEnabled(boolean);
 }
 
+/**
+ * @brief GemmaParamWidget::isMakeRelatedMatAuto
+ * @return  Whether make realated matrix(kinship) automatically.
+ */
 bool GemmaParamWidget::isMakeRelatedMatAuto(void)
 {
     if (!ui->yesKinRadioButton->isChecked())
@@ -82,6 +96,10 @@ bool GemmaParamWidget::isMakeRelatedMatAuto(void)
     return true;
 }
 
+/**
+ * @brief GemmaParamWidget::isCentRelatedMat
+ * @return Whether make central realated matrix.
+ */
 bool GemmaParamWidget::isCentRelatedMat(void)
 {
     if (!ui->centRelatRadioButton->isChecked())

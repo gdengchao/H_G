@@ -28,6 +28,10 @@ GraphViewer::~GraphViewer()
     delete scene;
 }
 
+/**
+ * @brief GraphViewer::loopChangeGraphInList
+ *          Slider show graph in list.
+ */
 void GraphViewer::loopChangeGraphInList(void)
 {
     int index = imgList.indexOf(this->getCurrentImg());
@@ -52,6 +56,11 @@ void GraphViewer::loopChangeGraphInList(void)
     }
 }
 
+/**
+ * @brief GraphViewer::setGraph
+ *          Set graphs which will be show.
+ * @param graph
+ */
 void GraphViewer::setGraph(QStringList graph)
 {
     if(image->load(graph[0]))
@@ -73,36 +82,49 @@ void GraphViewer::setGraph(QStringList graph)
     }
 }
 
+/**
+ * @brief GraphViewer::showEvent        override showEvent function
+ */
 void GraphViewer::showEvent(QShowEvent *)
 {
     ui->graphicsView->fitInView(scene->sceneRect(),Qt::KeepAspectRatio);
 }
 
+/**
+ * @brief GraphViewer::mouseDoubleClickEvent        override mouseDoubleClickEvent function
+ * @param e
+ */
 void GraphViewer::mouseDoubleClickEvent(QMouseEvent *e)
 {
     if(e->button()==Qt::LeftButton)
     {
-        qDebug() << "Graph clicked" << endl;
-
         this->loopChangeGraphInList();
-
-        qDebug() << "imgList: " << imgList << endl;
-        qDebug() << "curImage: " << curImage << endl;
-
-        emit clicked();
+        emit doubleClicked();
     }
 }
 
+/**
+ * @brief GraphViewer::getImgList
+ * @return  current image list
+ */
 QStringList GraphViewer::getImgList(void)
 {
     return this->imgList;
 }
 
+/**
+ * @brief GraphViewer::getCurrentImg
+ * @return current image being show
+ */
 QString GraphViewer::getCurrentImg(void)
 {
     return curImage;
 }
 
+/**
+ * @brief GraphViewer::setImgList   (will clear orginal list)
+ * @param imgList
+ */
 void GraphViewer::setImgList(QStringList imgList)
 {
     this->imgList.clear();

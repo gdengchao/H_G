@@ -10,9 +10,9 @@ class PhenoSelector
 public:
     PhenoSelector();
     PhenoSelector(QStringList const selectedPheno, QStringList const exludedPheno);
-    void setSelectedPheno(QStringList const list);
+    void setSelectedPheno(QStringList const phenoList);
     QStringList getSelectedPheno(void);
-    void setExcludedPheno(QStringList const list);
+    void setExcludedPheno(QStringList const phenoList);
     QStringList getExcludedPheno(void);
 
     void selectPheno(QList<QListWidgetItem *> phenoItems);
