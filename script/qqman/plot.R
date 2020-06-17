@@ -34,8 +34,10 @@ drawManhattan <- function(args)
     
     newData<-na.omit(data)
     
-    ### NOTICE the path of manhattan.R
+    ### NOTICE the path of manhattan.R  
     source("/home/chao/Documents/code/H_G/script/qqman/manhattan.R") #/home/chao/Documents/code/H_G/script/qqman/manhattan.R
+
+    # Release path.
 #	path = paste0(getwd(), "/script/qqman/manhattan.R")
 #	source(path)
 	manhattan(newData, output = out, suggestiveline = suggest, genomewideline = genomewide)

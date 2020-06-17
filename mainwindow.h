@@ -29,6 +29,7 @@
 #include "gemmaparamwidget.h"
 #include "emmaxparamwidget.h"
 #include "graphviewer.h"
+#include "functionalannotator.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -77,7 +78,7 @@ private slots:
     // Plot QQ_Manhattan
     void on_drawManPushButton_clicked();
     void on_drawQQPushButton_clicked();
-    void on_gwasReultBrowButton_clicked();
+    void on_qqmanGwasReultBrowButton_clicked();
     void on_pcaRunPushButton_clicked();
     // Linkage disequilibrium
     void on_ldRunPushButton_clicked();
@@ -85,12 +86,17 @@ private slots:
     void on_ldReultBrowButton_clicked();
     // Graph viewer
     void on_GraphViewer_clicked();
-    // Annotation
+    // Structural annotation
     void on_gffFileBrowButton_clicked();
-    void on_annoRunPushButton_clicked();
+    void on_strucAnnoRunPushButton_clicked();
     void on_fastaFileBrowButton_clicked();
-
     void on_avinFileBrowButton_clicked();
+    // Functional annotation
+    void on_annoGwasReultBrowButton_clicked();
+    void on_baseFileBrowButton_clicked();
+    void on_varFuncFileBrowButton_clicked();
+    void on_exVarFuncFileBrowButton_clicked();
+    void on_funcAnnoRunPushButton_clicked();
 
 private:
     Ui::MainWindow *ui;

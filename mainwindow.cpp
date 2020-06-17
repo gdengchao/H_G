@@ -679,7 +679,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
         if (model == "LMM")
         {
-            ui->gwasResultLineEdit->setText(out+"/output"+(i==0?"":QString::number(i))
+            ui->qqmanGwasResultLineEdit->setText(out+"/output"+(i==0?"":QString::number(i))
                                             +"/"+name+"_"+pheFileBaseName+".assoc.txt");
         }
 
@@ -858,7 +858,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
             return false;
         }
         this->process->close();
-        ui->gwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
+        ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
 
         QFile file;
         // delete intermidiate file.
@@ -940,7 +940,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
         }
         this->process->close();
 
-        ui->gwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
+        ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
 
         this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is finished");
     }
@@ -1088,7 +1088,8 @@ void MainWindow::resetWindow()
     ui->pcaRunPushButton->setEnabled(true);
     ui->drawManPushButton->setEnabled(true);
     ui->drawQQPushButton->setEnabled(true);
-    ui->annoRunPushButton->setEnabled(true);
+    ui->strucAnnoRunPushButton->setEnabled(true);
+    ui->funcAnnoRunPushButton->setEnabled(true);
 }
 
 void MainWindow::on_projectNameLineEdit_textChanged(const QString &text)
@@ -1278,7 +1279,7 @@ void MainWindow::on_drawManPushButton_clicked()
     qApp->processEvents();
 
     try {
-        QString gwasResulFile = ui->gwasResultLineEdit->text();
+        QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
         if (gwasResulFile.isEmpty())
         {   // Gwas result file is necessary.
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
@@ -1345,7 +1346,7 @@ void MainWindow::on_drawQQPushButton_clicked()
     ui->drawQQPushButton->setEnabled(false);
     qApp->processEvents();
     try {
-        QString gwasResulFile = ui->gwasResultLineEdit->text();
+        QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
         if (gwasResulFile.isEmpty())
         {   // Gwas result file is necessary.
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
@@ -1515,7 +1516,7 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
  * @brief MainWindow::on_gwasReultBrowButton_clicked
  *      To select gwas result file.
  */
-void MainWindow::on_gwasReultBrowButton_clicked()
+void MainWindow::on_qqmanGwasReultBrowButton_clicked()
 {
     QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", this->workDirectory->getOutputDirectory(),
                                               "result(*.linear *.logistic *.ps *.txt);;all(*)");
@@ -1531,7 +1532,7 @@ void MainWindow::on_gwasReultBrowButton_clicked()
     {
         return;
     }
-    ui->gwasResultLineEdit->setText(fileNames[0]);
+    ui->qqmanGwasResultLineEdit->setText(fileNames[0]);
 }
 
 /**
@@ -2230,20 +2231,19 @@ void MainWindow::on_gffFileBrowButton_clicked()
     ui->gffFileLineEdit->setText(fileNames[0]);
 }
 
-void MainWindow::on_annoRunPushButton_clicked()
+void MainWindow::on_strucAnnoRunPushButton_clicked()
 {
     QString gffFile = ui->gffFileLineEdit->text();
     QString fastaFile = ui->fastaFileLineEdit->text();
     if (gffFile.isNull() || gffFile.isEmpty() || fastaFile.isNull() || fastaFile.isEmpty())
     {
-        qDebug() << "on_annoRunPushButton_clicked()";
         return;
     }
 
     try
     {
         this->runningMsgWidget->show();
-        ui->annoRunPushButton->setEnabled(false);
+        ui->strucAnnoRunPushButton->setEnabled(false);
         qApp->processEvents();
 
         QFileInfo gffFileInfo(gffFile);
@@ -2406,3 +2406,100 @@ void MainWindow::on_avinFileBrowButton_clicked()
     ui->avinFileLineEdit->setText(fileNames[0]);
 }
 
+
+void MainWindow::on_annoGwasReultBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", this->workDirectory->getOutputDirectory(),
+                                              "result(*.linear *.logistic *.ps *.txt);;all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->annoGwasResultLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::on_baseFileBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", this->workDirectory->getOutputDirectory(),
+                                              "base(all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->baseFileLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::on_varFuncFileBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open variant function file", this->workDirectory->getOutputDirectory(),
+                                              "var_func(*.variant_function);;(all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->varFuncFileLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::on_exVarFuncFileBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open exonic variant function file", this->workDirectory->getOutputDirectory(),
+                                              "ex_var_func(*.exonic_variant_function);;(all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->exVarFuncFileLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::on_funcAnnoRunPushButton_clicked()
+{
+    ui->funcAnnoRunPushButton->setEnabled(false);
+    qApp->processEvents();
+
+    QString pvalFile = ui->annoGwasResultLineEdit->text();
+    QString thBase = ui->thresholdBaseLineEdit->text();
+    QString thExpo = ui->thresholdExpoLineEdit->text();
+
+    QFileInfo pvalFileInfo(pvalFile);
+    QString pvalFileAbPath = pvalFileInfo.absolutePath();
+    QString pvalFileBaseName = pvalFileInfo.baseName();
+    QString sigPvalFile = pvalFileAbPath + "/" + pvalFileBaseName + "_sig";   // To store SNPs after filter.
+
+    FunctionalAnnotator funcAnnotator;
+    funcAnnotator.filterSNP(pvalFile, thBase, thExpo, sigPvalFile);
+
+    ui->funcAnnoRunPushButton->setEnabled(true);
+    qApp->processEvents();
+}
