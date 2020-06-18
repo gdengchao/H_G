@@ -29,7 +29,7 @@
 #include "gemmaparamwidget.h"
 #include "emmaxparamwidget.h"
 #include "graphviewer.h"
-#include "functionalannotator.h"
+#include "funcannotator.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -92,11 +92,15 @@ private slots:
     void on_fastaFileBrowButton_clicked();
     void on_avinFileBrowButton_clicked();
     // Functional annotation
-    void on_annoGwasReultBrowButton_clicked();
+    void on_snpPosBrowButton_clicked();
     void on_baseFileBrowButton_clicked();
     void on_varFuncFileBrowButton_clicked();
     void on_exVarFuncFileBrowButton_clicked();
     void on_funcAnnoRunPushButton_clicked();
+
+    void on_funcAnnoStepPushButton_clicked();
+
+    void on_annoPvalBrowButton_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -1090,6 +1090,7 @@ void MainWindow::resetWindow()
     ui->drawQQPushButton->setEnabled(true);
     ui->strucAnnoRunPushButton->setEnabled(true);
     ui->funcAnnoRunPushButton->setEnabled(true);
+    ui->funcAnnoStepPushButton->setEnabled(true);
 }
 
 void MainWindow::on_projectNameLineEdit_textChanged(const QString &text)
@@ -2407,10 +2408,10 @@ void MainWindow::on_avinFileBrowButton_clicked()
 }
 
 
-void MainWindow::on_annoGwasReultBrowButton_clicked()
+void MainWindow::on_snpPosBrowButton_clicked()
 {
-    QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", this->workDirectory->getOutputDirectory(),
-                                              "result(*.linear *.logistic *.ps *.txt);;all(*)");
+    QFileDialog *fileDialog = new QFileDialog(this, "Open SNP postion file", this->workDirectory->getOutputDirectory(),
+                                              "all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
     QStringList fileNames;
@@ -2423,7 +2424,7 @@ void MainWindow::on_annoGwasReultBrowButton_clicked()
     {
         return;
     }
-    ui->annoGwasResultLineEdit->setText(fileNames[0]);
+    ui->snpPosLineEdit->setText(fileNames[0]);
 }
 
 void MainWindow::on_baseFileBrowButton_clicked()
@@ -2488,18 +2489,71 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
     ui->funcAnnoRunPushButton->setEnabled(false);
     qApp->processEvents();
 
-    QString pvalFile = ui->annoGwasResultLineEdit->text();
-    QString thBase = ui->thresholdBaseLineEdit->text();
-    QString thExpo = ui->thresholdExpoLineEdit->text();
+    QString snpPosFile = ui->snpPosLineEdit->text();            // SNP position file: SNP P_VAL CHR BP
+    QString baseFile = ui->baseFileLineEdit->text();            // data base file
+    QString exVarFuncFile = ui->exVarFuncFileLineEdit->text();  // .exonic_variant_function
+    QString varFuncFile = ui->varFuncFileLineEdit->text();      // .variant_function
 
-    QFileInfo pvalFileInfo(pvalFile);
-    QString pvalFileAbPath = pvalFileInfo.absolutePath();
-    QString pvalFileBaseName = pvalFileInfo.baseName();
-    QString sigPvalFile = pvalFileAbPath + "/" + pvalFileBaseName + "_sig";   // To store SNPs after filter.
+    FuncAnnotator funcAnnotator;
 
-    FunctionalAnnotator funcAnnotator;
-    funcAnnotator.filterSNP(pvalFile, thBase, thExpo, sigPvalFile);
 
     ui->funcAnnoRunPushButton->setEnabled(true);
     qApp->processEvents();
+}
+
+void MainWindow::on_funcAnnoStepPushButton_clicked()
+{
+    try {
+        ui->funcAnnoStepPushButton->setEnabled(false);
+        qApp->processEvents();
+
+        QString mapFile = this->fileReader->getMapFile();
+        if (mapFile.isNull())
+        {
+            QMessageBox::information(nullptr, "Error", "A map file is needed.");
+            throw -1;
+        }
+
+        FuncAnnotator funcAnnotator;
+        QString thBase = ui->annoThBaseLineEdit->text();    // Threshold base number.
+        QString thExpo = ui->annoThExpoLineEdit->text();    // Threshold exponent.
+        QString pvalFile = ui->annoPvalLineEdit->text();    // p-value file(the first column is SNP_ID and the last column is p-value)
+        QString sigSnpFile;
+        QString sigSnpPosFile;
+
+        if (!funcAnnotator.filterSNP(pvalFile, thBase, thExpo, sigSnpFile))
+        {
+            throw -1;
+        }
+        if (!funcAnnotator.extractPos(sigSnpFile, mapFile, sigSnpPosFile))
+        {
+            throw -1;
+        }
+
+        ui->funcAnnoRunPushButton->setEnabled(true);
+        qApp->processEvents();
+    } catch (...) {
+        this->resetWindow();
+    }
+
+    this->resetWindow();
+}
+
+void MainWindow::on_annoPvalBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", this->workDirectory->getOutputDirectory(),
+                                              "result(*.linear *.logistic *.ps *.txt);;all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->qqmanGwasResultLineEdit->setText(fileNames[0]);
 }

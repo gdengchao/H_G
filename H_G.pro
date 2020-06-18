@@ -21,7 +21,7 @@ SOURCES += \
     emmax.cpp \
     emmaxparamwidget.cpp \
     filereader.cpp \
-    functionalannotator.cpp \
+    funcannotator.cpp \
     gcta.cpp \
     gemma.cpp \
     gemmaparamwidget.cpp \
@@ -43,7 +43,7 @@ HEADERS += \
     emmax.h \
     emmaxparamwidget.h \
     filereader.h \
-    functionalannotator.h \
+    funcannotator.h \
     gcta.h \
     gemma.h \
     gemmaparamwidget.h \
