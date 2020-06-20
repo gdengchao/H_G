@@ -25,12 +25,22 @@ int main(int argc, char *argv[])
 //    pro.start("Rscript");
 //    if (pro.waitForStarted(-1))
 //    {
-//        qDebug() << "started." << endl;
+//        qDebug() << "started." <<endl;
 //    }
 //    else
 //    {
 //        qDebug() << "Not started." << endl;
 //    }
+
+    /*
+     *  To test QRegExp
+     */
+//    QString str = "HDH_G00730plitHDH_T00730:exon1:c.A132G:p.T44T,";
+//    QRegExp regExp("([^:]*):(.*),");
+//    int pos = regExp.indexIn(str);
+//    QStringList list = regExp.capturedTexts();
+//    QString strA = regExp.cap(1);
+//    QString strB = regExp.cap(2);
 
     MainWindow w;
     w.show();

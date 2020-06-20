@@ -2510,16 +2510,34 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
         QString mapFile = this->fileReader->getMapFile();
         if (mapFile.isNull())
         {
-            QMessageBox::information(nullptr, "Error", "A map file is needed.");
+            QMessageBox::information(nullptr, "Error", "A map file is necessary.");
             throw -1;
         }
 
-        FuncAnnotator funcAnnotator;
+        QString pvalFile = ui->annoPvalLineEdit->text();    // p-value file(the first column is SNP_ID and the last column is p-value)
+        if (pvalFile.isNull() || pvalFile.isEmpty())
+        {
+            QMessageBox::information(nullptr, "Error", "A p-value file is necessary.");
+            throw -1;
+        }
+
+        QFileInfo pvalFileInfo(pvalFile);
+        QString pvalFileAbPath = pvalFileInfo.absolutePath();
+        QString pvalFileBaseName = pvalFileInfo.baseName();
+
         QString thBase = ui->annoThBaseLineEdit->text();    // Threshold base number.
         QString thExpo = ui->annoThExpoLineEdit->text();    // Threshold exponent.
-        QString pvalFile = ui->annoPvalLineEdit->text();    // p-value file(the first column is SNP_ID and the last column is p-value)
-        QString sigSnpFile;
-        QString sigSnpPosFile;
+
+        if (thBase.isEmpty() || thExpo.isEmpty())
+        {
+            QMessageBox::information(nullptr, "Error", "Please set the threshold.");
+            throw -1;
+        }
+
+        QString sigSnpFile = pvalFileAbPath + "/" + pvalFileBaseName + "_sig";   // to save SNP after filter.
+        QString sigSnpPosFile = sigSnpFile + "_pos";        // to save extracted position of SNP after filter.
+
+        FuncAnnotator funcAnnotator;
 
         if (!funcAnnotator.filterSNP(pvalFile, thBase, thExpo, sigSnpFile))
         {
@@ -2529,6 +2547,7 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
         {
             throw -1;
         }
+        ui->snpPosLineEdit->setText(sigSnpPosFile);
 
         ui->funcAnnoRunPushButton->setEnabled(true);
         qApp->processEvents();
@@ -2555,5 +2574,5 @@ void MainWindow::on_annoPvalBrowButton_clicked()
     {
         return;
     }
-    ui->qqmanGwasResultLineEdit->setText(fileNames[0]);
+    ui->annoPvalLineEdit->setText(fileNames[0]);
 }

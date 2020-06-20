@@ -8,6 +8,7 @@
 #include <QProcess>
 #include <QApplication>
 #include <QMap>
+#include <QSet>
 #include <iostream>
 
 // Functional annotator

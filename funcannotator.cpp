@@ -76,12 +76,12 @@ bool FuncAnnotator::extractPos(QString const pvalFilePath, QString const mapFile
         return false;
     }
     QTextStream pvalFileStream(&pvalFile);
-    QMap<QString, QString> snpID;    // SNPs need to extract.
+    QMap<QString, QString> snpIDMap;    // SNPs need to extract.
     while (!pvalFileStream.atEnd())
     {
         qApp->processEvents();
         QStringList curLine = pvalFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
-        snpID.insert(curLine[0], curLine[0]+"\t"+curLine[2]);   // cut the SNP_ID and p-value
+        snpIDMap.insert(curLine[0], curLine[0]+"\t"+curLine[2]);   // cut the SNP_ID and p-value
     }
 
     QFile mapFile(mapFilePath);
@@ -93,15 +93,14 @@ bool FuncAnnotator::extractPos(QString const pvalFilePath, QString const mapFile
     }
 
     // traverse map file, extract SNP.
-    QTextStream mapFileStream;
-    QTextStream outFileStream;
+    QTextStream mapFileStream(&mapFile);
+    QTextStream outFileStream(&outFile);
     while (!mapFile.atEnd())
     {
         QStringList curLine = mapFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
-
-        if (snpID.find(curLine[1]) != snpID.end())
+        if (snpIDMap.find(curLine[1]) != snpIDMap.end())
         {
-            outFileStream << snpID[curLine[1]] << "chr" << curLine[0] << "\t" << curLine[3] << endl;
+            outFileStream << snpIDMap[curLine[1]] << "\tchr" << curLine[0] << "\t" << curLine[3] << endl;
         }
 
         qApp->processEvents();
@@ -121,5 +120,47 @@ bool FuncAnnotator::extractPos(QString const pvalFilePath, QString const mapFile
  */
 bool FuncAnnotator::complExoSnpInfo(QString const snpPosFilePath, QString const exValFuncFilePath, QString const outFilePath)
 {
+    if (snpPosFilePath.isNull() ||
+        exValFuncFilePath.isNull() ||
+        outFilePath.isNull())
+    {
+        return false;
+    }
 
+    QFile exValFuncFile(exValFuncFilePath);
+    if (!exValFuncFile.open(QIODevice::ReadOnly))
+    {
+        return false;
+    }
+    QTextStream exValFuncFileStream(&exValFuncFile);
+    QMap<QString, QStringList> snpInfoMap;      // save info in .exonic_variant_function
+    while (!exValFuncFileStream.atEnd())
+    {
+        QStringList curLine = exValFuncFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        QString chr_bp = curLine[4] + "_" + curLine[5];
+        /* aminoAcidChange: Amino acid changes
+        *    Include gene_ID,Transcriptional recognition marker,and Sequence changes of corresponding transcripts
+        */
+        QString aminoAcidChange = curLine[3];
+        int commaCounter = aminoAcidChange.count(',');
+        if (commaCounter == 1)
+        {
+            QRegExp regExp("([^:]*):(.*),");    //  Obj data: "HDH_G00730:HDH_T00730:exon1:c.A132G:p.T44T,"
+            int pos = regExp.indexIn(aminoAcidChange);
+            if (pos == -1)
+            {   // Match string error.
+                return false;
+            }
+            QStringList list = regExp.capturedTexts();
+            QString str_1 = regExp.cap(1);  // "HDH_G00730"
+            QString str_2 = regExp.cap(2);  // "HDH_T00730:exon1:c.A132G:p.T44T,"
+            snpInfoMap.insert(chr_bp, QStringList()<<str_1<<curLine[1]<<str_2);
+        }
+        else if (commaCounter == 2)
+        {
+            QStringList aminoAcidChangeList = aminoAcidChange.split(",", QString::SkipEmptyParts);
+
+        }
+    }
+    return true;
 }
