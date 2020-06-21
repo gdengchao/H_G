@@ -134,12 +134,15 @@ bool FuncAnnotator::complExoSnpInfo(QString const snpPosFilePath, QString const 
     }
     QTextStream exValFuncFileStream(&exValFuncFile);
     QMap<QString, QStringList> snpInfoMap;      // save info in .exonic_variant_function
+    QMap<QString, QStringList> snpMoreInfoMap;  // when there tow comma, save the 2nd info.
     while (!exValFuncFileStream.atEnd())
     {
+        qApp->processEvents();
+
         QStringList curLine = exValFuncFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         QString chr_bp = curLine[4] + "_" + curLine[5];
         /* aminoAcidChange: Amino acid changes
-        *    Include gene_ID,Transcriptional recognition marker,and Sequence changes of corresponding transcripts
+        *     contains the gene name, the transcript identifier and the sequence change in the corresponding transcript
         */
         QString aminoAcidChange = curLine[3];
         int commaCounter = aminoAcidChange.count(',');
@@ -152,15 +155,66 @@ bool FuncAnnotator::complExoSnpInfo(QString const snpPosFilePath, QString const 
                 return false;
             }
             QStringList list = regExp.capturedTexts();
-            QString str_1 = regExp.cap(1);  // "HDH_G00730"
-            QString str_2 = regExp.cap(2);  // "HDH_T00730:exon1:c.A132G:p.T44T,"
-            snpInfoMap.insert(chr_bp, QStringList()<<str_1<<curLine[1]<<str_2);
+            QString subStr_1 = regExp.cap(1);  // "HDH_G00730"
+            QString subStr_2 = regExp.cap(2);  // "HDH_T00730:exon1:c.A132G:p.T44T,"
+            snpInfoMap.insert(chr_bp, QStringList()<<subStr_1<<curLine[1]<<subStr_2);
         }
         else if (commaCounter == 2)
-        {
+        {   // Assume there are two annotation.()
             QStringList aminoAcidChangeList = aminoAcidChange.split(",", QString::SkipEmptyParts);
 
+            // The first annotation
+            QRegExp regExp("([^:]*):(.*)");    //  Obj data: "HDH_G00730:HDH_T00730:exon1:c.A132G:p.T44T"
+            int pos = regExp.indexIn(aminoAcidChangeList[0]);
+            if (pos == -1)
+            {   // Match string error.
+                return false;
+            }
+            QStringList list = regExp.capturedTexts();
+            QString subStr_1 = regExp.cap(1);  // "HDH_G00730"
+            QString subStr_2 = regExp.cap(2);  // "HDH_T00730:exon1:c.A132G:p.T44T,"
+            snpInfoMap.insert(chr_bp, QStringList()<<subStr_1<<curLine[1]<<subStr_2);
+
+            //  The second annotation
+            pos = regExp.indexIn(aminoAcidChangeList[1]);
+            if (pos == -1)
+            {   // Match string error.
+                return false;
+            }
+            list = regExp.capturedTexts();
+            subStr_1 = regExp.cap(1);  // "HDH_G00730"
+            subStr_2 = regExp.cap(2);  // "HDH_T00730:exon1:c.A132G:p.T44T,"
+            snpMoreInfoMap.insert(chr_bp, QStringList()<<subStr_1<<curLine[1]<<subStr_2);
         }
     }
+
+
+    QFile snpPosFile(snpPosFilePath);
+    QFile outFile(outFilePath);
+    if (!snpPosFile.open(QIODevice::ReadOnly) ||
+        !outFile.open(QIODevice::WriteOnly))
+    {
+        return false;
+    }
+    QTextStream snpPosFileStream(&snpPosFile);
+    QTextStream outFileStream(&outFile);
+    while (!snpPosFileStream.atEnd())
+    {
+        qApp->processEvents();
+        QStringList curLine = snpPosFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        QString chr_bp = curLine[2] + "_" + curLine[3];
+
+        if (snpInfoMap.find(chr_bp) != snpInfoMap.end())
+        {
+            outFileStream << snpInfoMap[chr_bp][0] << "\t" << snpInfoMap[chr_bp][1] << "\t"
+                          << curLine.join("\t") << snpInfoMap[chr_bp][2] << endl;
+        }
+        if (snpMoreInfoMap.find(chr_bp) != snpMoreInfoMap.end())
+        {
+            outFileStream << snpMoreInfoMap[chr_bp][0] << "\t" << snpMoreInfoMap[chr_bp][1] << "\t"
+                          << curLine.join("\t") << snpMoreInfoMap[chr_bp][2] << endl;
+        }
+    }
+
     return true;
 }

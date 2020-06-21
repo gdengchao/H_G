@@ -2489,13 +2489,25 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
     ui->funcAnnoRunPushButton->setEnabled(false);
     qApp->processEvents();
 
-    QString snpPosFile = ui->snpPosLineEdit->text();            // SNP position file: SNP P_VAL CHR BP
-    QString baseFile = ui->baseFileLineEdit->text();            // data base file
-    QString exVarFuncFile = ui->exVarFuncFileLineEdit->text();  // .exonic_variant_function
-    QString varFuncFile = ui->varFuncFileLineEdit->text();      // .variant_function
+    try {
+        QString snpPosFile = ui->snpPosLineEdit->text();            // SNP position file: SNP P_VAL CHR BP
+        QString baseFile = ui->baseFileLineEdit->text();            // data base file
+        QString exVarFuncFile = ui->exVarFuncFileLineEdit->text();  // .exonic_variant_function
+        QString varFuncFile = ui->varFuncFileLineEdit->text();      // .variant_function
 
-    FuncAnnotator funcAnnotator;
+        QFileInfo snpPosFileInfo(snpPosFile);
+        QString snpPosFileAbPath = snpPosFileInfo.absolutePath();
+        QString snpPosFileBaseName = snpPosFileInfo.baseName();
+        QString exonicPosFile = snpPosFileAbPath + "/exonix_pos";
 
+        FuncAnnotator funcAnnotator;
+        if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
+        {
+            throw -1;
+        }
+    } catch (...) {
+        this->resetWindow();
+    }
 
     ui->funcAnnoRunPushButton->setEnabled(true);
     qApp->processEvents();
