@@ -2407,7 +2407,10 @@ void MainWindow::on_avinFileBrowButton_clicked()
     ui->avinFileLineEdit->setText(fileNames[0]);
 }
 
-
+/**
+ * @brief MainWindow::on_snpPosBrowButton_clicked
+ *      To open postion of SNP file.
+ */
 void MainWindow::on_snpPosBrowButton_clicked()
 {
     QFileDialog *fileDialog = new QFileDialog(this, "Open SNP postion file", this->workDirectory->getOutputDirectory(),
@@ -2427,6 +2430,10 @@ void MainWindow::on_snpPosBrowButton_clicked()
     ui->snpPosLineEdit->setText(fileNames[0]);
 }
 
+/**
+ * @brief MainWindow::on_baseFileBrowButton_clicked
+ *          To open database file of annotation.
+ */
 void MainWindow::on_baseFileBrowButton_clicked()
 {
     QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", this->workDirectory->getOutputDirectory(),
@@ -2446,6 +2453,10 @@ void MainWindow::on_baseFileBrowButton_clicked()
     ui->baseFileLineEdit->setText(fileNames[0]);
 }
 
+/**
+ * @brief MainWindow::on_varFuncFileBrowButton_clicked
+ *          To open .variant_function file.
+ */
 void MainWindow::on_varFuncFileBrowButton_clicked()
 {
     QFileDialog *fileDialog = new QFileDialog(this, "Open variant function file", this->workDirectory->getOutputDirectory(),
@@ -2465,6 +2476,10 @@ void MainWindow::on_varFuncFileBrowButton_clicked()
     ui->varFuncFileLineEdit->setText(fileNames[0]);
 }
 
+/**
+ * @brief MainWindow::on_exVarFuncFileBrowButton_clicked
+ *          To open .exonic_variant_function file.
+ */
 void MainWindow::on_exVarFuncFileBrowButton_clicked()
 {
     QFileDialog *fileDialog = new QFileDialog(this, "Open exonic variant function file", this->workDirectory->getOutputDirectory(),
@@ -2484,6 +2499,11 @@ void MainWindow::on_exVarFuncFileBrowButton_clicked()
     ui->exVarFuncFileLineEdit->setText(fileNames[0]);
 }
 
+/**
+ * @brief MainWindow::on_funcAnnoRunPushButton_clicked
+ *          To run functional anotation.
+ *          Start from snpPosFile made in annoFuncStep or input.
+ */
 void MainWindow::on_funcAnnoRunPushButton_clicked()
 {
     ui->funcAnnoRunPushButton->setEnabled(false);
@@ -2495,16 +2515,42 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         QString exVarFuncFile = ui->exVarFuncFileLineEdit->text();  // .exonic_variant_function
         QString varFuncFile = ui->varFuncFileLineEdit->text();      // .variant_function
 
+
+        if (snpPosFile.isEmpty())
+        {
+            QMessageBox::information(nullptr, "Error", "A position of SNP file is necessary.");
+            throw -1;
+        }
+//        if (exVarFuncFile.isEmpty())
+//        {
+//            QMessageBox::information(nullptr, "Error", "A .exonic_variant_function file is necessary.");
+//            throw -1;
+//        }
+//        if (baseFile.isEmpty())
+//        {
+//            QMessageBox::information(nullptr, "Error", "A annotation base file is necessary.");
+//            throw -1;
+//        }
+//        if (varFuncFile.isEmpty())
+//        {
+//            QMessageBox::information(nullptr, "Error", "A .variant_function file is necessary.");
+//            throw -1;
+//        }
+
         QFileInfo snpPosFileInfo(snpPosFile);
         QString snpPosFileAbPath = snpPosFileInfo.absolutePath();
         QString snpPosFileBaseName = snpPosFileInfo.baseName();
         QString exonicPosFile = snpPosFileAbPath + "/exonix_pos";
-
+        QString nonExonicPosFile = snpPosFileAbPath + "/non_exonix_pos";
         FuncAnnotator funcAnnotator;
         if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
         {
             throw -1;
         }
+//        if (!funcAnnotator.complNonExoSnpInfo(snpPosFile, varFuncFile, exonicPosFile))
+//        {
+//            throw -1;
+//        }
     } catch (...) {
         this->resetWindow();
     }
@@ -2513,6 +2559,10 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
     qApp->processEvents();
 }
 
+/**
+ * @brief MainWindow::on_funcAnnoStepPushButton_clicked
+ *          Read map file and p-value file, filter SNP and exstract postion of SNP.
+ */
 void MainWindow::on_funcAnnoStepPushButton_clicked()
 {
     try {

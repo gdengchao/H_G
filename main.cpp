@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
 //    QString strA = regExp.cap(1);
 //    QString strB = regExp.cap(2);
 
+//    QString str("A(B)");
+//    QStringList gene = str.split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
+
     MainWindow w;
     w.show();
 
