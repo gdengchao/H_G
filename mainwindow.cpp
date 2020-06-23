@@ -8,6 +8,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    thread = new QThread;
+
     // Intiate Icon.(cross icon)
     ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->genoFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
@@ -66,6 +68,7 @@ MainWindow::~MainWindow()
 {
     // Free pointer.
     delete ui;
+    delete thread;
     delete fileReader;
     delete workDirectory;
     delete phenoSelector;
@@ -2358,7 +2361,8 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         this->runningMsgWidget->appendText("Annotation OK.\n");
         qApp->processEvents();
 
-        // annotate_variation
+        ui->varFuncFileLineEdit->setText(outFile+".variant_functino");
+        ui->exVarFuncFileLineEdit->setText(outFile+".exonic_variant_function");
 
         this->process->close();
 
@@ -2514,13 +2518,14 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         QString baseFile = ui->baseFileLineEdit->text();            // data base file
         QString exVarFuncFile = ui->exVarFuncFileLineEdit->text();  // .exonic_variant_function
         QString varFuncFile = ui->varFuncFileLineEdit->text();      // .variant_function
+        QString out = this->workDirectory->getOutputDirectory();
+        QString name = this->workDirectory->getProjectName();
 
-
-        if (snpPosFile.isEmpty())
-        {
-            QMessageBox::information(nullptr, "Error", "A position of SNP file is necessary.");
-            throw -1;
-        }
+//        if (snpPosFile.isEmpty())
+//        {
+//            QMessageBox::information(nullptr, "Error", "A position of SNP file is necessary.");
+//            throw -1;
+//        }
 //        if (exVarFuncFile.isEmpty())
 //        {
 //            QMessageBox::information(nullptr, "Error", "A .exonic_variant_function file is necessary.");
@@ -2540,17 +2545,23 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         QFileInfo snpPosFileInfo(snpPosFile);
         QString snpPosFileAbPath = snpPosFileInfo.absolutePath();
         QString snpPosFileBaseName = snpPosFileInfo.baseName();
-        QString exonicPosFile = snpPosFileAbPath + "/exonix_pos";
-        QString nonExonicPosFile = snpPosFileAbPath + "/non_exonix_pos";
+
+        QString exonicPosFile = snpPosFileAbPath + "/exonic_pos";
+        QString nonExonicPosFile = snpPosFileAbPath + "/non_exonic_pos";
+        QString funcAnnoResult = out + "/" + name +"_func_anno";
         FuncAnnotator funcAnnotator;
         if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
         {
             throw -1;
         }
-//        if (!funcAnnotator.complNonExoSnpInfo(snpPosFile, varFuncFile, exonicPosFile))
-//        {
-//            throw -1;
-//        }
+        if (!funcAnnotator.complNonExoSnpInfo(exonicPosFile, snpPosFile, varFuncFile, nonExonicPosFile))
+        {
+            throw -1;
+        }
+        if (!funcAnnotator.complFuncAnnoInfo(exonicPosFile, nonExonicPosFile, baseFile, funcAnnoResult))
+        {
+            throw -1;
+        }
     } catch (...) {
         this->resetWindow();
     }
