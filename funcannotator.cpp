@@ -228,7 +228,10 @@ bool FuncAnnotator::complExoSnpInfo(QString const snpPosFilePath, QString const 
  * @brief FuncAnnotator::complNonExoSnpInfo
  *          Add the gene ID and region before the SNP loci located outside of the gene exon,
  *      and add the SNP relative to the gene information in the last column.
+<<<<<<< HEAD
  * @param exonicPosFilePath     :gene_ID, mutation_type, snpPosFile(SNP_ID P-VALUE CHR BP),other info
+=======
+>>>>>>> 5cbbe7d3d293ad57249b58cc961a263b965d48e6
  * @param snpPosFilePath        :SNP_ID P-VALUE CHR BP
  * @param varFuncFilePath       :.variant_function
  * @param outFilePath           :gene_ID, mutation_type, snpPosFile:(SNP_ID, P-VALUE, CHR, BP), distance
@@ -321,7 +324,11 @@ bool FuncAnnotator::complNonExoSnpInfo(QString const exonicPosFilePath, QString 
             // gene: Gene_ID(distance) ---> Gene_ID, distance
             QStringList geneAnno = curLine[1].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
             outFileStream << geneAnno[0] << "\t" << curLine[0] << "\t"
+<<<<<<< HEAD
                           << snpPosInfoMap[chr_bp].join("\t") << "\t"
+=======
+                          << snpPosInfoMap[chr_bp].join("\t")
+>>>>>>> 5cbbe7d3d293ad57249b58cc961a263b965d48e6
                           << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
         }
         else if (commaCounter == 1 && semiCounter == 1)
@@ -334,6 +341,7 @@ bool FuncAnnotator::complNonExoSnpInfo(QString const exonicPosFilePath, QString 
             {   // A;B,C
                 QStringList geneAnno = gene_1st[0].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
                 outFileStream << geneAnno[0] << "\t" << snpRegion[0] << "\t"
+<<<<<<< HEAD
                               << snpPosInfoMap[chr_bp].join("\t") << "\t"
                               << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
                 geneAnno = gene_2nd[0].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
@@ -343,12 +351,24 @@ bool FuncAnnotator::complNonExoSnpInfo(QString const exonicPosFilePath, QString 
                 geneAnno = gene_2nd[1].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
                 outFileStream << geneAnno[0] << "\t" << snpRegion[1] << "\t"
                               << snpPosInfoMap[chr_bp].join("\t") << "\t"
+=======
+                              << snpPosInfoMap[chr_bp].join("\t")
+                              << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
+                geneAnno = gene_2nd[0].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
+                outFileStream << geneAnno[0] << "\t" << snpRegion[1] << "\t"
+                              << snpPosInfoMap[chr_bp].join("\t")
+                              << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
+                geneAnno = gene_2nd[1].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
+                outFileStream << geneAnno[0] << "\t" << snpRegion[1] << "\t"
+                              << snpPosInfoMap[chr_bp].join("\t")
+>>>>>>> 5cbbe7d3d293ad57249b58cc961a263b965d48e6
                               << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
             }
             else if (gene_2nd.length() < 2)
             {   // A,B;C
                 QStringList geneAnno = gene_1st[0].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
                 outFileStream << geneAnno[0] << "\t" << snpRegion[0] << "\t"
+<<<<<<< HEAD
                               << snpPosInfoMap[chr_bp].join("\t") << "\t"
                               << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
                 geneAnno = gene_1st[1].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
@@ -358,6 +378,17 @@ bool FuncAnnotator::complNonExoSnpInfo(QString const exonicPosFilePath, QString 
                 geneAnno = gene_2nd[0].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
                 outFileStream << geneAnno[0] << "\t" << snpRegion[1] << "\t"
                               << snpPosInfoMap[chr_bp].join("\t") << "\t"
+=======
+                              << snpPosInfoMap[chr_bp].join("\t")
+                              << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
+                geneAnno = gene_1st[1].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
+                outFileStream << geneAnno[0] << "\t" << snpRegion[0] << "\t"
+                              << snpPosInfoMap[chr_bp].join("\t")
+                              << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
+                geneAnno = gene_2nd[0].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
+                outFileStream << geneAnno[0] << "\t" << snpRegion[1] << "\t"
+                              << snpPosInfoMap[chr_bp].join("\t")
+>>>>>>> 5cbbe7d3d293ad57249b58cc961a263b965d48e6
                               << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
             }
         }
@@ -366,11 +397,19 @@ bool FuncAnnotator::complNonExoSnpInfo(QString const exonicPosFilePath, QString 
             QStringList geneAnno = curLine[1].split(",", QString::SkipEmptyParts);
             QStringList gene_1st = geneAnno[0].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
             outFileStream << gene_1st[0] << "\t" << curLine[0] << "\t"
+<<<<<<< HEAD
                           << snpPosInfoMap[chr_bp].join("\t") << "\t"
                           << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
             QStringList gene_2nd = geneAnno[1].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
             outFileStream << gene_2nd[0] << "\t" << curLine[0] << "\t"
                           << snpPosInfoMap[chr_bp].join("\t") << "\t"
+=======
+                          << snpPosInfoMap[chr_bp].join("\t")
+                          << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
+            QStringList gene_2nd = geneAnno[1].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
+            outFileStream << gene_2nd[0] << "\t" << curLine[0] << "\t"
+                          << snpPosInfoMap[chr_bp].join("\t")
+>>>>>>> 5cbbe7d3d293ad57249b58cc961a263b965d48e6
                           << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
         }
         else if (semiCounter == 1)
@@ -379,15 +418,24 @@ bool FuncAnnotator::complNonExoSnpInfo(QString const exonicPosFilePath, QString 
             QStringList snpRegion = curLine[0].split(";", QString::SkipEmptyParts);
             QStringList geneAnno = gene[0].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
             outFileStream << geneAnno[0] << "\t" << snpRegion[0] << "\t"
+<<<<<<< HEAD
                           << snpPosInfoMap[chr_bp].join("\t") << "\t"
                           << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
             geneAnno = gene[1].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
             outFileStream << geneAnno[0] << "\t" << snpRegion[1] << "\t"
                           << snpPosInfoMap[chr_bp].join("\t") << "\t"
+=======
+                          << snpPosInfoMap[chr_bp].join("\t")
+                          << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
+            geneAnno = gene[1].split(QRegExp("\\(|\\)"), QString::SkipEmptyParts);
+            outFileStream << geneAnno[0] << "\t" << snpRegion[1] << "\t"
+                          << snpPosInfoMap[chr_bp].join("\t")
+>>>>>>> 5cbbe7d3d293ad57249b58cc961a263b965d48e6
                           << (geneAnno.length() < 2 ? "" : geneAnno[1]) << endl;
         }
     }
 
+<<<<<<< HEAD
     return true;
 }
 
@@ -470,6 +518,8 @@ bool FuncAnnotator::complFuncAnnoInfo(QString const exonicPosFilePath, QString n
         curLine.removeFirst();
         outFileStream << snpPosMap[id].join("\t") << "\t" << curLine.join("\t") << endl;
     }
+=======
+>>>>>>> 5cbbe7d3d293ad57249b58cc961a263b965d48e6
 
     return true;
 }

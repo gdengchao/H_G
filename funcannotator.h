@@ -21,8 +21,11 @@ public:
     bool complExoSnpInfo(QString const snpPosFilePath, QString const exVarFuncFilePath, QString const outFilePath);
     bool complNonExoSnpInfo(QString const exonicPosFilePath, QString const snpPosFilePath,
                             QString const varFuncFilePath, QString const outFilePath);
+<<<<<<< HEAD
     bool complFuncAnnoInfo(QString const exonicPosFilePath, QString nonExonicPosFilePath,
                            QString baseFilePath, QString outFilePath);
+=======
+>>>>>>> 5cbbe7d3d293ad57249b58cc961a263b965d48e6
 };
 
 #endif // FUNCTIONALANNOTATOR_H
