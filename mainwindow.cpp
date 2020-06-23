@@ -8,6 +8,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    thread = new QThread;
+
     // Intiate Icon.(cross icon)
     ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->genoFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
@@ -66,6 +68,7 @@ MainWindow::~MainWindow()
 {
     // Free pointer.
     delete ui;
+    delete thread;
     delete fileReader;
     delete workDirectory;
     delete phenoSelector;
@@ -2540,17 +2543,18 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         QFileInfo snpPosFileInfo(snpPosFile);
         QString snpPosFileAbPath = snpPosFileInfo.absolutePath();
         QString snpPosFileBaseName = snpPosFileInfo.baseName();
-        QString exonicPosFile = snpPosFileAbPath + "/exonix_pos";
-        QString nonExonicPosFile = snpPosFileAbPath + "/non_exonix_pos";
+
+        QString exonicPosFile = snpPosFileAbPath + "/exonic_pos";
+        QString nonExonicPosFile = snpPosFileAbPath + "/non_exonic_pos";
         FuncAnnotator funcAnnotator;
-        if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
-        {
-            throw -1;
-        }
-//        if (!funcAnnotator.complNonExoSnpInfo(snpPosFile, varFuncFile, exonicPosFile))
+//        if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
 //        {
 //            throw -1;
 //        }
+        if (!funcAnnotator.complNonExoSnpInfo(exonicPosFile, snpPosFile, varFuncFile, nonExonicPosFile))
+        {
+            throw -1;
+        }
     } catch (...) {
         this->resetWindow();
     }

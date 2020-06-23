@@ -12,6 +12,7 @@
 #include <QMap>
 #include <QButtonGroup>
 #include <QDateTime>
+#include <QThread>
 #include <iostream>
 #include <cmath>
 #include "mtoolbutton.h"
@@ -104,7 +105,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-
+    QThread *thread;
 //    QThread workThread;
     void closeEvent(QCloseEvent *event) override;
 //    bool eventFilter(QObject *obj, QEvent *ev) override;
