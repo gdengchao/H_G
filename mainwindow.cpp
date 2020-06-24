@@ -364,7 +364,7 @@ void MainWindow::on_excludePhenoButton_clicked()
  * @brief MainWindow::on_rungwasButton_clicked
  *          Run GWAS
  */
-void MainWindow::on_rungwasButton_clicked()
+void MainWindow::on_runGwasButton_clicked()
 {
     QString tool = ui->toolComboBox->currentText();
     QString phenotype = this->fileReader->getPhenotypeFile();
@@ -386,8 +386,7 @@ void MainWindow::on_rungwasButton_clicked()
         return;
     }
 
-    ui->rungwasButton->setText("Running");
-    ui->rungwasButton->setDisabled(true);
+    ui->runGwasButton->setDisabled(true);
     this->runningMsgWidget->clearText();
     this->runningMsgWidget->show();
 
@@ -908,7 +907,6 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
     QString geno = ui->genoRadioButton->isChecked()? ui->genoDoubleSpinBox->text():nullptr;
-    // UserOS *userOS = new UserOS;
 
     // Genotype file info.
     QFileInfo genoFileInfo = QFileInfo(genotype);
@@ -923,34 +921,27 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
     Plink plink;
 
-    // Run GWAS
-    if(plink.runGWAS(phenotype, genotype, map, covar, kinship, model,
+    // Run GWAS(Set parameters)
+    if(!plink.runGWAS(phenotype, genotype, map, covar, kinship, model,
                      maf, mind, geno, out+"/"+name+"_"+pheFileBaseName))
-    {
-        this->process->start(this->toolpath+"plink", plink.getParamList());
-        if (!this->process->waitForStarted())
-        {
-            QMessageBox::information(nullptr, "Error", "Start plink with error when run GWAS    !");
-            this->resetWindow();
-            return false;
-        }
-        this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is running...");
-        if (!this->process->waitForFinished(-1))
-        {
-            QMessageBox::information(nullptr, "Error", "Exit plink with error when run GWAS    !");
-            this->resetWindow();
-            return false;
-        }
-        this->process->close();
-
-        ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
-
-        this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is finished");
-    }
-    else
     {
         return false;
     }
+
+    this->process->start(this->toolpath+"plink", plink.getParamList());
+    if (!this->process->waitForStarted())
+    {
+        QMessageBox::information(nullptr, "Error", "Start plink with error when run GWAS    !");
+        return false;
+    }
+    this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is running...");
+    while(!this->process->waitForFinished(-1))
+    {   // Avoid graphical interface delays
+        qApp->processEvents();
+    }
+    this->process->close();
+    ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
+    this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is finished");
 
     return true;
 }
@@ -1084,8 +1075,8 @@ void MainWindow::resetWindow()
         this->process->terminate();
         this->process->waitForFinished(-1);
     }
-    ui->rungwasButton->setText("Run");
-    ui->rungwasButton->setEnabled(true);
+    ui->runGwasButton->setText("Run");
+    ui->runGwasButton->setEnabled(true);
     ui->ldPlotPushButton->setEnabled(true);
     ui->ldRunPushButton->setEnabled(true);
     ui->pcaRunPushButton->setEnabled(true);

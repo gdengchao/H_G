@@ -68,7 +68,7 @@ private slots:
     void on_selectPhenoButton_clicked();
     void on_excludePhenoButton_clicked();
     // for run pushButton
-    void on_rungwasButton_clicked();
+    void on_runGwasButton_clicked();
     // for running Message
     void on_readoutput();
     void on_readerror();

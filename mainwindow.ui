@@ -56,7 +56,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <property name="iconSize">
      <size>
@@ -83,7 +83,7 @@
      <attribute name="title">
       <string>ASSOC</string>
      </attribute>
-     <widget class="QPushButton" name="rungwasButton">
+     <widget class="QPushButton" name="runGwasButton">
       <property name="geometry">
        <rect>
         <x>210</x>
