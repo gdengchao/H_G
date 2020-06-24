@@ -2521,26 +2521,26 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         QString out = this->workDirectory->getOutputDirectory();
         QString name = this->workDirectory->getProjectName();
 
-//        if (snpPosFile.isEmpty())
-//        {
-//            QMessageBox::information(nullptr, "Error", "A position of SNP file is necessary.");
-//            throw -1;
-//        }
-//        if (exVarFuncFile.isEmpty())
-//        {
-//            QMessageBox::information(nullptr, "Error", "A .exonic_variant_function file is necessary.");
-//            throw -1;
-//        }
-//        if (baseFile.isEmpty())
-//        {
-//            QMessageBox::information(nullptr, "Error", "A annotation base file is necessary.");
-//            throw -1;
-//        }
-//        if (varFuncFile.isEmpty())
-//        {
-//            QMessageBox::information(nullptr, "Error", "A .variant_function file is necessary.");
-//            throw -1;
-//        }
+        if (snpPosFile.isEmpty())
+        {
+            QMessageBox::information(nullptr, "Error", "A position of SNP file is necessary.");
+            throw -1;
+        }
+        if (exVarFuncFile.isEmpty())
+        {
+            QMessageBox::information(nullptr, "Error", "A .exonic_variant_function file is necessary.");
+            throw -1;
+        }
+        if (baseFile.isEmpty())
+        {
+            QMessageBox::information(nullptr, "Error", "A annotation base file is necessary.");
+            throw -1;
+        }
+        if (varFuncFile.isEmpty())
+        {
+            QMessageBox::information(nullptr, "Error", "A .variant_function file is necessary.");
+            throw -1;
+        }
 
         QFileInfo snpPosFileInfo(snpPosFile);
         QString snpPosFileAbPath = snpPosFileInfo.absolutePath();
@@ -2550,17 +2550,25 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         QString nonExonicPosFile = snpPosFileAbPath + "/non_exonic_pos";
         QString funcAnnoResult = out + "/" + name +"_func_anno";
         FuncAnnotator funcAnnotator;
-        if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
+
+        QFuture<void> fu = QtConcurrent::run([&]()
+        {   // Run functional annotation in another thread;
+            if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
+            {
+                throw -1;
+            }
+            if (!funcAnnotator.complNonExoSnpInfo(exonicPosFile, snpPosFile, varFuncFile, nonExonicPosFile))
+            {
+                throw -1;
+            }
+            if (!funcAnnotator.complFuncAnnoInfo(exonicPosFile, nonExonicPosFile, baseFile, funcAnnoResult))
+            {
+                throw -1;
+            }
+        });
+        while (!fu.isFinished())
         {
-            throw -1;
-        }
-        if (!funcAnnotator.complNonExoSnpInfo(exonicPosFile, snpPosFile, varFuncFile, nonExonicPosFile))
-        {
-            throw -1;
-        }
-        if (!funcAnnotator.complFuncAnnoInfo(exonicPosFile, nonExonicPosFile, baseFile, funcAnnoResult))
-        {
-            throw -1;
+            qApp->processEvents();
         }
     } catch (...) {
         this->resetWindow();

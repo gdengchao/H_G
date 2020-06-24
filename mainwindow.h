@@ -13,6 +13,7 @@
 #include <QButtonGroup>
 #include <QDateTime>
 #include <QThread>
+#include <QtConcurrent>
 #include <iostream>
 #include <cmath>
 #include "mtoolbutton.h"
