@@ -13,6 +13,7 @@
 #include <QButtonGroup>
 #include <QDateTime>
 #include <QThread>
+#include <QTimer>
 #include <QtConcurrent>
 #include <iostream>
 #include <cmath>
@@ -87,7 +88,7 @@ private slots:
     void on_ldPlotPushButton_clicked();
     void on_ldReultBrowButton_clicked();
     // Graph viewer
-    void on_GraphViewer_clicked();
+    void graphViewer_clicked_slot();    // on_*** is implicit slot function
     // Structural annotation
     void on_gffFileBrowButton_clicked();
     void on_strucAnnoRunPushButton_clicked();
@@ -99,14 +100,14 @@ private slots:
     void on_varFuncFileBrowButton_clicked();
     void on_exVarFuncFileBrowButton_clicked();
     void on_funcAnnoRunPushButton_clicked();
-
     void on_funcAnnoStepPushButton_clicked();
-
     void on_annoPvalBrowButton_clicked();
+
+    // Timer
+    void timer_timeout_slot();
 
 private:
     Ui::MainWindow *ui;
-    QThread *thread;
 //    QThread workThread;
     void closeEvent(QCloseEvent *event) override;
 //    bool eventFilter(QObject *obj, QEvent *ev) override;

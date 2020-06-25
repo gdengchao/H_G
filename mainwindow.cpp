@@ -8,8 +8,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    thread = new QThread;
-
     // Intiate Icon.(cross icon)
     ui->pheFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
     ui->genoFileToolButton->setIcon(QIcon(":/new/icon/images/plus.png"));
@@ -61,14 +59,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->kinFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_kinFileToolButton_closeFileSig()));
     connect(ui->covarFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_covarFileToolButton_closeFileSig()));
     // Graph Viewer
-    connect(graphViewer, SIGNAL(clicked), this, SLOT(on_GraphViewer_clicked()));
+    connect(graphViewer, SIGNAL(doubleClicked()), this, SLOT(graphViewer_clicked_slot()));
 }
 
 MainWindow::~MainWindow()
 {
     // Free pointer.
     delete ui;
-    delete thread;
     delete fileReader;
     delete workDirectory;
     delete phenoSelector;
@@ -472,9 +469,9 @@ void MainWindow::on_runGwasButton_clicked()
 /**
  * @brief MainWindow::callGemmaGwas
  *      Call gemma to GWAS(Whole process of gemma are implemeted here)
- * @param phenotype
+ * @param phenotype (FID MID PHE)
  * @param genotype
- * @param map
+ * @param map       :will to find in the same path(and prefix) of genotype file.
  * @param covar
  * @param kinship
  * @param out
@@ -491,13 +488,12 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
     QString geno = ui->genoRadioButton->isChecked()? ui->genoDoubleSpinBox->text():nullptr;
-    //UserOS *userOS = new UserOS;
 
     // Genotype file info.
     QFileInfo genoFileInfo = QFileInfo(genotype);
     QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
-    QString genoFileBaseName = genoFileInfo.baseName();     // geno
-    QString genoFileSuffix = genoFileInfo.suffix();         //
+    QString genoFileBaseName = genoFileInfo.baseName();     // demo
+    QString genoFileSuffix = genoFileInfo.suffix();         // gz
     QString genoFileAbPath = genoFileInfo.absolutePath();
 
     QString binaryFile = genoFileAbPath+"/"+genoFileBaseName+"_tmp";
@@ -567,11 +563,9 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
             return false;
         }
         this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
-        if (!this->process->waitForFinished(-1))
+        while (!this->process->waitForFinished(-1))
         {
-            QMessageBox::information(nullptr, "Error", "Exit plink with error when make binary in callGemmaGwas!  ");
-            this->resetWindow();
-            return false;
+            qApp->processEvents();
         }
         this->process->close();
         this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
@@ -579,15 +573,21 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
     Gemma gemma;
 
-
-    if (gemmaParamWidget->isFamCompletedAuto()
-            && !gemma.phe_fam_Preparation(phenotype, binaryFile+".fam"))
-    {   // Replace "NA" to "-9", then complete .fam
+    if (gemmaParamWidget->isFamCompletedAuto())
+    {
+        // Replace "NA" to "-9", then complete .fam
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
-        this->resetWindow();
-        return false;
+        QFuture<bool> fu =  QtConcurrent::run(&gemma, &Gemma::phe_fam_Preparation, phenotype, binaryFile+".fam");
+        while (!fu.isFinished())
+        {
+            qApp->processEvents(QEventLoop::AllEvents, 100);
+        }
+        if (!fu.result())
+        {
+            this->resetWindow();
+            return false;
+        }
     }
-
 
     if (kinship.isNull() && this->gemmaParamWidget->isMakeRelatedMatAuto())
     {
@@ -603,13 +603,10 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
              this->resetWindow();
              return false;
          }
-         //this->runningMsgWidget->setTitle("Making " + genoFileBaseName+"_tmp" + ".cXX.txt");
          this->runningMsgWidget->setTitle("Making kinship");
-         if (!this->process->waitForFinished(-1))
+         while (!this->process->waitForFinished(-1))
          {
-             QMessageBox::information(nullptr, "Error", "Exit gemma with error when  make kinship!   ");
-             this->resetWindow();
-             return false;
+             qApp->processEvents(QEventLoop::AllEvents, 100);
          }
          this->process->close();
          //this->runningMsgWidget->setTitle(genoFileBaseName+"_tmp" + ".cXX.txt is made");
@@ -626,26 +623,29 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
          }
     }
 
-    if (gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship,
+    if (!gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship,
                       name+"_"+pheFileBaseName, model, moreParam))
     {
-        this->process->start(this->toolpath+"gemma", gemma.getParamList());
-        // Running message to display message.
-        if (!this->process->waitForStarted())
-        {
-            QMessageBox::information(nullptr, "Error", "Start gemma with error when run GWAS! ");
-            this->resetWindow();
-            return false;
-        }
-        this->runningMsgWidget->setTitle("Gemma(" + pheFileBaseName+ "): " + name+" is running...");
-        if (!this->process->waitForFinished(-1))
-        {
-            QMessageBox::information(nullptr, "Error", "Exit gemma with error when run GWAS! ");
-            this->resetWindow();
-            return false;
-        }
-        this->process->close();
+        this->resetWindow();
+        return false;
+    }
+    this->process->start(this->toolpath+"gemma", gemma.getParamList());
+    // Running message to display message.
+    if (!this->process->waitForStarted())
+    {
+        QMessageBox::information(nullptr, "Error", "Start gemma with error when run GWAS! ");
+        this->resetWindow();
+        return false;
+    }
+    this->runningMsgWidget->setTitle("Gemma(" + pheFileBaseName+ "): " + name+" is running...");
+    while (!this->process->waitForFinished(-1))
+    {
+        qApp->processEvents(QEventLoop::AllEvents, 100);
+    }
+    this->process->close();
 
+    QFuture<void> fu = QtConcurrent::run([&]()
+    {
         QFile file;
         // delete intermidiate file.
         file.remove(binaryFile+".bed");
@@ -663,7 +663,6 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         }
         file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.log.txt");
 
-
         QDir dir;   // gemma output in the execution file dir by default.
         QDir objDir(out+"/output");
         // We move it to the work dir.
@@ -675,30 +674,24 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         }
         // It will be wrong when "/output" change to "/output/"
         dir.rename(QDir::currentPath() + "/output", out+"/output"+(i==0?"":QString::number(i)));
-
-//        ui->gwasResultLineEdit->setText(out+"/output"+(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName);
-
-
         if (model == "LMM")
         {
-            ui->qqmanGwasResultLineEdit->setText(out+"/output"+(i==0?"":QString::number(i))
-                                            +"/"+name+"_"+pheFileBaseName+".assoc.txt");
+            ui->qqmanGwasResultLineEdit->setText(out+"/output"+(i==0?"":QString::number(i))                                       +"/"+name+"_"+pheFileBaseName+".assoc.txt");
         }
-
-        this->runningMsgWidget->setTitle("Gemma("+pheFileBaseName+"): "+name+" is finished");
-    }
-    else
+    });
+    while (!fu.isFinished())
     {
-        this->resetWindow();
-        return false;
+        qApp->processEvents(QEventLoop::AllEvents, 100);
     }
+
+    this->runningMsgWidget->setTitle("Gemma("+pheFileBaseName+"): "+name+" is finished");
 
     return true;
 }
 
 /**
  * @brief MainWindow::callEmmaxGwas
- *      Call gemma to GWAS(Whole process of gemma are implemeted here)
+ *      Call emmax to GWAS(Whole process of emmax are implemeted here)
  * @param phenotype
  * @param genotype
  * @param map
@@ -790,11 +783,9 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
             return false;
         }
         this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped/tfam");
-        if (!this->process->waitForFinished(-1))
+        while (!this->process->waitForFinished(-1))
         {
-            QMessageBox::information(nullptr, "Error", "Exit plink with error when make transpose in callEmmaxGwas    !");
-            this->resetWindow();
-            return false;
+            qApp->processEvents();
         }
         this->process->close();
         this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
@@ -817,11 +808,9 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
          }
          //this->runningMsgWidget->setTitle("Making " + genoFileBaseName + ".hBN.kinf");
          this->runningMsgWidget->setTitle("Making kinship");
-         if (!this->process->waitForFinished(-1))
+         while (!this->process->waitForFinished(-1))
          {
-             QMessageBox::information(nullptr, "Error", "Exit emmax-kin with error when  make kinship    !");
-             this->resetWindow();
-             return false;
+             qApp->processEvents();
          }
          this->process->close();
          //this->runningMsgWidget->setTitle(genoFileBaseName + ".hBN.kinf is made");
@@ -841,49 +830,46 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
 //        QMessageBox::information(nullptr, "Error", "Making kinship ERROR!   ");
 //        return false;
 //    }
-    if (emmax.runGWAS(transposeFile, phenotype, covar, kinship,
+    if (!emmax.runGWAS(transposeFile, phenotype, covar, kinship,
                       out+"/"+name+"_"+pheFileBaseName, moreParam))
     {
-        this->process->start(this->toolpath+"emmax", emmax.getParamList());
-        // Running message to display message.
-        if (!this->process->waitForStarted())
-        {
-            QMessageBox::information(nullptr, "Error", "Start emmax with error when run GWAS    !");
-            this->resetWindow();
-            return false;
-        }
-        this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is running...");
-        if (!this->process->waitForFinished(-1))
-        {
-            QMessageBox::information(nullptr, "Error", "Exit emmax with error when run GWAS    !");
-            this->resetWindow();
-            return false;
-        }
-        this->process->close();
-        ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
+        this->resetWindow();
+        return false;
+    }
+    this->process->start(this->toolpath+"emmax", emmax.getParamList());
+    // Running message to display message.
+    if (!this->process->waitForStarted())
+    {
+        QMessageBox::information(nullptr, "Error", "Start emmax with error when run GWAS    !");
+        this->resetWindow();
+        return false;
+    }
+    this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is running...");
+    while (!this->process->waitForFinished(-1))
+    {
+        qApp->processEvents();
+    }
+    this->process->close();
+    ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
 
-        QFile file;
-        // delete intermidiate file.
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.map");
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.tped");
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.tfam");
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.log");
-        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.nosex");
-        if (emmaxParamWidget->isBNkinMatrix())
-        {
-            file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hBN.kinf");
-        }
-        else
-        {
-            file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hIBS.kinf");
-        }
-
-        this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is finished");
+    QFile file;
+    // delete intermidiate file.
+    file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.map");
+    file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.tped");
+    file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.tfam");
+    file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.log");
+    file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.nosex");
+    if (emmaxParamWidget->isBNkinMatrix())
+    {
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hBN.kinf");
     }
     else
     {
-        return false;
+        file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hIBS.kinf");
     }
+
+    this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is finished");
+
 
     return true;
 }
@@ -1256,7 +1242,6 @@ QString MainWindow::refreshMessage(QString curText, QString newText)
         return curText + newText;
     }
 
-    qDebug() << curText[curText.size() - 1] << "\t" << newText[newText.size()-1];
     return curText + newText;
 }
 
@@ -2184,7 +2169,7 @@ void MainWindow::on_ldReultBrowButton_clicked()
     ui->ldResultLineEdit->setText(fileNames[0]);
 }
 
-void MainWindow::on_GraphViewer_clicked()
+void MainWindow::graphViewer_clicked_slot()
 {
     qDebug() << "Graph viewer clicked" << endl;
 }
@@ -2647,4 +2632,9 @@ void MainWindow::on_annoPvalBrowButton_clicked()
         return;
     }
     ui->annoPvalLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::timer_timeout_slot()
+{
+    qApp->processEvents();
 }
