@@ -562,14 +562,12 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
             this->resetWindow();
             return false;
         }
-        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
         while (!this->process->waitForFinished(-1))
         {
             qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
             QThread::msleep(10);
         }
         this->process->close();
-        this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
     }
 
     Gemma gemma;
@@ -604,14 +602,11 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
              this->resetWindow();
              return false;
          }
-         this->runningMsgWidget->setTitle("Making kinship");
          while (!this->process->waitForFinished(-1))
          {
              qApp->processEvents(QEventLoop::AllEvents, 100);
          }
          this->process->close();
-         //this->runningMsgWidget->setTitle(genoFileBaseName+"_tmp" + ".cXX.txt is made");
-         this->runningMsgWidget->setTitle("Kinship is made");
          //kinship = genoFileAbPath + "/output/" + genoFileBaseName + ".cXX.txt";    // Attention
 
          if (moreParam["kinmatrix"] == "1")
@@ -638,7 +633,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         this->resetWindow();
         return false;
     }
-    this->runningMsgWidget->setTitle("Gemma(" + pheFileBaseName+ "): " + name+" is running...");
+
     while (!this->process->waitForFinished(-1))
     {
         qApp->processEvents(QEventLoop::AllEvents, 100);
@@ -684,8 +679,6 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     {
         qApp->processEvents(QEventLoop::AllEvents, 100);
     }
-
-    this->runningMsgWidget->setTitle("Gemma("+pheFileBaseName+"): "+name+" is finished");
 
     return true;
 }
@@ -783,13 +776,12 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
             this->resetWindow();
             return false;
         }
-        this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".tped/tfam");
+
         while (!this->process->waitForFinished(-1))
         {
             qApp->processEvents();
         }
         this->process->close();
-        this->runningMsgWidget->setTitle(genoFileBaseName +".tped/tfam is made");
     }
 
     Emmax emmax;
@@ -807,15 +799,12 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
              this->resetWindow();
              return false;
          }
-         //this->runningMsgWidget->setTitle("Making " + genoFileBaseName + ".hBN.kinf");
-         this->runningMsgWidget->setTitle("Making kinship");
+
          while (!this->process->waitForFinished(-1))
          {
              qApp->processEvents();
          }
          this->process->close();
-         //this->runningMsgWidget->setTitle(genoFileBaseName + ".hBN.kinf is made");
-         this->runningMsgWidget->setTitle("Kinship is made");
 
          if (emmaxParamWidget->isBNkinMatrix())
          {
@@ -845,7 +834,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
         this->resetWindow();
         return false;
     }
-    this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is running...");
+
     while (!this->process->waitForFinished(-1))
     {
         qApp->processEvents();
@@ -868,9 +857,6 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     {
         file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hIBS.kinf");
     }
-
-    this->runningMsgWidget->setTitle("Emmax(" + pheFileBaseName+"): " + name + " is finished");
-
 
     return true;
 }
@@ -921,7 +907,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
         QMessageBox::information(nullptr, "Error", "Start plink with error when run GWAS    !");
         return false;
     }
-    this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is running...");
+
     while(!this->process->waitForFinished(-1))
     {   // Avoid graphical interface delays
         qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
@@ -929,7 +915,6 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
     }
     this->process->close();
     ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
-    this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is finished");
 
     return true;
 }

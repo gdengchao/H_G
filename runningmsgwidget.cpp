@@ -71,34 +71,3 @@ void RunningMsgWidget::closeEvent(QCloseEvent *event)
     }
     event->ignore();
 }
-
-/**
- * @brief RunningMsgWidget::refreshLastLine
- *          Deal with last line of text.
- * @param line:new message.
- */
-void RunningMsgWidget::refreshLastLine(QString line)
-{
-    if (line.isNull())
-    {   // There no new message.
-        return;
-    }
-
-    int index = line.length();
-    if (line[index-1] == '\n' || line[index-1] == '\r')
-    {   //
-        index --;
-    }
-
-    if (line[index-1] != '%' || (line[index-1]=='%'&&line[index-2]=='0'&&!line[index-3].isNumber()))
-    {
-        this->appendText(line);
-    }
-    else
-    {
-        QStringList curText = this->getText().split("\n");
-        curText.removeLast();
-        curText.append(line);
-        this->setText(curText.join("\n"));
-    }
-}
