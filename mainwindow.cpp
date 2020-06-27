@@ -565,7 +565,8 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         this->runningMsgWidget->setTitle("Making " + genoFileBaseName +".beb/bim/fam");
         while (!this->process->waitForFinished(-1))
         {
-            qApp->processEvents();
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+            QThread::msleep(10);
         }
         this->process->close();
         this->runningMsgWidget->setTitle(genoFileBaseName +".beb/bim/fam is made");
@@ -923,7 +924,8 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
     this->runningMsgWidget->setTitle("Plink(" + pheFileBaseName+"): " + name+" is running...");
     while(!this->process->waitForFinished(-1))
     {   // Avoid graphical interface delays
-        qApp->processEvents();
+        qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+        QThread::msleep(10);
     }
     this->process->close();
     ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
@@ -1427,14 +1429,10 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
             QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
             return false;
         }
-//        if (!this->process->waitForFinished(-1))
-//        {
-//            QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
-//            return false;
-//        }
         while (!this->process->waitForFinished(-1))
         {
-            qApp->processEvents();  // In order to figure out no responding.
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);  // In order to figure out no responding.
+            QThread::msleep(10);
         }
         this->process->close();
     }
@@ -1481,7 +1479,8 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
 //        }
         while (!this->process->waitForFinished(-1))
         {
-            qApp->processEvents();
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+            QThread::msleep(10);
         }
         this->process->close();
 
@@ -1884,9 +1883,6 @@ void MainWindow::runPopLDdecaybyFamily(void)
                                     genoFileAbPath+"/"+keepFileBaseName+".map",
                                     genoFileAbPath+"/"+keepFileBaseName+".genotype"))
             {
-//                QStringList param;
-//                param.append(this->scriptpath+"poplddecay/plink2genotype.pl");
-//                this->process->start("perl", param+popLDdecay.getParamList());
                 this->process->start(this->scriptpath+"poplddecay/plink2genotype", popLDdecay.getParamList());
                 if (!this->process->waitForStarted())
                 {
@@ -1896,7 +1892,8 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 qDebug() << this->process->pid();
                 while (!this->process->waitForFinished(-1))
                 {
-                    qApp->processEvents();
+                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+                    QThread::msleep(10);
                 }
                 this->process->close();
 
@@ -1935,7 +1932,8 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 }
                 while (!this->process->waitForFinished(-1))
                 {
-                    qApp->processEvents();
+                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+                    QThread::msleep(10);
                 }
                 this->process->close();
                 ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
@@ -2040,9 +2038,6 @@ void MainWindow::runPopLDdecaySingle(void)
         PopLDdecay popLDdecay;
         if (popLDdecay.makeGenotype(plinkFile+".ped", plinkFile+".map", plinkFile+".genotype"))
         {
-//            QStringList param;
-//            param.append(this->scriptpath+"poplddecay/plink2genotype.pl");
-//            this->process->start("perl", param+popLDdecay.getParamList());
             this->process->start(this->scriptpath+"poplddecay/plink2genotype", popLDdecay.getParamList());
 
             if (!this->process->waitForStarted())
@@ -2052,7 +2047,8 @@ void MainWindow::runPopLDdecaySingle(void)
             }
             while (!this->process->waitForFinished(-1))
             {
-                qApp->processEvents();
+                qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+                QThread::msleep(10);
             }
             this->process->close();
 
@@ -2087,7 +2083,8 @@ void MainWindow::runPopLDdecaySingle(void)
             }
             while (!this->process->waitForFinished(-1))
             {
-                qApp->processEvents();
+                qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+                QThread::msleep(10);
             }
             this->process->close();
             ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
@@ -2136,7 +2133,8 @@ void MainWindow::on_ldPlotPushButton_clicked()
             }
             while (!this->process->waitForFinished(-1))
             {
-                qApp->processEvents();
+                qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+                QThread::msleep(10);
             }
             this->process->close();
             QStringList graphList(out+"/"+name+"_ld.png");
@@ -2250,7 +2248,8 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         qApp->processEvents();
         while (!this->process->waitForFinished(-1))
         {
-            qApp->processEvents();
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+            QThread::msleep(10);
         }
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Gff to gtf OK.\n");
@@ -2272,7 +2271,8 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         qApp->processEvents();
         while (!this->process->waitForFinished(-1))
         {
-            qApp->processEvents();
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+            QThread::msleep(10);
         }
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Gtf to genePred OK.\n");
@@ -2295,7 +2295,8 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         qApp->processEvents();
         while (!this->process->waitForFinished(-1))
         {
-            qApp->processEvents();
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+            QThread::msleep(10);
         }
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Retrieve seq from fasta OK.\n");
@@ -2331,7 +2332,8 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         qApp->processEvents();
         while (!this->process->waitForFinished(-1))
         {
-            qApp->processEvents();
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+            QThread::msleep(10);
         }
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Annotation OK.\n");
@@ -2544,7 +2546,8 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         });
         while (!fu.isFinished())
         {
-            qApp->processEvents();
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+            QThread::msleep(10);
         }
     } catch (...) {
         this->resetWindow();
@@ -2632,9 +2635,4 @@ void MainWindow::on_annoPvalBrowButton_clicked()
         return;
     }
     ui->annoPvalLineEdit->setText(fileNames[0]);
-}
-
-void MainWindow::timer_timeout_slot()
-{
-    qApp->processEvents();
 }

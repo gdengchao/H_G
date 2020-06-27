@@ -13,7 +13,6 @@
 #include <QButtonGroup>
 #include <QDateTime>
 #include <QThread>
-#include <QTimer>
 #include <QtConcurrent>
 #include <iostream>
 #include <cmath>
@@ -102,9 +101,6 @@ private slots:
     void on_funcAnnoRunPushButton_clicked();
     void on_funcAnnoStepPushButton_clicked();
     void on_annoPvalBrowButton_clicked();
-
-    // Timer
-    void timer_timeout_slot();
 
 private:
     Ui::MainWindow *ui;
