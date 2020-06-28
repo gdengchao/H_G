@@ -15,6 +15,7 @@
 #include <QThread>
 #include <QtConcurrent>
 #include <iostream>
+#include <stdexcept>
 #include <cmath>
 #include "mtoolbutton.h"
 #include "filereader.h"
@@ -101,6 +102,12 @@ private slots:
     void on_funcAnnoRunPushButton_clicked();
     void on_funcAnnoStepPushButton_clicked();
     void on_annoPvalBrowButton_clicked();
+
+    // PCA
+    void on_eigenvalFileBrowButton_clicked();
+    void on_eigenvecFileBrowButton_clicked();
+
+    void on_pcaPlotPushButton_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -1048,11 +1048,11 @@ void MainWindow::resetWindow()
         this->process->terminate();
         this->process->waitForFinished(-1);
     }
-    ui->runGwasButton->setText("Run");
     ui->runGwasButton->setEnabled(true);
-    ui->ldPlotPushButton->setEnabled(true);
     ui->ldRunPushButton->setEnabled(true);
+    ui->ldPlotPushButton->setEnabled(true);
     ui->pcaRunPushButton->setEnabled(true);
+    ui->pcaPlotPushButton->setEnabled(true);
     ui->drawManPushButton->setEnabled(true);
     ui->drawQQPushButton->setEnabled(true);
     ui->strucAnnoRunPushButton->setEnabled(true);
@@ -1721,9 +1721,9 @@ void MainWindow::on_pcaRunPushButton_clicked()
         {
             this->process->start(this->toolpath+"gcta64", gcta.getParamList());
             this->process->waitForStarted();
-            if (!this->process->waitForFinished(-1))
+            while (!this->process->waitForFinished(-1))
             {
-                throw -1;
+                qApp->processEvents();
             }
             this->process->close();
         }
@@ -1739,6 +1739,9 @@ void MainWindow::on_pcaRunPushButton_clicked()
         file.remove(binaryFile+".grm.bin");
         file.remove(binaryFile+".grm.id");
         file.remove(binaryFile+".grm.N.bin");
+
+        ui->eigenvalueLineEdit->setText(out+"/"+genoFileBaseName+".eigenval");
+        ui->eigenvectorLineEdit->setText(out+"/"+genoFileBaseName+".eigenvec");
 
     } catch (...) {
         this->resetWindow();
@@ -2163,7 +2166,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
     this->resetWindow();
     if (this->runningMsgWidget->isVisible())
     {
-        runningMsgWidget->close();
+        this->runningMsgWidget->close();
+    }
+    if (this->graphViewer->isVisible())
+    {
+        this->graphViewer->close();
     }
     if (this->isVisible() && !runningMsgWidget->isVisible())
     {
@@ -2489,11 +2496,6 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
             QMessageBox::information(nullptr, "Error", "A position of SNP file is necessary.");
             throw -1;
         }
-        if (exVarFuncFile.isEmpty())
-        {
-            QMessageBox::information(nullptr, "Error", "A .exonic_variant_function file is necessary.");
-            throw -1;
-        }
         if (baseFile.isEmpty())
         {
             QMessageBox::information(nullptr, "Error", "A annotation base file is necessary.");
@@ -2502,6 +2504,11 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         if (varFuncFile.isEmpty())
         {
             QMessageBox::information(nullptr, "Error", "A .variant_function file is necessary.");
+            throw -1;
+        }
+        if (exVarFuncFile.isEmpty())
+        {
+            QMessageBox::information(nullptr, "Error", "A .exonic_variant_function file is necessary.");
             throw -1;
         }
 
@@ -2514,20 +2521,41 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         QString funcAnnoResult = out + "/" + name +"_func_anno";
         FuncAnnotator funcAnnotator;
 
+        this->runningMsgWidget->show();
         QFuture<void> fu = QtConcurrent::run([&]()
         {   // Run functional annotation in another thread;
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Complete exonic SNP infomation,");
+            qApp->processEvents();
             if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
             {
                 throw -1;
             }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("OK\n");
+            qApp->processEvents();
+
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Complete non-exonic SNP infomation,");
+            qApp->processEvents();
             if (!funcAnnotator.complNonExoSnpInfo(exonicPosFile, snpPosFile, varFuncFile, nonExonicPosFile))
             {
                 throw -1;
             }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("OK\n");
+            qApp->processEvents();
+
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Complete functional annotation infomation,");
+            qApp->processEvents();
             if (!funcAnnotator.complFuncAnnoInfo(exonicPosFile, nonExonicPosFile, baseFile, funcAnnoResult))
             {
                 throw -1;
             }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Functional annotation OK\n");
+            qApp->processEvents();
         });
         while (!fu.isFinished())
         {
@@ -2584,18 +2612,39 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
 
         FuncAnnotator funcAnnotator;
 
-        if (!funcAnnotator.filterSNP(pvalFile, thBase, thExpo, sigSnpFile))
-        {
-            throw -1;
-        }
-        if (!funcAnnotator.extractPos(sigSnpFile, mapFile, sigSnpPosFile))
-        {
-            throw -1;
-        }
-        ui->snpPosLineEdit->setText(sigSnpPosFile);
+        this->runningMsgWidget->show();
 
-        ui->funcAnnoRunPushButton->setEnabled(true);
-        qApp->processEvents();
+        QFuture<void> fu = QtConcurrent::run([&]()
+        {
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Filter SNP above threshold,");
+            if (!funcAnnotator.filterSNP(pvalFile, thBase, thExpo, sigSnpFile))
+            {
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("OK\n");
+            qApp->processEvents();
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Extract position of SNP,");
+            qApp->processEvents();
+            if (!funcAnnotator.extractPos(sigSnpFile, mapFile, sigSnpPosFile))
+            {
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("OK\n");
+            qApp->processEvents();
+
+            ui->snpPosLineEdit->setText(sigSnpPosFile);
+            ui->funcAnnoRunPushButton->setEnabled(true);
+            qApp->processEvents();
+        });
+        while (!fu.isFinished())
+        {
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+        }
+
     } catch (...) {
         this->resetWindow();
     }
@@ -2620,4 +2669,90 @@ void MainWindow::on_annoPvalBrowButton_clicked()
         return;
     }
     ui->annoPvalLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::on_eigenvalFileBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open eigenval file", this->workDirectory->getOutputDirectory(),
+                                              "eigenval(*.eigenval);;all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->eigenvalueLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::on_eigenvecFileBrowButton_clicked()
+{
+    QFileDialog *fileDialog = new QFileDialog(this, "Open eigenvec file", this->workDirectory->getOutputDirectory(),
+                                              "eigenvec(*.eigenvec);;all(*)");
+    fileDialog->setViewMode(QFileDialog::Detail);
+
+    QStringList fileNames;
+    if (fileDialog->exec())
+    {
+        fileNames = fileDialog->selectedFiles();
+    }
+    delete fileDialog;
+    if (fileNames.isEmpty())    // If didn't choose any file.
+    {
+        return;
+    }
+    ui->eigenvectorLineEdit->setText(fileNames[0]);
+}
+
+void MainWindow::on_pcaPlotPushButton_clicked()
+{
+    QString eigenvalFile = ui->eigenvalueLineEdit->text();
+    QString eigenvecFile = ui->eigenvectorLineEdit->text();
+    QString outFile = this->workDirectory->getOutputDirectory() + "/" +
+                      this->workDirectory->getProjectName() + "_pca.png";
+
+    ui->pcaPlotPushButton->setEnabled(false);
+    qApp->processEvents();
+    if (eigenvalFile.isEmpty() ||
+        eigenvecFile.isEmpty() ||
+        outFile.isEmpty())
+    {
+        this->resetWindow();
+        return;
+    }
+
+    QStringList param;
+    param.clear();
+    param.append(this->scriptpath+"pca_plot.R");
+    param.append(eigenvalFile);
+    param.append(eigenvecFile);
+    param.append(outFile);
+
+    qDebug() << param;
+//    this->runningMsgWidget->show();
+    // R in environment path is necessary.
+    this->process->start("Rscript", param);
+    if (!this->process->waitForStarted())
+    {
+        QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
+        this->resetWindow();
+        return;
+    }
+    while (!this->process->waitForFinished(-1))
+    {
+        qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+        QThread::msleep(10);
+    }
+    this->process->close();
+
+    // Show plot
+    this->graphViewer->setGraph(QStringList() << outFile);
+    this->graphViewer->show();
+    ui->pcaPlotPushButton->setEnabled(true);
+    qApp->processEvents();
 }

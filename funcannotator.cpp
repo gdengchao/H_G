@@ -45,7 +45,6 @@ bool FuncAnnotator::filterSNP(QString const pvalFilePath, QString const thBase,
         if (-log10f(curLineList.constLast().toFloat()) >= threshold)
         {
             outFileStream << curLine << endl;
-            qApp->processEvents();
         }
     }
     pvalFile.close();
@@ -79,7 +78,6 @@ bool FuncAnnotator::extractPos(QString const pvalFilePath, QString const mapFile
     QMap<QString, QString> snpIDMap;    // SNPs need to extract.
     while (!pvalFileStream.atEnd())
     {
-        qApp->processEvents();
         QStringList curLine = pvalFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         snpIDMap.insert(curLine[0], curLine[0]+"\t"+curLine[2]);   // cut the SNP_ID and p-value
     }
@@ -102,8 +100,6 @@ bool FuncAnnotator::extractPos(QString const pvalFilePath, QString const mapFile
         {
             outFileStream << snpIDMap[curLine[1]] << "\tchr" << curLine[0] << "\t" << curLine[3] << endl;
         }
-
-        qApp->processEvents();
     }
 
     return true;
@@ -139,7 +135,6 @@ bool FuncAnnotator::complExoSnpInfo(QString const snpPosFilePath, QString const 
     QMap<QString, QStringList> snpPosInfoMap;       // Save snp position and info.
     while (!snpPosFileStream.atEnd())
     {
-        qApp->processEvents();
         QStringList curLine = snpPosFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         QString chr_bp = curLine[2] + "_" + curLine[3];
         snpPosInfoMap.insert(chr_bp, curLine);
@@ -159,8 +154,6 @@ bool FuncAnnotator::complExoSnpInfo(QString const snpPosFilePath, QString const 
     QTextStream exValFuncFileStream(&exValFuncFile);
     while (!exValFuncFileStream.atEnd())
     {
-//        qApp->processEvents();
-
         QStringList curLine = exValFuncFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         QString chr_bp = curLine[4] + "_" + curLine[5];
         if (snpPosInfoMap.find(chr_bp) == snpPosInfoMap.end())
@@ -257,8 +250,6 @@ bool FuncAnnotator::complNonExoSnpInfo(QString const exonicPosFilePath, QString 
     QSet<QString> exonicSnpIDSet;
     while (!exonicPosFileStream.atEnd())
     {
-//        qApp->processEvents();
-
         QStringList curLine = exonicPosFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         exonicSnpIDSet.insert(curLine[2]);
     }
@@ -275,8 +266,6 @@ bool FuncAnnotator::complNonExoSnpInfo(QString const exonicPosFilePath, QString 
     QMap<QString, QStringList> snpPosInfoMap;       // Save snp position and info.
     while(!snpPosFileStream.atEnd())
     {
-//        qApp->processEvents();
-
         QStringList curLine = snpPosFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         if (exonicSnpIDSet.find(curLine[0]) != exonicSnpIDSet.end())
         {   // Exclude snp in exonic.
@@ -300,8 +289,6 @@ bool FuncAnnotator::complNonExoSnpInfo(QString const exonicPosFilePath, QString 
     QTextStream outFileStream(&outFile);
     while(!varFuncFileStream.atEnd())
     {
-//        qApp->processEvents();
-
         QStringList curLine = varFuncFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         if (curLine[0] == "intergenic")
         {   // Not to deal with.
@@ -423,8 +410,6 @@ bool FuncAnnotator::complFuncAnnoInfo(QString const exonicPosFilePath, QString n
     QMap<QString, QStringList> snpPosMap;       // Save both exonicPos and nonExonicPos.
     while (!exonicPosFileStream.atEnd())
     {
-//        qApp->processEvents();
-
         QStringList curLine = exonicPosFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         if (curLine.length() == 6)
         {
@@ -437,8 +422,6 @@ bool FuncAnnotator::complFuncAnnoInfo(QString const exonicPosFilePath, QString n
     }
     while (!nonExonicPosFileStream.atEnd())
     {
-//        qApp->processEvents();
-
         QStringList curLine = nonExonicPosFileStream.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
         if (curLine.length() == 6)
         {

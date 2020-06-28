@@ -17,6 +17,9 @@ GraphViewer::GraphViewer(QWidget *parent) :
 //    this->translateSpeed = 1.0;
 //    this->translateButton = Qt::LeftButton;
 
+//    setWindowFlags(windowFlags()&~Qt::WindowMaximizeButtonHint);
+//    setFixedSize(this->width(),this->height());
+
     image = new QImage;
     scene = new QGraphicsScene;
 }
