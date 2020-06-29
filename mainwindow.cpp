@@ -1294,7 +1294,7 @@ void MainWindow::on_drawManPushButton_clicked()
         }
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Draw manhattan plot OK.");
-        this->runningMsgWidget->appendText("\nanhattan plot: \n" + outList.join("\n"));
+        this->runningMsgWidget->appendText("\nmanhattan plot: \n" + outList.join("\n"));
         qApp->processEvents();
 
         QFile file;
@@ -1457,11 +1457,7 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
             QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
             return false;
         }
-//        if (!this->process->waitForFinished(-1))
-//        {
-//            QMessageBox::information(nullptr, "Error", "Rscript exit with error.  ");
-//            return false;
-//        }
+
         while (!this->process->waitForFinished(-1))
         {
             qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
@@ -2728,13 +2724,12 @@ void MainWindow::on_pcaPlotPushButton_clicked()
 
     QStringList param;
     param.clear();
-    param.append(this->scriptpath+"pca_plot.R");
+    param.append(this->scriptpath+"pca/pca_plot.R");    // Can choose pca_plot.R or pca_ggplot.R
     param.append(eigenvalFile);
     param.append(eigenvecFile);
     param.append(outFile);
 
     qDebug() << param;
-//    this->runningMsgWidget->show();
     // R in environment path is necessary.
     this->process->start("Rscript", param);
     if (!this->process->waitForStarted())
