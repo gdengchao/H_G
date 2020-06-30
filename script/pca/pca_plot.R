@@ -4,6 +4,7 @@ eigenvalFile = args[1]
 eigenvecFile = args[2]
 output = args[3]
 
+# data: FID, IID and the fisrt PCs eigenvectors
 data<-read.table(eigenvecFile)
 eigenvalue<-read.table(eigenvalFile)
 
@@ -20,7 +21,7 @@ PC2=round(eigenvalue[2,1]/sum(eigenvalue),4)
 # Set output file name.
 baseName <- as.character(basename(output)) 
 suffix <- as.character(unlist(strsplit(baseName, split <- "\\.")))
-suffix <- as.character(suffix[length(suffix))
+suffix <- as.character(suffix(length(suffix))
 
 if (suffix == "png")
 {
