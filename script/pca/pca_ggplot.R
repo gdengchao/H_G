@@ -22,11 +22,11 @@ suffix <- as.character(suffix[length(suffix)])
 
 if (suffix == "png")
 {
-    png(file = output, width=750,height=750)
+    png(file = output, width=1000,height=1000)
 }
 if (suffix == "jpeg" || suffix == "jpg")
 {
-    jpeg(file = output, width=750,height=750)
+    jpeg(file = output, width=1000,height=1000)
 }
 
 

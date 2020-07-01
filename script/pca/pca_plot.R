@@ -21,15 +21,15 @@ PC2=round(eigenvalue[2,1]/sum(eigenvalue),4)
 # Set output file name.
 baseName <- as.character(basename(output)) 
 suffix <- as.character(unlist(strsplit(baseName, split <- "\\.")))
-suffix <- as.character(suffix(length(suffix))
+suffix <- as.character(suffix[length(suffix)])
 
 if (suffix == "png")
 {
-    png(file = output, width=750,height=750)
+    png(file = output, width=1000,height=1000)
 }
 if (suffix == "jpeg" || suffix == "jpg")
 {
-    jpeg(file = output, width=750,height=750)
+    jpeg(file = output, width=1000,height=1000)
 }
 
 column = ceiling(length(unique(Sample))/20);		# No more than 20 legend in a column
