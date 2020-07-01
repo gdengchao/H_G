@@ -714,3 +714,4 @@ void Plink::splitTransposeFile(QString tped, QString tfam, QString keepFile, QSt
     this->paramlist.append("--out");
     this->paramlist.append(out);
 }
+

@@ -2738,12 +2738,19 @@ void MainWindow::on_pcaPlotPushButton_clicked()
         this->resetWindow();
         return;
     }
+    this->runningMsgWidget->show();
+    this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+    this->runningMsgWidget->appendText("Plot PCA, \n");
     while (!this->process->waitForFinished(-1))
     {
         qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
         QThread::msleep(10);
     }
     this->process->close();
+
+    this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+    this->runningMsgWidget->appendText("OK, \n");
+    this->runningMsgWidget->appendText(outFile);
 
     // Show plot
     this->graphViewer->setGraph(QStringList() << outFile);
