@@ -683,6 +683,11 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         this->pValCorrect(pValFile, true, correctionType, correctedFile);
         ui->qqmanGwasResultLineEdit->setText(correctedFile);
     }
+    else if (model == "LMM")
+    {
+        ui->qqmanGwasResultLineEdit->setText(out+"/output"
+            +(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName+".assoc.txt");
+    }
 
     return true;
 }
@@ -844,7 +849,25 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
         qApp->processEvents();
     }
     this->process->close();
-    ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
+
+    // Correct p value
+    QString correctionType = this->emmaxParamWidget->getCorrectionType();
+
+    if (!correctionType.isNull())
+    {
+        QString pValFile = out+"/"+name+"_"+pheFileBaseName+".ps";
+        QString correctedFile = out+"/"+name+"_"+pheFileBaseName+"_corr.ps";
+
+        qDebug() << "pValFile: " << pValFile;
+        qDebug() << "correctedFile: " << correctedFile;
+        // There no header of emmax result file.
+        this->pValCorrect(pValFile, false, correctionType, correctedFile);
+        ui->qqmanGwasResultLineEdit->setText(correctedFile);
+    }
+    else
+    {
+        ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
+    }
 
     QFile file;
     // delete intermidiate file.
