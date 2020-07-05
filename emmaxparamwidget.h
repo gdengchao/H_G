@@ -22,6 +22,7 @@ public:
     bool isBNkinMatrix(void);
     bool isIBSkinMatrix(void);
     QMap<QString, QString> getCurrentParam(void);
+    QString getCorrectionType(void);
 
 private slots:
     void on_noKinRadioButton_clicked();

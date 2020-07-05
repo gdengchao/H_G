@@ -120,3 +120,27 @@ void EmmaxParamWidget::on_yesKinRadioButton_clicked()
     ui->ibsRadioButton->setEnabled(true);
     ui->bnRadioButton->setEnabled(true);
 }
+
+QString EmmaxParamWidget::getCorrectionType()
+{
+    if (ui->noCorrectRadioButton->isChecked())
+    {
+        return nullptr;
+    }
+    else if (ui->stepDownCorrectRadioButton->isChecked())
+    {
+        return "holm";
+    }
+    else if (ui->fdrCorrectRadioButton->isChecked())
+    {
+        return "BH";
+    }
+    else if (ui->bonfCorrectRadioButton)
+    {
+        return "bonferroni";
+    }
+    else
+    {
+        return nullptr;
+    }
+}
