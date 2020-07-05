@@ -16,7 +16,7 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>40</x>
      <y>40</y>
      <width>259</width>
      <height>58</height>
@@ -150,7 +150,7 @@
   <widget class="QWidget" name="layoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>40</x>
      <y>120</y>
      <width>251</width>
      <height>54</height>
@@ -248,7 +248,7 @@
   <widget class="Line" name="line">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>40</x>
      <y>100</y>
      <width>261</width>
      <height>21</height>

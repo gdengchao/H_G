@@ -32,6 +32,7 @@ private:
 
     QButtonGroup *kinAutoBtnGroup;
     QButtonGroup *kinMatrixBtnGroup;
+    QButtonGroup *correctBtnGroup;
 };
 
 #endif // EMMAXPARAMWIDGET_H

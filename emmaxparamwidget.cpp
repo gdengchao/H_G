@@ -12,16 +12,23 @@ EmmaxParamWidget::EmmaxParamWidget(QWidget *parent) :
     // Create button group and set exclusive.
     kinAutoBtnGroup = new QButtonGroup;
     kinMatrixBtnGroup = new QButtonGroup;
+    correctBtnGroup = new QButtonGroup;
     kinAutoBtnGroup->addButton(ui->yesKinRadioButton);
     kinAutoBtnGroup->addButton(ui->noKinRadioButton);
     kinAutoBtnGroup->setExclusive(true);
     kinMatrixBtnGroup->addButton(ui->bnRadioButton);
     kinMatrixBtnGroup->addButton(ui->ibsRadioButton);
     kinMatrixBtnGroup->setExclusive(true);
+    correctBtnGroup->addButton(ui->noCorrectRadioButton);
+    correctBtnGroup->addButton(ui->stepDownCorrectRadioButton);
+    correctBtnGroup->addButton(ui->fdrCorrectRadioButton);
+    correctBtnGroup->addButton(ui->bonfCorrectRadioButton);
+    correctBtnGroup->setExclusive(true);
 
     // Set default paramters.
     ui->yesKinRadioButton->setChecked(true);
     ui->bnRadioButton->setChecked(true);
+    ui->noCorrectRadioButton->setChecked(true);
 }
 
 EmmaxParamWidget::~EmmaxParamWidget()

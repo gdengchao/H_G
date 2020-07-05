@@ -30,6 +30,7 @@ public:
     bool isProbitBSLMM(void);
     bool isFamCompletedAuto(void);
     QMap<QString, QString> getCurrentParam(void);
+    QString getCorrectionType(void);
 
     void setLmmParamEnabled(bool boolean);
     void setBslmmParamEnabled(bool boolean);
@@ -46,6 +47,7 @@ private:
     QButtonGroup *lmmTestBtnGroup;
     QButtonGroup *bslmmModelBtnGroup;
     QButtonGroup *famCompleteBtnGroup;
+    QButtonGroup *correctBtnGroup;
 };
 
 #endif // GEMMAPARAMWIDGET_H

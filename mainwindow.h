@@ -145,6 +145,7 @@ private:
     bool callGemmaGwas(QString phenotype, QString genotype, QString map,
                        QString covar, QString kinship, QString out, QString name);
     bool makePheFile(QString const phenotype, QString const selectedPheno);
+    bool pValCorrect(QString pvalFile, bool header, QString correctType, QString outFile);
     QString refreshMessage(QString curMsg, QString newMsg);
     bool drawManhattan(QStringList data, QStringList out);
     bool drawQQplot(QStringList data, QStringList out);

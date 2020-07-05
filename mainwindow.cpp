@@ -640,44 +640,48 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     }
     this->process->close();
 
-    QFuture<void> fu = QtConcurrent::run([&]()
+    QFile file;
+    // delete intermidiate file.
+    file.remove(binaryFile+".bed");
+    file.remove(binaryFile+".bim");
+    file.remove(binaryFile+".fam");
+    file.remove(binaryFile+".log");
+    file.remove(binaryFile+".nosex");
+    if (moreParam["kinmatrix"] == "1")
     {
-        QFile file;
-        // delete intermidiate file.
-        file.remove(binaryFile+".bed");
-        file.remove(binaryFile+".bim");
-        file.remove(binaryFile+".fam");
-        file.remove(binaryFile+".log");
-        file.remove(binaryFile+".nosex");
-        if (moreParam["kinmatrix"] == "1")
-        {
-            file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.cXX.txt");
-        }
-        else
-        {
-            file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.sXX.txt");
-        }
-        file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.log.txt");
+        file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.cXX.txt");
+    }
+    else
+    {
+        file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.sXX.txt");
+    }
+    file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.log.txt");
 
-        QDir dir;   // gemma output in the execution file dir by default.
-        QDir objDir(out+"/output");
-        // We move it to the work dir.
-        int i = 0;
-        while(objDir.exists())
-        {   // It will be wrong when object dir existed.
-            i++;
-            objDir.setPath(out+"/output"+QString::number(i));
-        }
-        // It will be wrong when "/output" change to "/output/"
-        dir.rename(QDir::currentPath() + "/output", out+"/output"+(i==0?"":QString::number(i)));
-        if (model == "LMM")
-        {
-            ui->qqmanGwasResultLineEdit->setText(out+"/output"+(i==0?"":QString::number(i))                                       +"/"+name+"_"+pheFileBaseName+".assoc.txt");
-        }
-    });
-    while (!fu.isFinished())
+    QDir dir;   // gemma output in the execution file dir by default.
+    QDir objDir(out+"/output");
+    // We move it to the work dir.
+    int i = 0;
+    while(objDir.exists())
+    {   // It will be wrong when object dir existed.
+        i++;
+        objDir.setPath(out+"/output"+QString::number(i));
+    }
+    // It will be wrong when "/output" change to "/output/"
+    dir.rename(QDir::currentPath() + "/output", out+"/output"+(i==0?"":QString::number(i)));
+
+    // Correct p value
+    QString correctionType = this->gemmaParamWidget->getCorrectionType();
+    if (model == "LMM" && !correctionType.isNull())
     {
-        qApp->processEvents(QEventLoop::AllEvents, 100);
+        QString pValFile = out+"/output"
+                +(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName+".assoc.txt";
+        QString correctedFile = out+"/output"
+                +(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName+"_corr.assoc.txt";
+
+        qDebug() << "pValFile: " << pValFile;
+        qDebug() << "correctedFile: " << correctedFile;
+        this->pValCorrect(pValFile, true, correctionType, correctedFile);
+        ui->qqmanGwasResultLineEdit->setText(correctedFile);
     }
 
     return true;
@@ -2168,6 +2172,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         this->graphViewer->close();
     }
+    if (this->gemmaParamWidget->isVisible())
+    {
+        this->gemmaParamWidget->close();
+    }
+    if (this->emmaxParamWidget->isVisible())
+    {
+        this->emmaxParamWidget->close();
+    }
     if (this->isVisible() && !runningMsgWidget->isVisible())
     {
         event->accept();
@@ -2757,4 +2769,43 @@ void MainWindow::on_pcaPlotPushButton_clicked()
     this->graphViewer->show();
     ui->pcaPlotPushButton->setEnabled(true);
     qApp->processEvents();
+}
+
+/**
+ * @brief AssocTool::pValCorrect
+ * @param pvalFile  The last column is p-val.
+ * @param type      Shep-Down(Holm):holm, FDR(BH):BH, Bonferroni:bonferroni
+ * @return
+ */
+bool MainWindow::pValCorrect(QString pvalFile, bool header, QString correctType, QString outFile)
+{
+    if (pvalFile.isNull() || correctType.isNull() || outFile.isNull())
+    {
+        return false;
+    }
+
+    QStringList param;
+
+    param.clear();
+    param.append(this->scriptpath+"qqman/correction.R");
+    param.append(pvalFile);
+    param.append(header ? "TRUE" : "FALSE");
+    param.append(correctType);
+    param.append(outFile);
+    // R in environment path is necessary.
+    this->process->start("Rscript", param);
+    if (!this->process->waitForStarted())
+    {
+        QMessageBox::information(nullptr, "Error", "Can't find Rscript in system path.  ");
+        return false;
+    }
+//    this->process->waitForFinished(-1);
+    while (!this->process->waitForFinished(-1))
+    {
+        qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
+        QThread::msleep(10);
+    }
+    this->process->close();
+
+    return true;
 }

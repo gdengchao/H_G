@@ -13,3 +13,4 @@ QStringList AssocTool::getSupportedModel(void)
 {
     return this->model;
 }
+

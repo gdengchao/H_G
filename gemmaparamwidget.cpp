@@ -15,9 +15,10 @@ GemmaParamWidget::GemmaParamWidget(QWidget *parent) :
     lmmTestBtnGroup = new QButtonGroup;
     bslmmModelBtnGroup = new QButtonGroup;
     famCompleteBtnGroup = new QButtonGroup;
-    kinAutoBtnGroup->addButton(ui->yesKinRadioButton);
+    correctBtnGroup = new QButtonGroup;
+    kinAutoBtnGroup->addButton(ui->yesKinRadioButton);  // Add radio button to ButtonGroup
     kinAutoBtnGroup->addButton(ui->noKinRadioButton);
-    kinAutoBtnGroup->setExclusive(true);
+    kinAutoBtnGroup->setExclusive(true);    // Can only choose one
     kinMatrixBtnGroup->addButton(ui->centRelatRadioButton);
     kinMatrixBtnGroup->addButton(ui->stdRelatRadioButton);
     kinMatrixBtnGroup->setExclusive(true);
@@ -33,6 +34,11 @@ GemmaParamWidget::GemmaParamWidget(QWidget *parent) :
     famCompleteBtnGroup->addButton(ui->yesFamRadioButton);
     famCompleteBtnGroup->addButton(ui->noFamRadioButton);
     famCompleteBtnGroup->setExclusive(true);
+    correctBtnGroup->addButton(ui->noCorrectRadioButton);
+    correctBtnGroup->addButton(ui->stepDownCorrectRadioButton);
+    correctBtnGroup->addButton(ui->fdrCorrectRadioButton);
+    correctBtnGroup->addButton(ui->bonfCorrectRadioButton);
+    correctBtnGroup->setExclusive(true);
 
     // Set default paramters.
     ui->yesKinRadioButton->setChecked(true);
@@ -40,6 +46,7 @@ GemmaParamWidget::GemmaParamWidget(QWidget *parent) :
     ui->waldTestRadioButton->setChecked(true);
     ui->stdLinearBslmmRadioButton->setChecked(true);
     ui->yesFamRadioButton->setChecked(true);
+    ui->noCorrectRadioButton->setChecked(true);
     // Disable set complete fam.
     ui->completeFamLabel->setVisible(false);
     ui->yesFamRadioButton->setVisible(false);
@@ -273,4 +280,28 @@ void GemmaParamWidget::on_yesKinRadioButton_clicked()
 {
     ui->centRelatRadioButton->setEnabled(true);
     ui->stdRelatRadioButton->setEnabled(true);
+}
+
+QString GemmaParamWidget::getCorrectionType()
+{
+    if (ui->noCorrectRadioButton->isChecked())
+    {
+        return nullptr;
+    }
+    else if (ui->stepDownCorrectRadioButton->isChecked())
+    {
+        return "holm";
+    }
+    else if (ui->fdrCorrectRadioButton->isChecked())
+    {
+        return "BH";
+    }
+    else if (ui->bonfCorrectRadioButton)
+    {
+        return "bonferroni";
+    }
+    else
+    {
+        return nullptr;
+    }
 }
