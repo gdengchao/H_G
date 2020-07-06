@@ -812,7 +812,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
          while (!this->process->waitForFinished(-1))
          {
              qApp->processEvents();
-         }
+         }  
          this->process->close();
 
          if (emmaxParamWidget->isBNkinMatrix())

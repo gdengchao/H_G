@@ -32,6 +32,7 @@ SOURCES += \
     phenoselector.cpp \
     plink.cpp \
     poplddecay.cpp \
+    qualityctrlwidget.cpp \
     runningmsgwidget.cpp \
     tool.cpp \
     useros.cpp \
@@ -53,6 +54,7 @@ HEADERS += \
     phenoselector.h \
     plink.h \
     poplddecay.h \
+    qualityctrlwidget.h \
     runningmsgwidget.h \
     tool.h \
     useros.h \
@@ -63,6 +65,7 @@ FORMS += \
     gemmaparamwidget.ui \
     graphviewer.ui \
     mainwindow.ui \
+    qualityctrlwidget.ui \
     runningmsgwidget.ui
 
 # Default rules for deployment.
