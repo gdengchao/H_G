@@ -924,6 +924,15 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
     Plink plink;
 
+    // Linkage filter
+    if (qualityControl->isLinkageFilterNeeded())
+    {
+        QString linkageFilteredFile = genoFileAbPath + "/" + genoFileBaseName;
+        QString winSize, stepLen, r2Threshold;
+        this->qualityControl->getLinkageFilterType(winSize, stepLen, r2Threshold);
+        plink.linkageFilter(genotype, map, winSize, stepLen, r2Threshold, linkageFilteredFile);
+    }
+
     // Run GWAS(Set parameters)
     if(!plink.runGWAS(phenotype, genotype, map, covar, kinship, model,
                      maf, mind, geno, out+"/"+name+"_"+pheFileBaseName))

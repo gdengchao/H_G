@@ -44,6 +44,8 @@ public:
     void filterPlinkFile(QString genotype, QString map, QString maf, QString mind, QString geno, QString out);
     void filterTransposeFile(QString genotype, QString map, QString maf, QString mind, QString geno, QString out);
     void filterData(QString genotype, QString map, QString maf, QString mind, QString geno, QString out);
+    void linkageFilter(QString genotype, QString map,
+                       QString winSize, QString stepLen, QString r2Threshold, QString out);
 
     // Split genotype(and map) file, all of them generate map/ped file.
     void splitVcfFile(QString vcfFile, QString keepFile, QString out);

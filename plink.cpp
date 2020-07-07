@@ -362,6 +362,61 @@ bool Plink::binary2plink(QString binaryFile, QString out, QString maf, QString m
     return true;
 }
 
+void Plink::linkageFilter(QString genotype, QString map,
+                          QString winSize, QString stepLen, QString r2Threshold, QString out)
+{
+    // Genotype file info.
+    QFileInfo genoFileInfo = QFileInfo(genotype);
+    QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
+    QString genoFileBaseName = genoFileInfo.baseName();     // geno
+    QString genoFileSuffix = genoFileInfo.suffix();         //
+    QString genoFileAbPath = genoFileInfo.absolutePath();
+
+    this->paramlist.clear();            // Clear paramlist before set parameter.
+    if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+    {
+        this->paramlist.append("--vcf");
+        this->paramlist.append(genotype);
+    }
+    if (genotype.split(".")[genotype.split(".").length()-1] == "ped")
+    {
+        if (map.isNull())
+        {
+            map = genoFileAbPath+"/"+genoFileBaseName+".map";
+        }
+        this->paramlist.append("--ped");
+        this->paramlist.append(genotype);
+        this->paramlist.append("--map");
+        this->paramlist.append(map);
+    }
+
+    if (genotype.split(".")[genotype.split(".").length()-1] == "tped")
+    {
+        if (map.isNull())
+        {
+            map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
+        }
+        this->paramlist.append("--tped");
+        this->paramlist.append(genotype);
+        this->paramlist.append("--tfam");
+        this->paramlist.append(map);
+    }
+
+    if (genotype.split(".")[genotype.split(".").length()-1] == "bed")
+    {
+        this->paramlist.append("--bfile");
+        this->paramlist.append(genoFileAbPath+"/"+genoFileBaseName);
+    }
+
+    this->paramlist.append("--allow-extra-chr");
+    this->paramlist.append("--indep-pairwise");
+    this->paramlist.append(winSize);
+    this->paramlist.append(stepLen);
+    this->paramlist.append(r2Threshold);
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+}
+
 bool Plink::runGWAS(QString phenotype, QString genotype, QString map, QString covariate, QString kinship,
                     QString model, QString maf, QString mind, QString geno,QString out)
 {

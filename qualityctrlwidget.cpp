@@ -40,3 +40,8 @@ void QualityCtrlWidget::on_yesLinkageFilterRadioButton_clicked()
     ui->stepLenLineEdit->setEnabled(true);
     ui->r2ThrLineEdit->setEnabled(true);
 }
+
+bool QualityCtrlWidget::isLinkageFilterNeeded()
+{
+    return ui->yesLinkageFilterRadioButton->isChecked();
+}
