@@ -2,6 +2,7 @@
 #define QUALITYCTRLWIDGET_H
 
 #include <QWidget>
+#include <QButtonGroup>
 
 namespace Ui {
 class QualityCtrlWidget;
@@ -15,8 +16,15 @@ public:
     explicit QualityCtrlWidget(QWidget *parent = nullptr);
     ~QualityCtrlWidget();
 
+private slots:
+    void on_noLinkageFilterRadioButton_clicked();
+
+    void on_yesLinkageFilterRadioButton_clicked();
+
 private:
     Ui::QualityCtrlWidget *ui;
+
+    QButtonGroup *linkageFileterBtnGroup;
 };
 
 #endif // QUALITYCTRLWIDGET_H

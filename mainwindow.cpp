@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     runningMsgWidget = new RunningMsgWidget;
     gemmaParamWidget = new GemmaParamWidget;
     emmaxParamWidget = new EmmaxParamWidget;
+    qualityControl = new QualityCtrlWidget;
     process = new QProcess;
     graphViewer = new GraphViewer;
     ldByFamGroupButton = new QButtonGroup;
@@ -75,6 +76,8 @@ MainWindow::~MainWindow()
     delete gemmaParamWidget;
     emmaxParamWidget->close();
     delete emmaxParamWidget;
+    qualityControl->close();
+    delete qualityControl;
     delete ldByFamGroupButton;
 
     if (process)    // QProcess
@@ -2831,4 +2834,9 @@ bool MainWindow::pValCorrect(QString pvalFile, bool header, QString correctType,
     this->process->close();
 
     return true;
+}
+
+void MainWindow::on_qualCtrlDetailPushButton_clicked()
+{
+    this->qualityControl->show();
 }

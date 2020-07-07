@@ -23,11 +23,56 @@
     </rect>
    </property>
    <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
+    <enum>QFrame::WinPanel</enum>
    </property>
    <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
+    <enum>QFrame::Sunken</enum>
    </property>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>231</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>SNP linkage filter</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="yesLinkageFilterRadioButton">
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>YES</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="noLinkageFilterRadioButton">
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>NO</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QFrame" name="frame_2">
    <property name="geometry">
@@ -39,23 +84,23 @@
     </rect>
    </property>
    <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
+    <enum>QFrame::Panel</enum>
    </property>
    <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
+    <enum>QFrame::Sunken</enum>
    </property>
    <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>30</x>
       <y>10</y>
-      <width>231</width>
+      <width>211</width>
       <height>81</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="QLineEdit" name="winSizeLineEdit">
        <property name="maximumSize">
         <size>
          <width>70</width>
@@ -78,7 +123,7 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_3">
+      <widget class="QLineEdit" name="r2ThrLineEdit">
        <property name="maximumSize">
         <size>
          <width>70</width>
@@ -94,7 +139,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_2">
+      <widget class="QLineEdit" name="stepLenLineEdit">
        <property name="maximumSize">
         <size>
          <width>70</width>
@@ -126,62 +171,17 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QWidget" name="">
-   <property name="geometry">
-    <rect>
-     <x>70</x>
-     <y>50</y>
-     <width>231</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>SNP linkage filter</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="radioButton">
-      <property name="maximumSize">
-       <size>
-        <width>70</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>YES</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="radioButton_2">
-      <property name="maximumSize">
-       <size>
-        <width>70</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>NO</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <zorder>frame_2</zorder>
   <zorder>frame</zorder>
+  <zorder>frame_2</zorder>
   <zorder>label</zorder>
-  <zorder>radioButton</zorder>
-  <zorder>radioButton_2</zorder>
+  <zorder>yesLinkageFilterRadioButton</zorder>
+  <zorder>noLinkageFilterRadioButton</zorder>
   <zorder>label_2</zorder>
   <zorder>label_3</zorder>
   <zorder>label_4</zorder>
-  <zorder>lineEdit</zorder>
-  <zorder>lineEdit_2</zorder>
-  <zorder>lineEdit_3</zorder>
+  <zorder>winSizeLineEdit</zorder>
+  <zorder>stepLenLineEdit</zorder>
+  <zorder>r2ThrLineEdit</zorder>
  </widget>
  <resources/>
  <connections/>

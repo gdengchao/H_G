@@ -31,8 +31,10 @@
 #include "runningmsgwidget.h"
 #include "gemmaparamwidget.h"
 #include "emmaxparamwidget.h"
+#include "qualityctrlwidget.h";
 #include "graphviewer.h"
 #include "funcannotator.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -106,8 +108,10 @@ private slots:
     // PCA
     void on_eigenvalFileBrowButton_clicked();
     void on_eigenvecFileBrowButton_clicked();
-
     void on_pcaPlotPushButton_clicked();
+
+    // Quality control
+    void on_qualCtrlDetailPushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -134,6 +138,8 @@ private:
     GraphViewer * graphViewer;
     // LD by family.
     QButtonGroup *ldByFamGroupButton;
+    // Quality Control parameters more.
+    QualityCtrlWidget *qualityControl;
 
     // Usual functions.
     bool isVcfFile(QString const file);
