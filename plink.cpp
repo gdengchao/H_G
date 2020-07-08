@@ -408,11 +408,68 @@ void Plink::linkageFilter(QString genotype, QString map,
         this->paramlist.append(genoFileAbPath+"/"+genoFileBaseName);
     }
 
+    // plink --file hapmap1 --allow-extra-chr --indep-pairwise 100 5 0.5 --out hapmap_ldfl
+
     this->paramlist.append("--allow-extra-chr");
     this->paramlist.append("--indep-pairwise");
     this->paramlist.append(winSize);
     this->paramlist.append(stepLen);
     this->paramlist.append(r2Threshold);
+    this->paramlist.append("--out");
+    this->paramlist.append(out);
+}
+
+void Plink::extractBySnpNameFile(QString genotype, QString map, QString snpIDFile, QString out)
+{
+    // Genotype file info.
+    QFileInfo genoFileInfo = QFileInfo(genotype);
+    QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
+    QString genoFileBaseName = genoFileInfo.baseName();     // geno
+    QString genoFileSuffix = genoFileInfo.suffix();         //
+    QString genoFileAbPath = genoFileInfo.absolutePath();
+
+    // plink --file hapmap1 --allow-extra-chr --extract hapmap_ldfl.prune.in --recode --out hapmap_ldfl
+
+    this->paramlist.clear();            // Clear paramlist before set parameter.
+    if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+    {
+        this->paramlist.append("--vcf");
+        this->paramlist.append(genotype);
+    }
+    if (genotype.split(".")[genotype.split(".").length()-1] == "ped")
+    {
+        if (map.isNull())
+        {
+            map = genoFileAbPath+"/"+genoFileBaseName+".map";
+        }
+        this->paramlist.append("--ped");
+        this->paramlist.append(genotype);
+        this->paramlist.append("--map");
+        this->paramlist.append(map);
+    }
+
+    if (genotype.split(".")[genotype.split(".").length()-1] == "tped")
+    {
+        if (map.isNull())
+        {
+            map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
+        }
+        this->paramlist.append("--tped");
+        this->paramlist.append(genotype);
+        this->paramlist.append("--tfam");
+        this->paramlist.append(map);
+    }
+
+    if (genotype.split(".")[genotype.split(".").length()-1] == "bed")
+    {
+        this->paramlist.append("--bfile");
+        this->paramlist.append(genoFileAbPath+"/"+genoFileBaseName);
+    }
+
+    this->paramlist.append("--allow-extra-chr");
+    this->paramlist.append("--extract");
+    this->paramlist.append(snpIDFile);
+    this->paramlist.append("--recode");
     this->paramlist.append("--out");
     this->paramlist.append(out);
 }

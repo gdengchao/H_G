@@ -45,3 +45,17 @@ bool QualityCtrlWidget::isLinkageFilterNeeded()
 {
     return ui->yesLinkageFilterRadioButton->isChecked();
 }
+
+/**
+ * @brief QualityCtrlWidget::getLinkageFilterType
+ *          Get paramter from widget and save param to input variables.
+ * @param winSize
+ * @param stepLen
+ * @param r2Threshold
+ */
+void QualityCtrlWidget::getLinkageFilterType(QString &winSize, QString &stepLen, QString &r2Threshold)
+{
+    winSize = ui->winSizeLineEdit->text();
+    stepLen = ui->stepLenLineEdit->text();
+    r2Threshold = ui->r2ThrLineEdit->text();
+}

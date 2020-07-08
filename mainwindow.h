@@ -158,5 +158,6 @@ private:
     QStringList makeQQManInputFile(QString pvalueFile);
     void runPopLDdecaySingle(void);
     void runPopLDdecaybyFamily(void);
+    bool runExTool(QProcess &process, QString tool, QStringList param);
 };
 #endif // MAINWINDOW_H
