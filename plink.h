@@ -8,7 +8,6 @@
 #include <QProcess>
 #include <QMessageBox>
 #include <QFile>
-#include "useros.h"
 #include "assoctool.h"
 
 class Plink : public AssocTool

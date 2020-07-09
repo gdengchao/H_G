@@ -21,7 +21,6 @@
 #include "filereader.h"
 #include "workdirectory.h"
 #include "phenoselector.h"
-#include "useros.h"
 #include "plink.h"
 #include "emmax.h"
 #include "gemma.h"

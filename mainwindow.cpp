@@ -535,6 +535,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
         genotype = linkageFilteredFilePrefix + ".ped";
         map = linkageFilteredFilePrefix + ".map";
+        genoFileName = genoFileBaseName + "_ldfl";
     }
 
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
@@ -761,6 +762,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
 
         genotype = linkageFilteredFilePrefix + ".ped";
         map = linkageFilteredFilePrefix + ".map";
+        genoFileName = genoFileBaseName + "_ldfl";
     }
 
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
