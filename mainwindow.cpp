@@ -1240,33 +1240,50 @@ QString MainWindow::refreshMessage(QString curText, QString newText)
         return newText;
     }
 
-    if (curText[curText.size()-1] == '%' && newText[newText.size()-1] == '%')
-    {   // Refresh percent.
-        QString::iterator iter = newText.end(); // After the last char.
-        QString newPercent = "%";
-        iter--;iter--;  // Pointer to the last number.
-        // Get the last percent in newText when there multi percent in the same line.
-        while ((*iter).isNumber())
-        {
-            newPercent = *iter + newPercent;
-            iter--;
-        }
+    QRegExp regRxp("\\s*((100|[1-9]?\\d)%\\s*)");
 
-        // Remove the percent in curText.
+    // For current text: replace pecent number to null string.
+    curText.replace(QRegExp("\\s*(100|[1-9]?\\d)%\\s*"), "");
+    // For current text: repalce multiple line break to only one.
+    curText.replace(QRegExp("\n\n+"), "\n");
+    // For current text: replace multiple '=' to null string.
+    //    (only matching gemma output message)
+    curText.replace(QRegExp("=+"), "");
 
-        while(curText[curText.size()-1] == '%')
-        {
-            curText.remove(curText.size()-1, 1);
-            iter = curText.end();
-            iter--; iter--;
-            while ((*iter).isNumber())
-            {
-                curText.remove(curText.size()-1, 1);
-            }
-        }
-
-        return curText + newText;
+    // Only consider gemma here (gemma msg: ===========   12%)
+    QRegExp gemmaMsg("(=+\\s*(100|[1-9]?\\d)%\\s*)+");
+    int pos = gemmaMsg.indexIn(newText);
+    if (pos > -1)
+    {   // Will cause multiple '\n' in current text.
+        // So it's necessary to repalce multiple line break to only one in current text.
+        newText = "\n"+gemmaMsg.cap(1);
     }
+
+//    if (curText[curText.size()-1] == '%' && newText[newText.size()-1] == '%')
+//    {   // Refresh percent.
+//        QString::iterator iter = newText.end(); // After the last char.
+//        QString newPercent = "%";
+//        iter--;iter--;  // Pointer to the last number.
+//        // Get the last percent in newText when there multi percent in the same line.
+//        while ((*iter).isNumber())
+//        {
+//            newPercent = *iter + newPercent;
+//            iter--;
+//        }
+
+//        // Remove the percent in curText.
+
+//        while(curText[curText.size()-1] == '%')
+//        {
+//            curText.remove(curText.size()-1, 1);
+//            iter = curText.end();
+//            iter--; iter--;
+//            while ((*iter).isNumber())
+//            {
+//                curText.remove(curText.size()-1, 1);
+//            }
+//        }
+//    }
 
     return curText + newText;
 }
