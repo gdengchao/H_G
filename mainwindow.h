@@ -111,6 +111,8 @@ private slots:
 
     // Quality control
     void on_qualCtrlDetailPushButton_clicked();
+    // Checkout file existence.
+    bool checkoutExistence(QString filePath);
 
 private:
     Ui::MainWindow *ui;

@@ -526,6 +526,12 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
         QString filteredSnpIDFile = linkageFilteredFilePrefix + ".prune.in";
 
+        if (!this->checkoutExistence(filteredSnpIDFile))
+        {
+            QMessageBox::information(this, "Error", "Linkage filter error.");
+            return false;
+        }
+
         plink.extractBySnpNameFile(genotype, map, filteredSnpIDFile, linkageFilteredFilePrefix);
 
         if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
@@ -536,6 +542,13 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         genotype = linkageFilteredFilePrefix + ".ped";
         map = linkageFilteredFilePrefix + ".map";
         genoFileName = genoFileBaseName + "_ldfl";
+
+        if (!this->checkoutExistence(genotype) ||
+            !this->checkoutExistence(map))
+        {
+            QMessageBox::information(this, "Error", "Extaract snp after linkage filter error.");
+            return false;
+        }
     }
 
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
@@ -660,6 +673,18 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     }
     file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.log.txt");
 
+    if (qualityControl->isLinkageFilterNeeded())
+    {
+        file.remove(genotype);
+        file.remove(map);
+    }
+
+    if (qualityControl->isLinkageFilterNeeded())
+    {
+        file.remove(genotype);
+        file.remove(map);
+    }
+
     QDir dir;   // gemma output in the execution file dir by default.
     QDir objDir(out+"/output");
     // We move it to the work dir.
@@ -684,10 +709,24 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         qDebug() << "pValFile: " << pValFile;
         qDebug() << "correctedFile: " << correctedFile;
         this->pValCorrect(pValFile, true, correctionType, correctedFile);
+
+        if (!this->checkoutExistence(correctedFile))
+        {
+            QMessageBox::information(this, "Error", "Gemma corrected error.");
+            return false;
+        }
+
         ui->qqmanGwasResultLineEdit->setText(correctedFile);
     }
     else if (model == "LMM")
     {
+        if (!this->checkoutExistence(out+"/output"
+            +(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName+".assoc.txt"))
+        {
+            QMessageBox::information(this, "Error", "Gemma GWAS error.");
+            return false;
+        }
+
         ui->qqmanGwasResultLineEdit->setText(out+"/output"
             +(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName+".assoc.txt");
     }
@@ -860,6 +899,13 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
         qDebug() << "correctedFile: " << correctedFile;
         // There no header of emmax result file.
         this->pValCorrect(pValFile, false, correctionType, correctedFile);
+
+        if (!this->checkoutExistence(correctedFile))
+        {
+            QMessageBox::information(this, "Error", "Gemma corrected error.");
+            return false;
+        }
+
         ui->qqmanGwasResultLineEdit->setText(correctedFile);
     }
     else
@@ -881,6 +927,12 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     else
     {
         file.remove(genoFileAbPath+"/"+genoFileBaseName+"_tmp.hIBS.kinf");
+    }
+
+    if (qualityControl->isLinkageFilterNeeded())
+    {
+        file.remove(genotype);
+        file.remove(map);
     }
 
     return true;
@@ -925,8 +977,9 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
         QString linkageFilteredFilePrefix = genoFileAbPath + "/" + genoFileBaseName + "_ldfl";
         QString winSize, stepLen, r2Threshold;
         this->qualityControl->getLinkageFilterType(winSize, stepLen, r2Threshold);
-        plink.linkageFilter(genotype, map, winSize, stepLen, r2Threshold, linkageFilteredFilePrefix);
 
+        this->runningMsgWidget->appendText("LinkageFilter");
+        plink.linkageFilter(genotype, map, winSize, stepLen, r2Threshold, linkageFilteredFilePrefix);
         if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
         {
             return false;
@@ -934,15 +987,30 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
         QString filteredSnpIDFile = linkageFilteredFilePrefix + ".prune.in";
 
+        if (!this->checkoutExistence(filteredSnpIDFile))
+        {
+            QMessageBox::information(this, "Error", "Linkage filter error.");
+            return false;
+        }
+
         plink.extractBySnpNameFile(genotype, map, filteredSnpIDFile, linkageFilteredFilePrefix);
 
+       this->runningMsgWidget->appendText("extractBySnpName");
         if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
         {
             return false;
         }
 
+        this->runningMsgWidget->appendText("OK");
+
         genotype = linkageFilteredFilePrefix + ".ped";
         map = linkageFilteredFilePrefix + ".map";
+
+        if (!this->checkoutExistence(genotype) || !this->checkoutExistence(map))
+        {
+            QMessageBox::information(this, "Error", "Extract snp after linkage filter error.");
+            return false;
+        }
     }
 
     // Run GWAS(Set parameters)
@@ -955,6 +1023,13 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
     {
         return false;
     }
+
+    if (!this->checkoutExistence(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower()))
+    {
+        QMessageBox::information(this, "Error", "Plink GWAS error.");
+        return false;
+    }
+
     ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
 
     return true;
@@ -2172,6 +2247,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         this->emmaxParamWidget->close();
     }
+    if (this->qualityControl->isVisible())
+    {
+        this->qualityControl->close();
+    }
     if (this->isVisible() && !runningMsgWidget->isVisible())
     {
         event->accept();
@@ -2785,4 +2864,10 @@ bool MainWindow::runExTool(QProcess &process, QString tool, QStringList param)
     process.close();
 
     return true;
+}
+
+bool MainWindow::checkoutExistence(QString filePath)
+{
+    QFile file(filePath);
+    return file.exists();
 }

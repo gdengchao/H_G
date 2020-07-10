@@ -364,7 +364,7 @@ bool Plink::binary2plink(QString binaryFile, QString out, QString maf, QString m
 
 void Plink::linkageFilter(QString genotype, QString map,
                           QString winSize, QString stepLen, QString r2Threshold, QString out)
-{
+  {
     // Genotype file info.
     QFileInfo genoFileInfo = QFileInfo(genotype);
     QString genoFileName = genoFileInfo.fileName();         // demo.vcf.gz
