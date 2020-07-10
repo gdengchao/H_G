@@ -32,6 +32,7 @@ SOURCES += \
     phenoselector.cpp \
     plink.cpp \
     poplddecay.cpp \
+    process.cpp \
     qualityctrlwidget.cpp \
     runningmsgwidget.cpp \
     tool.cpp \
@@ -53,6 +54,7 @@ HEADERS += \
     phenoselector.h \
     plink.h \
     poplddecay.h \
+    process.h \
     qualityctrlwidget.h \
     runningmsgwidget.h \
     tool.h \

@@ -30,9 +30,10 @@
 #include "runningmsgwidget.h"
 #include "gemmaparamwidget.h"
 #include "emmaxparamwidget.h"
-#include "qualityctrlwidget.h";
+#include "qualityctrlwidget.h"
 #include "graphviewer.h"
 #include "funcannotator.h"
+#include "process.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -72,8 +73,8 @@ private slots:
     // for run pushButton
     void on_runGwasButton_clicked();
     // for running Message
-    void on_readoutput();
-    void on_readerror();
+//    void on_readoutput();
+//    void on_readerror();
     void on_closeRunningWidget();
     // For tool and model selector
     void on_toolComboBox_currentTextChanged(const QString &tool);
@@ -114,8 +115,13 @@ private slots:
     // Checkout file existence.
     bool checkoutExistence(QString filePath);
 
+    // For my Process
+    void on_outMessageReady(QString text);
+    void on_errMessageReady(QString text);
+
 private:
     Ui::MainWindow *ui;
+    bool runningFlag = false;   // There are working but not in Process now.
 //    QThread workThread;
     void closeEvent(QCloseEvent *event) override;
 //    bool eventFilter(QObject *obj, QEvent *ev) override;
@@ -131,7 +137,7 @@ private:
     PhenoSelector *phenoSelector;       // Select objective phenotype to analysis.
     // for display running information.
     RunningMsgWidget *runningMsgWidget;
-    QProcess *process;
+//    QProcess *process;
     // To set detail paramters
     GemmaParamWidget *gemmaParamWidget;
     EmmaxParamWidget *emmaxParamWidget;
@@ -141,6 +147,9 @@ private:
     QButtonGroup *ldByFamGroupButton;
     // Quality Control parameters more.
     QualityCtrlWidget *qualityControl;
+
+    // Running process(External process)
+    QList<QFuture<void>> concurRunningList;
 
     // Usual functions.
     bool isVcfFile(QString const file);
@@ -159,6 +168,6 @@ private:
     QStringList makeQQManInputFile(QString pvalueFile);
     void runPopLDdecaySingle(void);
     void runPopLDdecaybyFamily(void);
-    bool runExTool(QProcess &process, QString tool, QStringList param);
+    bool runExTool(QString tool, QStringList param);
 };
 #endif // MAINWINDOW_H

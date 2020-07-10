@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     gemmaParamWidget = new GemmaParamWidget;
     emmaxParamWidget = new EmmaxParamWidget;
     qualityControl = new QualityCtrlWidget;
-    process = new QProcess;
+//    process = new QProcess;
     graphViewer = new GraphViewer;
     ldByFamGroupButton = new QButtonGroup;
 
@@ -50,8 +50,8 @@ MainWindow::MainWindow(QWidget *parent)
     ldByFamGroupButton->setExclusive(true);
 
     // connect QProcess->start(tool) and runningMsgWidget.
-    connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
-    connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
+//    connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
+//    connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
     connect(runningMsgWidget, SIGNAL(closeSignal()), this, SLOT(on_closeRunningWidget()));
     // connect MToolButton->rightClick
     connect(ui->pheFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_pheFileToolButton_closeFileSig()));
@@ -80,12 +80,12 @@ MainWindow::~MainWindow()
     delete qualityControl;
     delete ldByFamGroupButton;
 
-    if (process)    // QProcess
-    {
-        process->terminate();
-        process->waitForFinished(-1);
-    }
-    delete process;
+//    if (process)    // QProcess
+//    {
+//        process->terminate();
+//        process->waitForFinished(-1);
+//    }
+//    delete process;
 
     delete graphViewer;
 }
@@ -366,6 +366,13 @@ void MainWindow::on_excludePhenoButton_clicked()
  */
 void MainWindow::on_runGwasButton_clicked()
 {
+    if (this->runningFlag)
+    {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
+        return;
+    }
+    this->runningFlag = true;
+
     QString tool = ui->toolComboBox->currentText();
     QString phenotype = this->fileReader->getPhenotypeFile();
     QString genotype = this->fileReader->getGenotypeFile();
@@ -395,60 +402,22 @@ void MainWindow::on_runGwasButton_clicked()
     QString pheFileAbPath = pheFileInfo.absolutePath();
     QString pheFileSuffix = pheFileInfo.suffix();
 
-    if (pheFileSuffix == "phe")
-    {   // Only one phenotype data.
-        if (tool == "emmax")
-        {
-            if (!this->callEmmaxGwas(phenotype, genotype, map, covar, kinship, out, name))
-            {
-                this->resetWindow();
-                return;
-            }
-        }
-
-        if (tool == "gemma")
-        {
-            if (!this->callGemmaGwas(phenotype, genotype, map, covar, kinship, out, name))
-            {
-                this->resetWindow();
-                return;
-            }
-        }
-
-        if (tool == "plink")  // plink GWAS
-        {
-            if (!this->callPlinkGwas(phenotype, genotype, map, covar, kinship, out, name))
-            {
-                this->resetWindow();
-                return;
-            }
-        }
-    }
-    else
-    {   // There several phenotype data.
-        for (int i = 0; i < ui->selectedPhenoListWidget->count(); i++)
-        {   // Make .phe file then run GWAS one by one.
-            QListWidgetItem *item = ui->selectedPhenoListWidget->item(i);
-
-            if (!this->makePheFile(phenotype, item->text()))
-            {
-                this->resetWindow();
-                return;
-            }
-            QString madedPheFile = pheFileAbPath + "/" + item->text() + ".phe";
+    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
+    {
+        if (pheFileSuffix == "phe")
+        {   // Only one phenotype data.
             if (tool == "emmax")
             {
-                if (!this->callEmmaxGwas(madedPheFile, genotype, map, covar, kinship, out, name))
+                if (!this->callEmmaxGwas(phenotype, genotype, map, covar, kinship, out, name))
                 {
                     this->resetWindow();
-
                     return;
                 }
             }
 
             if (tool == "gemma")
             {
-                if (!this->callGemmaGwas(madedPheFile, genotype, map, covar, kinship, out, name))
+                if (!this->callGemmaGwas(phenotype, genotype, map, covar, kinship, out, name))
                 {
                     this->resetWindow();
                     return;
@@ -457,15 +426,61 @@ void MainWindow::on_runGwasButton_clicked()
 
             if (tool == "plink")  // plink GWAS
             {
-                if (!this->callPlinkGwas(madedPheFile, genotype, map, covar, kinship, out, name))
+                if (!this->callPlinkGwas(phenotype, genotype, map, covar, kinship, out, name))
                 {
                     this->resetWindow();
                     return;
                 }
             }
         }
+        else
+        {   // There several phenotype data.
+            for (int i = 0; i < ui->selectedPhenoListWidget->count(); i++)
+            {   // Make .phe file then run GWAS one by one.
+                QListWidgetItem *item = ui->selectedPhenoListWidget->item(i);
+
+                if (!this->makePheFile(phenotype, item->text()))
+                {
+                    this->resetWindow();
+                    return;
+                }
+                QString madedPheFile = pheFileAbPath + "/" + item->text() + ".phe";
+                if (tool == "emmax")
+                {
+                    if (!this->callEmmaxGwas(madedPheFile, genotype, map, covar, kinship, out, name))
+                    {
+                        this->resetWindow();
+
+                        return;
+                    }
+                }
+
+                if (tool == "gemma")
+                {
+                    if (!this->callGemmaGwas(madedPheFile, genotype, map, covar, kinship, out, name))
+                    {
+                        this->resetWindow();
+                        return;
+                    }
+                }
+
+                if (tool == "plink")  // plink GWAS
+                {
+                    if (!this->callPlinkGwas(madedPheFile, genotype, map, covar, kinship, out, name))
+                    {
+                        this->resetWindow();
+                        return;
+                    }
+                }
+            }
+        }
+    });
+    while (!fu.isFinished())
+    {
+        qApp->processEvents(QEventLoop::AllEvents, 100);
     }
 
+    this->runningFlag = false;
     this->resetWindow();
 }
 
@@ -519,7 +534,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         this->qualityControl->getLinkageFilterType(winSize, stepLen, r2Threshold);
         plink.linkageFilter(genotype, map, winSize, stepLen, r2Threshold, linkageFilteredFilePrefix);
 
-        if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+        if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
             return false;
         }
@@ -534,7 +549,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
         plink.extractBySnpNameFile(genotype, map, filteredSnpIDFile, linkageFilteredFilePrefix);
 
-        if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+        if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
             return false;
         }
@@ -598,7 +613,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
     if (transformFileFlag || filterDataFlag)
     {   // Run plink to transform file or filter data.
-        if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+        if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
             return false;
         }
@@ -610,7 +625,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     {
         // Replace "NA" to "-9", then complete .fam
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
-        QFuture<bool> fu =  QtConcurrent::run(&gemma, &Gemma::phe_fam_Preparation, phenotype, binaryFile+".fam");
+        QFuture<bool> fu =  QtConcurrent::run(QThreadPool::globalInstance(), &gemma, &Gemma::phe_fam_Preparation, phenotype, binaryFile+".fam");
         while (!fu.isFinished())
         {
             qApp->processEvents(QEventLoop::AllEvents, 100);
@@ -629,7 +644,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
              this->resetWindow();
              return false;  // Make kinship failed.
          }
-         if (!runExTool(*(this->process), this->toolpath+"gemma", gemma.getParamList()))
+         if (!runExTool(this->toolpath+"gemma", gemma.getParamList()))
          {
              return false;
          }
@@ -651,7 +666,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         this->resetWindow();
         return false;
     }
-    if (!runExTool(*(this->process), this->toolpath+"gemma", gemma.getParamList()))
+    if (!runExTool(this->toolpath+"gemma", gemma.getParamList()))
     {
         return false;
     }
@@ -672,12 +687,6 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.sXX.txt");
     }
     file.remove(QDir::currentPath() + "/output/"+genoFileBaseName+"_tmp.log.txt");
-
-    if (qualityControl->isLinkageFilterNeeded())
-    {
-        file.remove(genotype);
-        file.remove(map);
-    }
 
     if (qualityControl->isLinkageFilterNeeded())
     {
@@ -785,7 +794,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
         this->qualityControl->getLinkageFilterType(winSize, stepLen, r2Threshold);
         plink.linkageFilter(genotype, map, winSize, stepLen, r2Threshold, linkageFilteredFilePrefix);
 
-        if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+        if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
             return false;
         }
@@ -794,7 +803,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
 
         plink.extractBySnpNameFile(genotype, map, filteredSnpIDFile, linkageFilteredFilePrefix);
 
-        if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+        if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
             return false;
         }
@@ -847,7 +856,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
 
     if (transformFileFlag || filterDataFlag)
     {
-        if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+        if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
                 return false;
         }
@@ -861,7 +870,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
              this->resetWindow();
              return false;  // Make kinship failed.
          }
-         if (!runExTool(*(this->process), this->toolpath+"emmax-kin", emmax.getParamList()))
+         if (!runExTool(this->toolpath+"emmax-kin", emmax.getParamList()))
          {
              return false;
          }
@@ -882,7 +891,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
         this->resetWindow();
         return false;
     }
-    if (!runExTool(*(this->process), this->toolpath+"emmax", emmax.getParamList()))
+    if (!runExTool(this->toolpath+"emmax", emmax.getParamList()))
     {
         return false;
     }
@@ -970,7 +979,6 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
     QString pheFileBaseName = pheFileInfo.baseName();
 
     Plink plink;
-
     // Linkage filter
     if (qualityControl->isLinkageFilterNeeded())
     {
@@ -980,7 +988,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
         this->runningMsgWidget->appendText("LinkageFilter");
         plink.linkageFilter(genotype, map, winSize, stepLen, r2Threshold, linkageFilteredFilePrefix);
-        if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+        if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
             return false;
         }
@@ -996,7 +1004,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
         plink.extractBySnpNameFile(genotype, map, filteredSnpIDFile, linkageFilteredFilePrefix);
 
        this->runningMsgWidget->appendText("extractBySnpName");
-        if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+        if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
             return false;
         }
@@ -1005,6 +1013,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
         genotype = linkageFilteredFilePrefix + ".ped";
         map = linkageFilteredFilePrefix + ".map";
+        genoFileName = genoFileName + "_ldfl";
 
         if (!this->checkoutExistence(genotype) || !this->checkoutExistence(map))
         {
@@ -1019,7 +1028,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
     {
         return false;
     }
-    if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+    if (!runExTool(this->toolpath+"plink", plink.getParamList()))
     {
         return false;
     }
@@ -1039,38 +1048,38 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
  * @brief MainWindow::on_readoutput
  *      Read data from standard ouput stream, generated from tool which is running, to show in RunningMsgWidget
  */
-void MainWindow::on_readoutput()
-{
-    QString text = QString::fromLocal8Bit(this->process->readAllStandardOutput().data());
-    this->runningMsgWidget->setText(this->refreshMessage(this->runningMsgWidget->getText(), text));
-    this->runningMsgWidget->repaint();
-    qApp->processEvents();
-    QThread::msleep(10);
-}
+//void MainWindow::on_readoutput()
+//{
+//    QString text = QString::fromLocal8Bit(this->process->readAllStandardOutput().data());
+//    this->runningMsgWidget->setText(this->refreshMessage(this->runningMsgWidget->getText(), text));
+//    this->runningMsgWidget->repaint();
+//    qApp->processEvents();
+//    QThread::msleep(10);
+//}
 
 /**
  * @brief MainWindow::on_readerror
  *      Read data from standard error stream, generated from tool which is running, to show in RunningMsgWidget
  */
-void MainWindow::on_readerror()
-{
-    QString tool = ui->toolComboBox->currentText();
-//    if (tool == "emmax" || tool == "gemma")
-//    {   // Emmax let messages print to stand error.
-//        this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-//        this->runningMsgWidget->repaint();
-//        qApp->processEvents();
-//    }
-//    else
-//    {
-//        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-//        this->runningMsgWidget->close();
-//    }
-    this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-    this->runningMsgWidget->repaint();
-    qApp->processEvents();
-    QThread::msleep(10);
-}
+//void MainWindow::on_readerror()
+//{
+//    QString tool = ui->toolComboBox->currentText();
+////    if (tool == "emmax" || tool == "gemma")
+////    {   // Emmax let messages print to stand error.
+////        this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
+////        this->runningMsgWidget->repaint();
+////        qApp->processEvents();
+////    }
+////    else
+////    {
+////        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
+////        this->runningMsgWidget->close();
+////    }
+//    this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
+//    this->runningMsgWidget->repaint();
+//    qApp->processEvents();
+//    QThread::msleep(10);
+//}
 
 /**
  * @brief MainWindow::on_closeRunningWidget
@@ -1082,18 +1091,25 @@ void MainWindow::on_closeRunningWidget()
         return;
     }
 
-    if (this->process->isOpen())
-    {   // Juage there are any tools running now.
+    if (this->runningFlag)
+    {
+//        QMessageBox::information(this, "INFO","A project is working",
+//            QMessageBox::Ok, QMessageBox::Ok);
+        // Juage there are any tools running now.
         QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
            "The association will be terminated if close the widget!   ",
             QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+
         if (ret == QMessageBox::Yes)
         {
-            this->process->close();
             this->runningMsgWidget->clearText();
             this->runningMsgWidget->hide();
+            //QThreadPool::globalInstance()->waitForDone(100);
+            QThreadPool::globalInstance()->clear();
+            this->runningFlag = false;
             this->resetWindow();
         }
+        return;
     }
     else
     {   // Close widget directly while no tool running.
@@ -1155,15 +1171,15 @@ bool MainWindow::isVcfFile(QString file) // Just consider filename.
  */
 void MainWindow::resetWindow()
 {
-    if (this->process->isOpen())
-    {
-        this->process->close();
-    }
-    if (this->process)
-    {
-        this->process->terminate();
-        this->process->waitForFinished(-1);
-    }
+//    if (this->process->isOpen())
+//    {
+//        this->process->close();
+//    }
+//    if (this->process)
+//    {
+//        this->process->terminate();
+//        this->process->waitForFinished(-1);
+//    }
     ui->runGwasButton->setEnabled(true);
     ui->ldRunPushButton->setEnabled(true);
     ui->ldPlotPushButton->setEnabled(true);
@@ -1375,69 +1391,85 @@ void MainWindow::on_projectNameLineEdit_editingFinished()
 
 void MainWindow::on_drawManPushButton_clicked()
 {
+    if (this->runningFlag)
+    {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
+        return;
+    }
+
+    runningFlag = true;
     ui->drawManPushButton->setEnabled(false);
     qApp->processEvents();
 
     try {
-        QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
-        if (gwasResulFile.isEmpty())
-        {   // Gwas result file is necessary.
+        QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
+        {
+            QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
+            if (gwasResulFile.isEmpty())
+            {   // Gwas result file is necessary.
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText("A GWAS result file is necessary.");
+                qApp->processEvents();
+                throw -1;
+            }
+
+            this->runningMsgWidget->show();
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("A GWAS result file is necessary.");
+            this->runningMsgWidget->appendText("Make qqman input file, ");
             qApp->processEvents();
-            throw -1;
-        }
 
-        this->runningMsgWidget->show();
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Make qqman input file, ");
-        qApp->processEvents();
+            // Transform gwas result file type to input file type of qqman.
+            this->runningFlag = true;
+            QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
+            QStringList outList;
+            this->runningFlag = false;
+            if (qqmanFile.isEmpty())
+            {   // makeQQManInputFile error.
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
+                qApp->processEvents();
+                throw -1;
+            }
 
-        // Transform gwas result file type to input file type of qqman.
-        QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
-        QStringList outList;
-
-        if (qqmanFile.isEmpty())
-        {   // makeQQManInputFile error.
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
+            this->runningMsgWidget->appendText("Make qqman input file OK. ");
             qApp->processEvents();
-            throw -1;
-        }
 
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Make qqman input file OK. ");
-        qApp->processEvents();
+            for (auto item:qqmanFile)
+            {   // Multiple result, multiple output plot, append to list.
+                outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
+                               +"_"+item.split(".")[item.split(".").length()-1]+"_man.png");
+            }
 
-        for (auto item:qqmanFile)
-        {   // Multiple result, multiple output plot, append to list.
-            outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
-                           +"_"+item.split(".")[item.split(".").length()-1]+"_man.png");
-        }
-
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Draw manhattan plot, ");
-        qApp->processEvents();
-        if (!this->drawManhattan(qqmanFile, outList))
-        {   // drawManhattan error
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Draw manhattan plot ERROR. ");
+            this->runningMsgWidget->appendText("Draw manhattan plot, ");
             qApp->processEvents();
-            throw -1;
-        }
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Draw manhattan plot OK.");
-        this->runningMsgWidget->appendText("\nmanhattan plot: \n" + outList.join("\n"));
-        qApp->processEvents();
+            if (!this->drawManhattan(qqmanFile, outList))
+            {   // drawManhattan error
+                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+                this->runningMsgWidget->appendText("Draw manhattan plot ERROR. ");
+                qApp->processEvents();
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Draw manhattan plot OK.");
+            this->runningMsgWidget->appendText("\nmanhattan plot: \n" + outList.join("\n"));
+            qApp->processEvents();
 
-        QFile file;
-        for (auto item:qqmanFile)
-        {   // Remove intermediate file.
-            file.remove(item);
+            QFile file;
+            for (auto item:qqmanFile)
+            {   // Remove intermediate file.
+                file.remove(item);
+            }
+        });
+        while (!fu.isFinished())
+        {
+            qApp->processEvents(QEventLoop::AllEvents, 100);
         }
     } catch (...) {
         this->resetWindow();    // reset MainWindow
     }
+    runningFlag = false;
     this->resetWindow();
 }
 
@@ -1460,7 +1492,9 @@ void MainWindow::on_drawQQPushButton_clicked()
         this->runningMsgWidget->appendText("Make qqman input file, ");
         qApp->processEvents();
         // Transform gwasResultFile to input file type of qqman.
+        this->runningFlag = true;
         QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
+        this->runningFlag = false;
         QStringList outList;
 
         if (qqmanFile.isEmpty())
@@ -1541,7 +1575,7 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
         param.append(QString::number(sgBase)+'e'+QString::number(sgExpo));
 
         // R in environment path is necessary.
-        if (!runExTool(*(this->process), "Rscript", param))
+        if (!runExTool("Rscript", param))
         {
             return false;
         }
@@ -1576,7 +1610,7 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
         param.append(data[i]);
         param.append(out[i]);
         // R in environment path is necessary.
-        if (!runExTool(*(this->process), "Rscript", param))
+        if (!runExTool("Rscript", param))
         {
             return false;
         }
@@ -1797,7 +1831,7 @@ void MainWindow::on_pcaRunPushButton_clicked()
 
         if (transformFileFlag)
         {   // Run plink to transform file or filter data.
-            if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+            if (!runExTool(this->toolpath+"plink", plink.getParamList()))
             {
                 return;
             }
@@ -1811,7 +1845,7 @@ void MainWindow::on_pcaRunPushButton_clicked()
         Gcta gcta;
         if (gcta.makeGRM(binaryFile, binaryFile))
         {
-            if (!runExTool(*(this->process), this->toolpath+"gcta64", gcta.getParamList()))
+            if (!runExTool(this->toolpath+"gcta64", gcta.getParamList()))
             {
                 return;
             }
@@ -1821,7 +1855,7 @@ void MainWindow::on_pcaRunPushButton_clicked()
         if (gcta.runPCA(binaryFile, ui->nPCsLineEdit->text().toInt(),
                         ui->nThreadsLineEdit->text().toInt(), out+"/"+genoFileBaseName))
         {
-            if (!runExTool(*(this->process), this->toolpath+"gcta64", gcta.getParamList()))
+            if (!runExTool(this->toolpath+"gcta64", gcta.getParamList()))
             {
                 return;
             }
@@ -1942,19 +1976,11 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 plink.splitBinaryFile(genoFileAbPath+"/"+genoFileBaseName, keepFile, genoFileAbPath+"/"+keepFileBaseName);
             }
 
-            this->process->start(this->toolpath+"plink", plink.getParamList());
-            if (!this->process->waitForStarted())
+
+            if (!this->runExTool(this->toolpath+"plink", plink.getParamList()))
             {
-                isLD_OK = false;
                 throw -1;
             }
-            if (!this->process->waitForFinished(-1))
-            {
-                this->resetWindow();
-                isLD_OK = false;
-                throw -1;
-            }
-            this->process->close();
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText(keepFileBaseName+".ped and "+keepFileBaseName+".map OK.\n");
             qApp->processEvents();
@@ -1970,19 +1996,11 @@ void MainWindow::runPopLDdecaybyFamily(void)
                                     genoFileAbPath+"/"+keepFileBaseName+".map",
                                     genoFileAbPath+"/"+keepFileBaseName+".genotype"))
             {
-                this->process->start(this->scriptpath+"poplddecay/plink2genotype", popLDdecay.getParamList());
-                if (!this->process->waitForStarted())
+                if (!this->runExTool(this->scriptpath+"poplddecay/plink2genotype",
+                                     popLDdecay.getParamList()))
                 {
-                    isLD_OK = false;
                     throw -1;
                 }
-                qDebug() << this->process->pid();
-                while (!this->process->waitForFinished(-1))
-                {
-                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
-                    QThread::msleep(10);
-                }
-                this->process->close();
 
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
                 this->runningMsgWidget->appendText(keepFileBaseName+".genotype OK.\n");
@@ -2010,19 +2028,11 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
                 this->runningMsgWidget->appendText("Run LD,\n");
                 qApp->processEvents();
-                this->process->start(this->toolpath+"PopLDdecay", popLDdecay.getParamList());
-                if (!this->process->waitForStarted())
+                if (!this->runExTool(this->toolpath+"PopLDdecay", popLDdecay.getParamList()))
                 {
-//                    QMessageBox::information(nullptr, "Error", "Can't find perl in system path. ");
-                    isLD_OK = false;
                     throw -1;
                 }
-                while (!this->process->waitForFinished(-1))
-                {
-                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
-                    QThread::msleep(10);
-                }
-                this->process->close();
+
                 ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
                 this->runningMsgWidget->appendText("LD OK. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
@@ -2103,7 +2113,7 @@ void MainWindow::runPopLDdecaySingle(void)
 
         if (transformFileFlag)
         {   // Run plink to transform file or filter data.
-            if (!runExTool(*(this->process), this->toolpath+"plink", plink.getParamList()))
+            if (!runExTool(this->toolpath+"plink", plink.getParamList()))
             {
                 return;
             }
@@ -2119,7 +2129,7 @@ void MainWindow::runPopLDdecaySingle(void)
         PopLDdecay popLDdecay;
         if (popLDdecay.makeGenotype(plinkFile+".ped", plinkFile+".map", plinkFile+".genotype"))
         {
-            if (!runExTool(*(this->process), this->scriptpath+"poplddecay/plink2genotype",
+            if (!runExTool(this->scriptpath+"poplddecay/plink2genotype",
                            popLDdecay.getParamList()))
             {
                 return;
@@ -2148,7 +2158,7 @@ void MainWindow::runPopLDdecaySingle(void)
         qApp->processEvents();
         if (popLDdecay.runLD(plinkFile+".genotype", out+"/"+name))
         {
-            if (!runExTool(*(this->process), this->toolpath+"PopLDdecay",
+            if (!runExTool(this->toolpath+"PopLDdecay",
                            popLDdecay.getParamList()))
             {
                 return;
@@ -2187,7 +2197,7 @@ void MainWindow::on_ldPlotPushButton_clicked()
         PopLDdecay popLDdecay;
         if (popLDdecay.plotLD(ldResultFile, out+"/"+name+"_ld"))
         {
-            if (!runExTool(*(this->process), this->scriptpath+"poplddecay/Plot_OnePop",
+            if (!runExTool(this->scriptpath+"poplddecay/Plot_OnePop",
                            popLDdecay.getParamList()))
             {
                 return;
@@ -2231,6 +2241,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     qDebug() << "MainWindow::closeEvent";
     this->resetWindow();
+    this->runningFlag = false;
     if (this->runningMsgWidget->isVisible())
     {
         this->runningMsgWidget->close();
@@ -2311,7 +2322,7 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         }
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Gff to gtf, \n");
-        if (!runExTool(*(this->process), this->toolpath+"gffread", annovar.getParamList()))
+        if (!runExTool(this->toolpath+"gffread", annovar.getParamList()))
         {
             throw -1;
         }
@@ -2328,7 +2339,7 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
         this->runningMsgWidget->appendText("Gtf to genePred, \n");
         qApp->processEvents();
-        if (!runExTool(*(this->process), this->toolpath+"gtfToGenePred", annovar.getParamList()))
+        if (!runExTool(this->toolpath+"gtfToGenePred", annovar.getParamList()))
         {
             throw -1;
         }
@@ -2347,7 +2358,7 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         this->runningMsgWidget->appendText("Retrieve seq from fasta,\n");
         qApp->processEvents();
 
-        if (!runExTool(*(this->process), this->scriptpath+"annovar/retrieve_seq_from_fasta",
+        if (!runExTool(this->scriptpath+"annovar/retrieve_seq_from_fasta",
                        annovar.getParamList()))
         {
             throw -1;
@@ -2380,7 +2391,7 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         this->runningMsgWidget->appendText("Annotation,\n");
         qApp->processEvents();
 
-        if (!runExTool(*(this->process), this->scriptpath+"annovar/annotate_variation",
+        if (!runExTool(this->scriptpath+"annovar/annotate_variation",
                        annovar.getParamList()))
         {
             throw -1;
@@ -2391,9 +2402,7 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
         qApp->processEvents();
 
         ui->varFuncFileLineEdit->setText(outFile+".variant_functino");
-        ui->exVarFuncFileLineEdit->setText(outFile+".exonic_variant_function");
 
-        this->process->close();
 
     } catch(...)
     {
@@ -2581,7 +2590,7 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         FuncAnnotator funcAnnotator;
 
         this->runningMsgWidget->show();
-        QFuture<void> fu = QtConcurrent::run([&]()
+        QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
         {   // Run functional annotation in another thread;
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("Complete exonic SNP infomation,");
@@ -2673,7 +2682,7 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
 
         this->runningMsgWidget->show();
 
-        QFuture<void> fu = QtConcurrent::run([&]()
+        QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
         {
             this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
             this->runningMsgWidget->appendText("Filter SNP above threshold,");
@@ -2793,7 +2802,7 @@ void MainWindow::on_pcaPlotPushButton_clicked()
     param.append(outFile);
 
     // R in environment path is necessary.
-    if (!runExTool(*(this->process), "Rscript", param))
+    if (!runExTool("Rscript", param))
     {
         return;
     }
@@ -2835,7 +2844,7 @@ bool MainWindow::pValCorrect(QString pvalFile, bool header, QString correctType,
     param.append(correctType);
     param.append(outFile);
     // R in environment path is necessary.
-    if (!runExTool(*(this->process), "Rscript", param))
+    if (!runExTool("Rscript", param))
     {
         return false;
     }
@@ -2848,20 +2857,35 @@ void MainWindow::on_qualCtrlDetailPushButton_clicked()
     this->qualityControl->show();
 }
 
-bool MainWindow::runExTool(QProcess &process, QString tool, QStringList param)
+bool MainWindow::runExTool(QString tool, QStringList param)
 {
-    process.start(tool, param);
-    if (!process.waitForStarted())
+    Process proc;
+//    if (this->runningProcessList.indexOf(proc) == -1)
+//    {
+//        this->runningProcessList.append(proc);
+//    }
+
+    // Read message form Process and display in RunningMsgWidget
+    connect(&proc, SIGNAL(outMessageReady(QString)), this, SLOT(on_outMessageReady(QString)));
+    connect(&proc, SIGNAL(errMessageReady(QString)), this, SLOT(on_errMessageReady(QString)));
+
+    proc.start(tool, param);
+    if (!proc.waitForStarted())
     {
         QMessageBox::information(nullptr, "Error", "Can't open " + tool);
         return false;
     }
-    while (!process.waitForFinished(-1))
-    {
-        qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
-        QThread::msleep(10);
-    }
-    process.close();
+    proc.waitForFinished(-1);
+//    while (!proc->waitForFinished(-1))
+//    {
+//        qApp->processEvents(QEventLoop::AllEvents, 200);
+//        QThread::msleep(10);
+//    }
+    proc.close();
+//    if (this->runningProcessList.indexOf(proc) != -1)
+//    {
+//        this->runningProcessList.removeOne(proc);
+//    }
 
     return true;
 }
@@ -2870,4 +2894,18 @@ bool MainWindow::checkoutExistence(QString filePath)
 {
     QFile file(filePath);
     return file.exists();
+}
+
+void MainWindow::on_outMessageReady(QString text)
+{
+    this->runningMsgWidget->setText(this->refreshMessage(this->runningMsgWidget->getText(), text));
+    this->runningMsgWidget->repaint();
+    qApp->processEvents();
+}
+
+void MainWindow::on_errMessageReady(QString text)
+{
+    this->runningMsgWidget->appendText(text);
+    this->runningMsgWidget->repaint();
+    qApp->processEvents();
 }

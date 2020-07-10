@@ -63,8 +63,6 @@ QString RunningMsgWidget::getText(void)
  */
 void RunningMsgWidget::closeEvent(QCloseEvent *event)
 {
-    qDebug() << "RunningMsgWidget::closeEvent";
-
     if (this->isVisible())
     {
         emit this->closeSignal();
