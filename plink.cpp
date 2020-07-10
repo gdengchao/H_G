@@ -408,8 +408,7 @@ void Plink::linkageFilter(QString genotype, QString map,
         this->paramlist.append(genoFileAbPath+"/"+genoFileBaseName);
     }
 
-    // plink --file hapmap1 --allow-extra-chr --indep-pairwise 100 5 0.5 --out hapmap_ldfl
-
+    // plink1.9 --file 222_filter1 --allow-extra-chr --indep-pairwise 100 5 0.5 --out ldfl
     this->paramlist.append("--allow-extra-chr");
     this->paramlist.append("--indep-pairwise");
     this->paramlist.append(winSize);
@@ -427,8 +426,6 @@ void Plink::extractBySnpNameFile(QString genotype, QString map, QString snpIDFil
     QString genoFileBaseName = genoFileInfo.baseName();     // geno
     QString genoFileSuffix = genoFileInfo.suffix();         //
     QString genoFileAbPath = genoFileInfo.absolutePath();
-
-    // plink --file hapmap1 --allow-extra-chr --extract hapmap_ldfl.prune.in --recode --out hapmap_ldfl
 
     this->paramlist.clear();            // Clear paramlist before set parameter.
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
@@ -466,6 +463,7 @@ void Plink::extractBySnpNameFile(QString genotype, QString map, QString snpIDFil
         this->paramlist.append(genoFileAbPath+"/"+genoFileBaseName);
     }
 
+    // plink1.9 --file 222_filter1 --allow-extra-chr --extract ldfl.prune.in --recode --out 222_filter1_ldfl
     this->paramlist.append("--allow-extra-chr");
     this->paramlist.append("--extract");
     this->paramlist.append(snpIDFile);

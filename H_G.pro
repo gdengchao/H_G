@@ -35,7 +35,6 @@ SOURCES += \
     qualityctrlwidget.cpp \
     runningmsgwidget.cpp \
     tool.cpp \
-    useros.cpp \
     workdirectory.cpp
 
 HEADERS += \
@@ -57,7 +56,6 @@ HEADERS += \
     qualityctrlwidget.h \
     runningmsgwidget.h \
     tool.h \
-    useros.h \
     workdirectory.h
 
 FORMS += \
