@@ -21,5 +21,9 @@ void Process::on_readProcessError()
 void Process::on_terminateProcess()
 {
 //    qDebug() << "Close Process";
+    if (this->isOpen())
+    {
+        this->close();
+    }
     this->terminate();
 }

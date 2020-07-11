@@ -34,6 +34,9 @@ private:
 
 signals :
     void closeSignal(void);
+
+protected slots:
+    void on_appendText(QString text);
 };
 
 #endif // RUNNINGMSGWIDGET_H

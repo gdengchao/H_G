@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
 //    connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
     connect(runningMsgWidget, SIGNAL(closeSignal()), this, SLOT(on_closeRunningWidget()));
+    connect(this, SIGNAL(runningMsgAppendText(QString)), this->runningMsgWidget, SLOT(on_appendText(QString)));
     // connect MToolButton->rightClick
     connect(ui->pheFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_pheFileToolButton_closeFileSig()));
     connect(ui->genoFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_genoFileToolButton_closeFileSig()));
@@ -1418,24 +1419,33 @@ void MainWindow::on_drawManPushButton_clicked()
             }
 
             this->runningMsgWidget->show();
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Make qqman input file, ");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Make qqman input file, ");
+//            qApp->processEvents();
 
+            emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+                                      "\nMake qqman input file, ");
+            QThread::msleep(10);
             // Transform gwas result file type to input file type of qqman.
             QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
             QStringList outList;
             if (qqmanFile.isEmpty())
             {   // makeQQManInputFile error.
-                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
-                qApp->processEvents();
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
+//                qApp->processEvents();
+                emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+                                          "\nMake qqman input file ERROR.");
+                QThread::msleep(10);
                 throw -1;
             }
 
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Make qqman input file OK. ");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Make qqman input file OK. ");
+//            qApp->processEvents();
+            emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+                                      "\nMake qqman input file OK.");
+            QThread::msleep(10);
 
             for (auto item:qqmanFile)
             {   // Multiple result, multiple output plot, append to list.
@@ -1443,24 +1453,39 @@ void MainWindow::on_drawManPushButton_clicked()
                                +"_"+item.split(".")[item.split(".").length()-1]+"_man.png");
             }
 
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Draw manhattan plot, ");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Draw manhattan plot, ");
+//            qApp->processEvents();
+            emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+                                      "\nDraw manhattan plot, ");
+            QThread::msleep(10);
             if (!this->drawManhattan(qqmanFile, outList))
             {   // drawManhattan error
-                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText("Draw manhattan plot ERROR. ");
-                qApp->processEvents();
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("Draw manhattan plot ERROR. ");
+//                qApp->processEvents();
+                emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+                                          "\nDraw manhattan plot ERROR.");
+                QThread::msleep(10);
                 throw -1;
             }
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Draw manhattan plot OK.");
-            this->runningMsgWidget->appendText("\nmanhattan plot: \n" + outList.join("\n"));
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Draw manhattan plot OK.");
+//            this->runningMsgWidget->appendText("\nmanhattan plot: \n" + outList.join("\n"));
+//            qApp->processEvents();
+            emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+                                      "\nDraw manhattan plot OK." +
+                                      "\nmanhattan plot: \n" +
+                                      outList.join("\n"));
+            QThread::msleep(10);
 
             QFile file;
             for (auto item:qqmanFile)
             {   // Remove intermediate file.
+                if (item == gwasResulFile)
+                {
+                    continue;
+                }
                 file.remove(item);
             }
         } catch (...) {
@@ -1533,6 +1558,10 @@ void MainWindow::on_drawQQPushButton_clicked()
         QFile file;
         for (auto item:qqmanFile)
         {   // Remove intermediate file.
+            if (item == gwasResulFile)
+            {
+                continue;
+            }
             file.remove(item);
         }
     } catch (int) {

@@ -50,6 +50,7 @@ public:
 
 signals:
     void terminateProcess();
+    void runningMsgAppendText(QString text);
 
 private slots:
     // for FileReader

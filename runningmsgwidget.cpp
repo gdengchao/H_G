@@ -69,3 +69,8 @@ void RunningMsgWidget::closeEvent(QCloseEvent *event)
     }
     event->ignore();
 }
+
+void RunningMsgWidget::on_appendText(QString text)
+{
+    this->appendText(text);
+}
