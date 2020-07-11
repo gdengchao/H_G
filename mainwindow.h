@@ -49,7 +49,7 @@ public:
     ~MainWindow();
 
 signals:
-    void closeProcess();
+    void terminateProcess();
 
 private slots:
     // for FileReader

@@ -477,7 +477,7 @@ void MainWindow::on_runGwasButton_clicked()
     });
     while (!fu.isFinished())
     {
-        qApp->processEvents(QEventLoop::AllEvents, 100);
+        qApp->processEvents(QEventLoop::AllEvents, 200);
     }
 
     this->runningFlag = false;
@@ -628,7 +628,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         QFuture<bool> fu =  QtConcurrent::run(QThreadPool::globalInstance(), &gemma, &Gemma::phe_fam_Preparation, phenotype, binaryFile+".fam");
         while (!fu.isFinished())
         {
-            qApp->processEvents(QEventLoop::AllEvents, 100);
+            qApp->processEvents(QEventLoop::AllEvents, 200);
         }
         if (!fu.result())
         {
@@ -1041,6 +1041,11 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
     ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
 
+
+    QFile file;
+    file.remove(out+"/"+name+"_"+pheFileBaseName+".nosex");
+    file.remove(out+"/"+name+"_"+pheFileBaseName+".log");
+
     return true;
 }
 
@@ -1102,7 +1107,7 @@ void MainWindow::on_closeRunningWidget()
 
         if (ret == QMessageBox::Yes)
         {
-            emit closeProcess();
+            emit terminateProcess();
             this->runningFlag = false;
             this->runningMsgWidget->clearText();
             this->runningMsgWidget->hide();
@@ -1396,13 +1401,13 @@ void MainWindow::on_drawManPushButton_clicked()
         return;
     }
 
-    runningFlag = true;
+    this->runningFlag = true;
     ui->drawManPushButton->setEnabled(false);
     qApp->processEvents();
 
-    try {
-        QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
-        {
+    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [=]()
+    {
+        try {
             QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
             if (gwasResulFile.isEmpty())
             {   // Gwas result file is necessary.
@@ -1418,10 +1423,8 @@ void MainWindow::on_drawManPushButton_clicked()
             qApp->processEvents();
 
             // Transform gwas result file type to input file type of qqman.
-            this->runningFlag = true;
             QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
             QStringList outList;
-            this->runningFlag = false;
             if (qqmanFile.isEmpty())
             {   // makeQQManInputFile error.
                 this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
@@ -1460,15 +1463,15 @@ void MainWindow::on_drawManPushButton_clicked()
             {   // Remove intermediate file.
                 file.remove(item);
             }
-        });
-        while (!fu.isFinished())
-        {
-            qApp->processEvents(QEventLoop::AllEvents, 100);
+        } catch (...) {
+            this->resetWindow();    // reset MainWindow
         }
-    } catch (...) {
-        this->resetWindow();    // reset MainWindow
+    });
+    while (!fu.isFinished())
+    {
+        qApp->processEvents(QEventLoop::AllEvents, 200);
     }
-    runningFlag = false;
+    this->runningFlag = false;
     this->resetWindow();
 }
 
@@ -1491,9 +1494,7 @@ void MainWindow::on_drawQQPushButton_clicked()
         this->runningMsgWidget->appendText("Make qqman input file, ");
         qApp->processEvents();
         // Transform gwasResultFile to input file type of qqman.
-        this->runningFlag = true;
         QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
-        this->runningFlag = false;
         QStringList outList;
 
         if (qqmanFile.isEmpty())
@@ -2240,7 +2241,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     qDebug() << "MainWindow::closeEvent";
     this->resetWindow();
-    this->runningFlag = false;
     if (this->runningMsgWidget->isVisible())
     {
         this->runningMsgWidget->close();
@@ -2859,16 +2859,13 @@ void MainWindow::on_qualCtrlDetailPushButton_clicked()
 bool MainWindow::runExTool(QString tool, QStringList param)
 {
     Process *proc = new Process;
-//    if (this->runningProcessList.indexOf(proc) == -1)
-//    {
-//        this->runningProcessList.append(proc);
-//    }
 
     // Read message form Process and display in RunningMsgWidget
     connect(proc, SIGNAL(outMessageReady(QString)), this, SLOT(on_outMessageReady(QString)));
     connect(proc, SIGNAL(errMessageReady(QString)), this, SLOT(on_errMessageReady(QString)));
-    connect(this, SIGNAL(closeProcess()), proc, SLOT(on_closeProcess()), Qt::DirectConnection);
+    connect(this, SIGNAL(terminateProcess()), proc, SLOT(on_terminateProcess()), Qt::DirectConnection);
 
+//     proc->execute(tool, param);
     proc->start(tool, param);
     if (!proc->waitForStarted())
     {
@@ -2876,18 +2873,10 @@ bool MainWindow::runExTool(QString tool, QStringList param)
         return false;
     }
     proc->waitForFinished(-1);
-//    while (!proc.waitForFinished(-1))
-//    {
-//        qApp->processEvents(QEventLoop::AllEvents, 200);
-//        QThread::msleep(10);
-//    }
+
     proc->close();
     delete proc;
     proc = nullptr;
-//    if (this->runningProcessList.indexOf(proc) != -1)
-//    {
-//        this->runningProcessList.removeOne(proc);
-//    }
 
     return true;
 }
@@ -2898,14 +2887,14 @@ bool MainWindow::checkoutExistence(QString filePath)
     return file.exists();
 }
 
-void MainWindow::on_outMessageReady(QString text)
+void MainWindow::on_outMessageReady(const QString text)
 {
     this->runningMsgWidget->setText(this->refreshMessage(this->runningMsgWidget->getText(), text));
     this->runningMsgWidget->repaint();
     qApp->processEvents();
 }
 
-void MainWindow::on_errMessageReady(QString text)
+void MainWindow::on_errMessageReady(const QString text)
 {
     this->runningMsgWidget->appendText(text);
     this->runningMsgWidget->repaint();

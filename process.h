@@ -14,11 +14,11 @@ public:
 public slots:
     void on_readProcessOutput();
     void on_readProcessError();
-    void on_closeProcess();
+    void on_terminateProcess();
 
 signals:
-    void outMessageReady(QString);
-    void errMessageReady(QString);
+    void outMessageReady(const QString);
+    void errMessageReady(const QString);
 };
 
 #endif // PROCESS_H

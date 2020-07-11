@@ -18,8 +18,8 @@ void Process::on_readProcessError()
     emit errMessageReady(message);
 }
 
-void Process::on_closeProcess()
+void Process::on_terminateProcess()
 {
-    qDebug() << "Close Process";
+//    qDebug() << "Close Process";
     this->terminate();
 }
