@@ -53,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
 //    connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
     connect(runningMsgWidget, SIGNAL(closeSignal()), this, SLOT(on_closeRunningWidget()));
-    connect(this, SIGNAL(runningMsgAppendText(QString)), this->runningMsgWidget, SLOT(on_appendText(QString)));
+    connect(this, SIGNAL(runningMsgWidgetAppendText(QString)), this->runningMsgWidget, SLOT(on_appendText(QString)));
     // connect MToolButton->rightClick
     connect(ui->pheFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_pheFileToolButton_closeFileSig()));
     connect(ui->genoFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_genoFileToolButton_closeFileSig()));
@@ -1102,8 +1102,8 @@ void MainWindow::on_closeRunningWidget()
 //        QMessageBox::information(this, "INFO","A project is working",
 //            QMessageBox::Ok, QMessageBox::Ok);
         // Juage there are any tools running now.
-        QMessageBox::StandardButton ret = QMessageBox::information(this, "Notice",
-           "The association will be terminated if close the widget!   ",
+        QMessageBox::StandardButton ret = QMessageBox::information(this, "WARNING",
+           "The project may be terminated if close the widget!   ",
             QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
 
         if (ret == QMessageBox::Yes)
@@ -1423,7 +1423,7 @@ void MainWindow::on_drawManPushButton_clicked()
 //            this->runningMsgWidget->appendText("Make qqman input file, ");
 //            qApp->processEvents();
 
-            emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                       "\nMake qqman input file, ");
             QThread::msleep(10);
             // Transform gwas result file type to input file type of qqman.
@@ -1434,7 +1434,7 @@ void MainWindow::on_drawManPushButton_clicked()
 //                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
 //                this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
 //                qApp->processEvents();
-                emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                           "\nMake qqman input file ERROR.");
                 QThread::msleep(10);
                 throw -1;
@@ -1443,7 +1443,7 @@ void MainWindow::on_drawManPushButton_clicked()
 //            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
 //            this->runningMsgWidget->appendText("Make qqman input file OK. ");
 //            qApp->processEvents();
-            emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                       "\nMake qqman input file OK.");
             QThread::msleep(10);
 
@@ -1456,7 +1456,7 @@ void MainWindow::on_drawManPushButton_clicked()
 //            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
 //            this->runningMsgWidget->appendText("Draw manhattan plot, ");
 //            qApp->processEvents();
-            emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                       "\nDraw manhattan plot, ");
             QThread::msleep(10);
             if (!this->drawManhattan(qqmanFile, outList))
@@ -1464,7 +1464,7 @@ void MainWindow::on_drawManPushButton_clicked()
 //                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
 //                this->runningMsgWidget->appendText("Draw manhattan plot ERROR. ");
 //                qApp->processEvents();
-                emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                           "\nDraw manhattan plot ERROR.");
                 QThread::msleep(10);
                 throw -1;
@@ -1473,7 +1473,7 @@ void MainWindow::on_drawManPushButton_clicked()
 //            this->runningMsgWidget->appendText("Draw manhattan plot OK.");
 //            this->runningMsgWidget->appendText("\nmanhattan plot: \n" + outList.join("\n"));
 //            qApp->processEvents();
-            emit runningMsgAppendText(QDateTime::currentDateTime().toString() +
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                       "\nDraw manhattan plot OK." +
                                       "\nmanhattan plot: \n" +
                                       outList.join("\n"));
@@ -1504,70 +1504,98 @@ void MainWindow::on_drawQQPushButton_clicked()
 {
     ui->drawQQPushButton->setEnabled(false);
     qApp->processEvents();
-    try {
-        QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
-        if (gwasResulFile.isEmpty())
-        {   // Gwas result file is necessary.
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("A GWAS result file is necessary.");
-            qApp->processEvents();
-            throw -1;
-        }
-
-        this->runningMsgWidget->show();
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Make qqman input file, ");
-        qApp->processEvents();
-        // Transform gwasResultFile to input file type of qqman.
-        QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
-        QStringList outList;
-
-        if (qqmanFile.isEmpty())
-        {
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
-            qApp->processEvents();
-            throw -1;
-        }
-
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Make qqman input file OK. ");
-        qApp->processEvents();
-
-        for (auto item:qqmanFile)
-        {   // Multiple result, multiple output plot.
-            outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
-                           +"_"+item.split(".")[item.split(".").length()-1]+"_qq.png");
-        }
-
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Draw QQ plot, ");
-        qApp->processEvents();
-        if (!this->drawQQplot(qqmanFile, outList))
-        {
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Draw QQ plot ERROR. ");
-            qApp->processEvents();
-            throw -1;
-        }
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Draw QQ OK. ");
-        this->runningMsgWidget->appendText("\nQQ plot: \n" + outList.join("\n"));
-        qApp->processEvents();
-
-        QFile file;
-        for (auto item:qqmanFile)
-        {   // Remove intermediate file.
-            if (item == gwasResulFile)
-            {
-                continue;
+    this->runningFlag = true;
+    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [=]()
+    {
+        try {
+            QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
+            if (gwasResulFile.isEmpty())
+            {   // Gwas result file is necessary.
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("A GWAS result file is necessary.");
+//                qApp->processEvents();
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                          "\nA GWAS result file is necessary.");
+                QThread::msleep(10);
+                throw -1;
             }
-            file.remove(item);
+
+            this->runningMsgWidget->show();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Make qqman input file, ");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nMake qqman input file, ");
+            // Transform gwasResultFile to input file type of qqman.
+            QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
+            QStringList outList;
+
+            if (qqmanFile.isEmpty())
+            {
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
+//                qApp->processEvents();
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                                "\nMake qqman input file ERROR. ");
+                QThread::msleep(10);
+                throw -1;
+            }
+
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Make qqman input file OK. ");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nMake qqman input file OK. ");
+
+            for (auto item:qqmanFile)
+            {   // Multiple result, multiple output plot.
+                outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
+                               +"_"+item.split(".")[item.split(".").length()-1]+"_qq.png");
+            }
+
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Draw QQ plot, ");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nDraw QQ plot, ");
+            QThread::msleep(10);
+            if (!this->drawQQplot(qqmanFile, outList))
+            {
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("Draw QQ plot ERROR. ");
+//                qApp->processEvents();
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                                "\nDraw QQ plot ERROR. ");
+                QThread::msleep(10);
+                throw -1;
+            }
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Draw QQ OK. ");
+//            this->runningMsgWidget->appendText("\nQQ plot: \n" + outList.join("\n"));
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nDraw QQ plot OK. " +
+                                            "\nQQ plot: \n" + outList.join("\n"));
+            QThread::msleep(10);
+            QFile file;
+            for (auto item:qqmanFile)
+            {   // Remove intermediate file.
+                if (item == gwasResulFile)
+                {
+                    continue;
+                }
+                file.remove(item);
+            }
+        } catch (int) {
+           this->resetWindow();
         }
-    } catch (int) {
-       this->resetWindow();
+    });
+    while (!fu.isFinished())
+    {
+        qApp->processEvents(QEventLoop::AllEvents, 200);
     }
 
+    this->runningFlag = false;
     this->resetWindow();
 }
 
@@ -1593,7 +1621,7 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
 
     QStringList param;
 
-    for (int i = 0; i < data.size(); i++)
+    for (int i = 0; i < data.size() && runningFlag; i++)
     {
         param.clear();
         param.append(this->scriptpath+"qqman/plot.R");
@@ -1610,8 +1638,13 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
         }
     }
     // Show plot
-    this->graphViewer->setGraph(out);
-    this->graphViewer->show();
+
+    if (this->runningFlag)
+    {
+        this->graphViewer->setGraph(out);
+        this->graphViewer->show();
+    }
+
     return true;
 }
 
@@ -1646,8 +1679,11 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
 
     }
     // Show plot
-    this->graphViewer->setGraph(out);
-    this->graphViewer->show();
+    if (this->runningFlag)
+    {
+        this->graphViewer->setGraph(out);
+        this->graphViewer->show();
+    }
     return true;
 }
 

@@ -50,7 +50,7 @@ public:
 
 signals:
     void terminateProcess();
-    void runningMsgAppendText(QString text);
+    void runningMsgWidgetAppendText(QString text);
 
 private slots:
     // for FileReader
@@ -125,7 +125,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    volatile bool runningFlag = false;   // There are working but not in Process now.
+    volatile bool runningFlag = false;   // A flag t judge there running project.
 //    QThread workThread;
     void closeEvent(QCloseEvent *event) override;
 //    bool eventFilter(QObject *obj, QEvent *ev) override;
