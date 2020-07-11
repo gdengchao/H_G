@@ -1,6 +1,6 @@
 #include "process.h"
 
-Process::Process(QIODevice *parent) : QProcess(parent)
+Process::Process(QObject *parent) : QProcess(parent)
 {
     connect(this, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readProcessOutput()));
     connect(this, SIGNAL(readyReadStandardError()), this, SLOT(on_readProcessError()));
@@ -16,4 +16,10 @@ void Process::on_readProcessError()
 {
     QString message = QString::fromLocal8Bit(this->readAllStandardError().data());
     emit errMessageReady(message);
+}
+
+void Process::on_closeProcess()
+{
+    qDebug() << "Close Process";
+    this->terminate();
 }

@@ -402,7 +402,7 @@ void MainWindow::on_runGwasButton_clicked()
     QString pheFileAbPath = pheFileInfo.absolutePath();
     QString pheFileSuffix = pheFileInfo.suffix();
 
-    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
+    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [=]()
     {
         if (pheFileSuffix == "phe")
         {   // Only one phenotype data.
@@ -1102,11 +1102,10 @@ void MainWindow::on_closeRunningWidget()
 
         if (ret == QMessageBox::Yes)
         {
+            emit closeProcess();
+            this->runningFlag = false;
             this->runningMsgWidget->clearText();
             this->runningMsgWidget->hide();
-            //QThreadPool::globalInstance()->waitForDone(100);
-            QThreadPool::globalInstance()->clear();
-            this->runningFlag = false;
             this->resetWindow();
         }
         return;
@@ -2859,29 +2858,32 @@ void MainWindow::on_qualCtrlDetailPushButton_clicked()
 
 bool MainWindow::runExTool(QString tool, QStringList param)
 {
-    Process proc;
+    Process *proc = new Process;
 //    if (this->runningProcessList.indexOf(proc) == -1)
 //    {
 //        this->runningProcessList.append(proc);
 //    }
 
     // Read message form Process and display in RunningMsgWidget
-    connect(&proc, SIGNAL(outMessageReady(QString)), this, SLOT(on_outMessageReady(QString)));
-    connect(&proc, SIGNAL(errMessageReady(QString)), this, SLOT(on_errMessageReady(QString)));
+    connect(proc, SIGNAL(outMessageReady(QString)), this, SLOT(on_outMessageReady(QString)));
+    connect(proc, SIGNAL(errMessageReady(QString)), this, SLOT(on_errMessageReady(QString)));
+    connect(this, SIGNAL(closeProcess()), proc, SLOT(on_closeProcess()), Qt::DirectConnection);
 
-    proc.start(tool, param);
-    if (!proc.waitForStarted())
+    proc->start(tool, param);
+    if (!proc->waitForStarted())
     {
         QMessageBox::information(nullptr, "Error", "Can't open " + tool);
         return false;
     }
-    proc.waitForFinished(-1);
-//    while (!proc->waitForFinished(-1))
+    proc->waitForFinished(-1);
+//    while (!proc.waitForFinished(-1))
 //    {
 //        qApp->processEvents(QEventLoop::AllEvents, 200);
 //        QThread::msleep(10);
 //    }
-    proc.close();
+    proc->close();
+    delete proc;
+    proc = nullptr;
 //    if (this->runningProcessList.indexOf(proc) != -1)
 //    {
 //        this->runningProcessList.removeOne(proc);

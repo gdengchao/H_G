@@ -48,6 +48,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+signals:
+    void closeProcess();
+
 private slots:
     // for FileReader
     void on_pheFileToolButton_clicked();
@@ -121,7 +124,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    bool runningFlag = false;   // There are working but not in Process now.
+    volatile bool runningFlag = false;   // There are working but not in Process now.
 //    QThread workThread;
     void closeEvent(QCloseEvent *event) override;
 //    bool eventFilter(QObject *obj, QEvent *ev) override;
