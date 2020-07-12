@@ -20,6 +20,5 @@ void Process::on_readProcessError()
 
 void Process::on_terminateProcess()
 {
-    this->terminate();
-    this->waitForFinished();
+    this->kill();
 }

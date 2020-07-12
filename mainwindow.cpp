@@ -403,7 +403,7 @@ void MainWindow::on_runGwasButton_clicked()
     QString pheFileAbPath = pheFileInfo.absolutePath();
     QString pheFileSuffix = pheFileInfo.suffix();
 
-    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [=]()
+    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
     {
         if (pheFileSuffix == "phe")
         {   // Only one phenotype data.
@@ -481,8 +481,8 @@ void MainWindow::on_runGwasButton_clicked()
         qApp->processEvents(QEventLoop::AllEvents, 200);
     }
 
-    this->runningFlag = false;
     this->resetWindow();
+    this->runningFlag = false;
 }
 
 /**
@@ -626,16 +626,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     {
         // Replace "NA" to "-9", then complete .fam
         // .fam: FID IID PID MID Sex 1 Phe  (phenotype data to the 7th column of .fam)
-        QFuture<bool> fu =  QtConcurrent::run(QThreadPool::globalInstance(), &gemma, &Gemma::phe_fam_Preparation, phenotype, binaryFile+".fam");
-        while (!fu.isFinished())
-        {
-            qApp->processEvents(QEventLoop::AllEvents, 200);
-        }
-        if (!fu.result())
-        {
-            this->resetWindow();
-            return false;
-        }
+        gemma.phe_fam_Preparation(phenotype, binaryFile+".fam");
     }
 
     if (kinship.isNull() && this->gemmaParamWidget->isMakeRelatedMatAuto())
@@ -1406,7 +1397,7 @@ void MainWindow::on_drawManPushButton_clicked()
     ui->drawManPushButton->setEnabled(false);
     qApp->processEvents();
 
-    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [=]()
+    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
     {
         try {
             QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
@@ -1502,10 +1493,14 @@ void MainWindow::on_drawManPushButton_clicked()
 
 void MainWindow::on_drawQQPushButton_clicked()
 {
+    if (this->runningFlag)
+    {
+        return;
+    }
+    this->runningFlag = true;
     ui->drawQQPushButton->setEnabled(false);
     qApp->processEvents();
-    this->runningFlag = true;
-    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [=]()
+    QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
     {
         try {
             QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
@@ -1526,6 +1521,7 @@ void MainWindow::on_drawQQPushButton_clicked()
 //            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nMake qqman input file, ");
+            QThread::msleep(10);
             // Transform gwasResultFile to input file type of qqman.
             QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
             QStringList outList;
@@ -1546,7 +1542,7 @@ void MainWindow::on_drawQQPushButton_clicked()
 //            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nMake qqman input file OK. ");
-
+            QThread::msleep(10);
             for (auto item:qqmanFile)
             {   // Multiple result, multiple output plot.
                 outList.append(this->workDirectory->getOutputDirectory()+"/"+this->workDirectory->getProjectName()
@@ -1832,6 +1828,11 @@ QStringList MainWindow::makeQQManInputFile(QString pvalueFile)
 
 void MainWindow::on_pcaRunPushButton_clicked()
 {
+    if (this->runningFlag)
+    {
+        return;
+    }
+    this->runningFlag = true;
     if (this->fileReader->getGenotypeFile().isNull() || this->fileReader->getGenotypeFile().isEmpty())
     {
         QMessageBox::information(nullptr, "Error", "A genotype file is necessary!   ");
@@ -1844,112 +1845,126 @@ void MainWindow::on_pcaRunPushButton_clicked()
     this->runningMsgWidget->show();
 
     try {
-        QString genotype = this->fileReader->getGenotypeFile();
-        QFileInfo genoFileInfo(genotype);
-        QString genoFileAbPath = genoFileInfo.absolutePath();
-        QString genoFileBaseName = genoFileInfo.baseName();
-        QString map = this->fileReader->getMapFile();
-        QString out = this->workDirectory->getOutputDirectory();
-        QString name = this->workDirectory->getProjectName();
-        //  binaryFile: Set a default path. Binary geno file with paht without suffix.
-        QString binaryFile = genoFileAbPath+"/"+genoFileBaseName+"_tmp";
-
-        bool transformFileFlag = false;
-
-        // Need binary files.  Every temp file and a "_tmp" after baseName, and will be deleted after gwas.
-        Plink plink;
-        if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
+        QFuture<void> fu = QtConcurrent::run([&]()
         {
-            if(!plink.vcf2binary(genotype, binaryFile, nullptr, nullptr, nullptr))
+            QString genotype = this->fileReader->getGenotypeFile();
+            QFileInfo genoFileInfo(genotype);
+            QString genoFileAbPath = genoFileInfo.absolutePath();
+            QString genoFileBaseName = genoFileInfo.baseName();
+            QString map = this->fileReader->getMapFile();
+            QString out = this->workDirectory->getOutputDirectory();
+            QString name = this->workDirectory->getProjectName();
+            //  binaryFile: Set a default path. Binary geno file with paht without suffix.
+            QString binaryFile = genoFileAbPath+"/"+genoFileBaseName+"_tmp";
+
+            bool transformFileFlag = false;
+
+            // Need binary files.  Every temp file and a "_tmp" after baseName, and will be deleted after gwas.
+            Plink plink;
+            if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
             {
-                throw -1;
+                if(!plink.vcf2binary(genotype, binaryFile, nullptr, nullptr, nullptr))
+                {
+                    throw -1;
+                }
+
+                transformFileFlag = true;
+            }
+            if (genotype.split(".")[genotype.split(".").length()-1] == "ped")  // Transform "plink" to "binary"
+            {
+                if (map.isNull())
+                {
+                    map = genoFileAbPath+"/"+genoFileBaseName+".map";
+                }
+                if (!plink.plink2binary(genotype, map, binaryFile, nullptr, nullptr, nullptr))
+                {
+                    throw -1;
+                }
+
+                transformFileFlag = true;
             }
 
-            transformFileFlag = true;
-        }
-        if (genotype.split(".")[genotype.split(".").length()-1] == "ped")  // Transform "plink" to "binary"
+            if (genotype.split(".")[genotype.split(".").length()-1] == "tped")  // Transform "transpose" to "binary"
+            {
+                if (map.isNull())
+                {
+                    map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
+                }
+                if (!plink.transpose2binary(genotype, map, binaryFile, nullptr, nullptr, nullptr))
+                {
+                    throw -1;
+                }
+                transformFileFlag = true;
+            }
+
+            if (transformFileFlag)
+            {   // Run plink to transform file or filter data.
+                if (!runExTool(this->toolpath+"plink", plink.getParamList()))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                binaryFile = genoFileAbPath + "/" + genoFileBaseName;
+            }
+
+            // Mkae GRM
+            Gcta gcta;
+            if (gcta.makeGRM(binaryFile, binaryFile))
+            {
+                if (!runExTool(this->toolpath+"gcta64", gcta.getParamList()))
+                {
+                    return;
+                }
+            }
+
+            // Run PCA
+            if (gcta.runPCA(binaryFile, ui->nPCsLineEdit->text().toInt(),
+                            ui->nThreadsLineEdit->text().toInt(), out+"/"+genoFileBaseName))
+            {
+                if (!runExTool(this->toolpath+"gcta64", gcta.getParamList()))
+                {
+                    return;
+                }
+            }
+
+            QFile file;
+            if (transformFileFlag)
+            {
+                file.remove(binaryFile+".bed");
+                file.remove(binaryFile+".bim");
+                file.remove(binaryFile+".fam");
+                file.remove(binaryFile+".nosex");
+            }
+            file.remove(binaryFile+".grm.bin");
+            file.remove(binaryFile+".grm.id");
+            file.remove(binaryFile+".grm.N.bin");
+
+            ui->eigenvalueLineEdit->setText(out+"/"+genoFileBaseName+".eigenval");
+            ui->eigenvectorLineEdit->setText(out+"/"+genoFileBaseName+".eigenvec");
+        });
+        while (!fu.isFinished())
         {
-            if (map.isNull())
-            {
-                map = genoFileAbPath+"/"+genoFileBaseName+".map";
-            }
-            if (!plink.plink2binary(genotype, map, binaryFile, nullptr, nullptr, nullptr))
-            {
-                throw -1;
-            }
-
-            transformFileFlag = true;
+            qApp->processEvents(QEventLoop::AllEvents, 200);
         }
-
-        if (genotype.split(".")[genotype.split(".").length()-1] == "tped")  // Transform "transpose" to "binary"
-        {
-            if (map.isNull())
-            {
-                map = genoFileAbPath+"/"+genoFileBaseName+".tfam";
-            }
-            if (!plink.transpose2binary(genotype, map, binaryFile, nullptr, nullptr, nullptr))
-            {
-                throw -1;
-            }
-            transformFileFlag = true;
-        }
-
-        if (transformFileFlag)
-        {   // Run plink to transform file or filter data.
-            if (!runExTool(this->toolpath+"plink", plink.getParamList()))
-            {
-                return;
-            }
-        }
-        else
-        {
-            binaryFile = genoFileAbPath + "/" + genoFileBaseName;
-        }
-
-        // Mkae GRM
-        Gcta gcta;
-        if (gcta.makeGRM(binaryFile, binaryFile))
-        {
-            if (!runExTool(this->toolpath+"gcta64", gcta.getParamList()))
-            {
-                return;
-            }
-        }
-
-        // Run PCA
-        if (gcta.runPCA(binaryFile, ui->nPCsLineEdit->text().toInt(),
-                        ui->nThreadsLineEdit->text().toInt(), out+"/"+genoFileBaseName))
-        {
-            if (!runExTool(this->toolpath+"gcta64", gcta.getParamList()))
-            {
-                return;
-            }
-        }
-
-        QFile file;
-        if (transformFileFlag)
-        {
-            file.remove(binaryFile+".bed");
-            file.remove(binaryFile+".bim");
-            file.remove(binaryFile+".fam");
-            file.remove(binaryFile+".nosex");
-        }
-        file.remove(binaryFile+".grm.bin");
-        file.remove(binaryFile+".grm.id");
-        file.remove(binaryFile+".grm.N.bin");
-
-        ui->eigenvalueLineEdit->setText(out+"/"+genoFileBaseName+".eigenval");
-        ui->eigenvectorLineEdit->setText(out+"/"+genoFileBaseName+".eigenvec");
 
     } catch (...) {
         this->resetWindow();
     }
 
     this->resetWindow();
+    this->runningFlag = false;
 }
 
 void MainWindow::on_ldRunPushButton_clicked()
 {
+    if (this->runningFlag)
+    {
+        return;
+    }
+    this->runningFlag = true;
+
     if (this->fileReader->getGenotypeFile().isNull() || this->fileReader->getGenotypeFile().isEmpty())
     {
         QMessageBox::information(nullptr, "Error", "A genotype file is necessary!   ");
@@ -1959,15 +1974,24 @@ void MainWindow::on_ldRunPushButton_clicked()
     ui->ldRunPushButton->setEnabled(false);
     qApp->processEvents();
 
-    if (ui->yesLDByFamRadioButton->isChecked())
+    QFuture<void> fu = QtConcurrent::run([&]()
     {
-        this->runPopLDdecaybyFamily();
-    }
-    else
+        if (ui->yesLDByFamRadioButton->isChecked())
+        {
+            this->runPopLDdecaybyFamily();
+        }
+        else
+        {
+            this->runPopLDdecaySingle();
+        }
+    });
+    while (!fu.isFinished())
     {
-        this->runPopLDdecaySingle();
+        qApp->processEvents(QEventLoop::AllEvents, 200);
     }
+
     this->resetWindow();
+    this->runningFlag = false;
 }
 
 void MainWindow::runPopLDdecaybyFamily(void)
@@ -1989,10 +2013,12 @@ void MainWindow::runPopLDdecaybyFamily(void)
         if (isVcfFile(genotype)){} // Transform "vcf" to "transpose"
 
         // Make .keep file.
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Make .keep file, \n");
-        qApp->processEvents();
-
+//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//        this->runningMsgWidget->appendText("Make .keep file, \n");
+//        qApp->processEvents();
+        emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                        "\nMake .keep file, \n");
+        QThread::msleep(10);
         if (genoFileSuffix == "ped")
         {
             keepFileList = popLDdecay.makeKeepFile(genotype);
@@ -2008,10 +2034,12 @@ void MainWindow::runPopLDdecaybyFamily(void)
             keepFileList = popLDdecay.makeKeepFile(map);
         }
 
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText(".keep file OK.\n");
-        qApp->processEvents();
-
+//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//        this->runningMsgWidget->appendText(".keep file OK.\n");
+//        qApp->processEvents();
+        emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                        "\n.keep file OK.\n");
+        QThread::msleep(10);
         bool isLD_OK = true;
         for (QString keepFile:keepFileList)
         {
@@ -2019,10 +2047,12 @@ void MainWindow::runPopLDdecaybyFamily(void)
             QString keepFileBaseName = keepFileInfo.baseName();
             QString keepFileAbPath = keepFileInfo.absolutePath();
 
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Make "+keepFileBaseName+".ped"+" and "+keepFileBaseName+".map, \n");
-            qApp->processEvents();
-
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Make "+keepFileBaseName+".ped"+" and "+keepFileBaseName+".map, \n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                    "\nMake "+keepFileBaseName+".ped"+" and "+keepFileBaseName+".map, \n");
+            QThread::msleep(10);
             // Split ped and map file.
             if (genoFileSuffix == "ped")
             {
@@ -2046,16 +2076,21 @@ void MainWindow::runPopLDdecaybyFamily(void)
             {
                 throw -1;
             }
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText(keepFileBaseName+".ped and "+keepFileBaseName+".map OK.\n");
-            qApp->processEvents();
-
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText(keepFileBaseName+".ped and "+keepFileBaseName+".map OK.\n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                "\nkeepFileBaseName" + ".ped and " + keepFileBaseName + ".map OK.\n");
+            QThread::msleep(10);
             QFile file;
 //            file.remove(keepFile);
 
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype.\n");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype.\n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nMake "+keepFileBaseName+".genotype.\n");
+            QThread::msleep(10);
             // Make .genotype file.
             if (popLDdecay.makeGenotype(genoFileAbPath+"/"+keepFileBaseName+".ped",
                                     genoFileAbPath+"/"+keepFileBaseName+".map",
@@ -2067,15 +2102,21 @@ void MainWindow::runPopLDdecaybyFamily(void)
                     throw -1;
                 }
 
-                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText(keepFileBaseName+".genotype OK.\n");
-                qApp->processEvents();
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText(keepFileBaseName+".genotype OK.\n");
+//                qApp->processEvents();
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                                + "\n" + keepFileBaseName+".genotype OK.\n");
+                QThread::msleep(10);
             }
             else
             {
-                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype ERROR.\n");
-                qApp->processEvents();
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype ERROR.\n");
+//                qApp->processEvents();
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nMake "+keepFileBaseName+".genotype ERROR.\n");
+                QThread::msleep(10);
                 isLD_OK = false;
                 throw -1;
             }
@@ -2090,24 +2131,35 @@ void MainWindow::runPopLDdecaybyFamily(void)
             if (popLDdecay.runLD(genoFileAbPath+"/"+keepFileBaseName+".genotype",
                                  out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]))
             {
-                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText("Run LD,\n");
-                qApp->processEvents();
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("Run LD,\n");
+//                qApp->processEvents();
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                                "\nRun LD,\n");
+                QThread::msleep(10);
                 if (!this->runExTool(this->toolpath+"PopLDdecay", popLDdecay.getParamList()))
                 {
                     throw -1;
                 }
 
                 ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
-                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText("LD OK. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
-                qApp->processEvents();
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("LD OK. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
+//                qApp->processEvents();
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                    "LD OK. (FID: " +
+                    keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
+                QThread::msleep(10);
             }
             else
             {
-                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText("LD ERROR. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
-                qApp->processEvents();
+//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//                this->runningMsgWidget->appendText("LD ERROR. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
+//                qApp->processEvents();
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                    "LD ERROR. (FID: " +
+                    keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
+                QThread::msleep(10);
                 isLD_OK = false;
                 throw -1;
             }
@@ -2116,9 +2168,12 @@ void MainWindow::runPopLDdecaybyFamily(void)
 
         if (isLD_OK)
         {
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("LD by family done. \n");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("LD by family done. \n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                "\nLD by family done. \n");
+            QThread::msleep(10);
         }
     } catch (...) {
         ;
@@ -2200,15 +2255,21 @@ void MainWindow::runPopLDdecaySingle(void)
                 return;
             }
 
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText(plinkFile + ".genotype OK.\n");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText(plinkFile + ".genotype OK.\n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            + "\n" + plinkFile + ".genotype OK.\n");
+            QThread::msleep(10);
         }
         else
         {
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText(plinkFile + ".genotype ERROR.\n");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText(plinkFile + ".genotype ERROR.\n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            + "\n" + plinkFile + ".genotype ERROR.\n");
+            QThread::msleep(10);
             throw -1;
         }
 
@@ -2218,9 +2279,12 @@ void MainWindow::runPopLDdecaySingle(void)
         file.remove(plinkFile+".nosex");
         file.remove(plinkFile+".log");
 
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Run LD, \n");
-        qApp->processEvents();
+//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//        this->runningMsgWidget->appendText("Run LD, \n");
+//        qApp->processEvents();
+        emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                        + "\nRun LD");
+        QThread::msleep(10);
         if (popLDdecay.runLD(plinkFile+".genotype", out+"/"+name))
         {
             if (!runExTool(this->toolpath+"PopLDdecay",
@@ -2229,15 +2293,21 @@ void MainWindow::runPopLDdecaySingle(void)
                 return;
             };
             ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("LD OK.\n"+out+"/"+name+".stat.gz" + "\n");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("LD OK.\n"+out+"/"+name+".stat.gz" + "\n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            + "\nLD OK.\n");
+            QThread::msleep(10);
         }
         else
         {
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("LD ERROR.\n");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("LD ERROR.\n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            + "\nLD ERROR.\n");
+            QThread::msleep(10);
             throw -1;
         }
         file.remove(plinkFile+".genotype");
@@ -2248,7 +2318,11 @@ void MainWindow::runPopLDdecaySingle(void)
 
 void MainWindow::on_ldPlotPushButton_clicked()
 {
-
+    if (this->runningFlag)
+    {
+        return;
+    }
+    this->runningFlag = true;
     QString ldResultFile = ui->ldResultLineEdit->text();
     if (ldResultFile.isNull() || ldResultFile.isEmpty())
     {
@@ -2257,25 +2331,36 @@ void MainWindow::on_ldPlotPushButton_clicked()
     try {
         ui->ldPlotPushButton->setEnabled(false);
         qApp->processEvents();
-        QString out = this->workDirectory->getOutputDirectory();
-        QString name = this->workDirectory->getProjectName();
-        PopLDdecay popLDdecay;
-        if (popLDdecay.plotLD(ldResultFile, out+"/"+name+"_ld"))
+        QFuture<void> fu = QtConcurrent::run([&]()
         {
-            if (!runExTool(this->scriptpath+"poplddecay/Plot_OnePop",
-                           popLDdecay.getParamList()))
+            QString out = this->workDirectory->getOutputDirectory();
+            QString name = this->workDirectory->getProjectName();
+            PopLDdecay popLDdecay;
+            if (popLDdecay.plotLD(ldResultFile, out+"/"+name+"_ld"))
             {
-                return;
-            };
-            QStringList graphList(out+"/"+name+"_ld.png");
-            this->graphViewer->setGraph(graphList);
-            this->graphViewer->show();
+                if (!runExTool(this->scriptpath+"poplddecay/Plot_OnePop",
+                               popLDdecay.getParamList()))
+                {
+                    return;
+                };
+                QStringList graphList(out+"/"+name+"_ld.png");
+                if (this->runningFlag)
+                {
+                    this->graphViewer->setGraph(graphList);
+                    this->graphViewer->show();
+                }
+            }
+        });
+        while (!fu.isFinished())
+        {
+            qApp->processEvents(QEventLoop::AllEvents, 200);
         }
     } catch (...) {
         this->resetWindow();
     }
 
     this->resetWindow();
+    this->runningFlag = false;
 }
 
 void MainWindow::on_ldReultBrowButton_clicked()
@@ -2357,6 +2442,7 @@ void MainWindow::on_gffFileBrowButton_clicked()
 
 void MainWindow::on_strucAnnoRunPushButton_clicked()
 {
+    this->runningFlag = true;
     QString gffFile = ui->gffFileLineEdit->text();
     QString fastaFile = ui->fastaFileLineEdit->text();
     if (gffFile.isNull() || gffFile.isEmpty() || fastaFile.isNull() || fastaFile.isEmpty())
@@ -2366,113 +2452,122 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
 
     try
     {
-        this->runningMsgWidget->show();
-        ui->strucAnnoRunPushButton->setEnabled(false);
-        qApp->processEvents();
 
-        QFileInfo gffFileInfo(gffFile);
-        QString gffFileBaseName = gffFileInfo.baseName();
-        QString gffFileCompBaseName = gffFileInfo.completeBaseName();
-        QString gffFileSuffix = gffFileInfo.suffix();
-        QString gffFileAbPath = gffFileInfo.absolutePath();
-
-        QString gtfFile =gffFileAbPath+"/"+gffFileCompBaseName+".gtf";
-
-        // gffTogtf
-        Annovar annovar;
-        if (!annovar.gffTogtf(gffFile, gtfFile))
+        QFuture<void> fu = QtConcurrent::run([&]()
         {
-            throw -1;
-        }
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Gff to gtf, \n");
-        if (!runExTool(this->toolpath+"gffread", annovar.getParamList()))
+            this->runningMsgWidget->show();
+            ui->strucAnnoRunPushButton->setEnabled(false);
+            qApp->processEvents();
+
+            QFileInfo gffFileInfo(gffFile);
+            QString gffFileBaseName = gffFileInfo.baseName();
+            QString gffFileCompBaseName = gffFileInfo.completeBaseName();
+            QString gffFileSuffix = gffFileInfo.suffix();
+            QString gffFileAbPath = gffFileInfo.absolutePath();
+
+            QString gtfFile =gffFileAbPath+"/"+gffFileCompBaseName+".gtf";
+
+            // gffTogtf
+            Annovar annovar;
+            if (!annovar.gffTogtf(gffFile, gtfFile))
+            {
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Gff to gtf, \n");
+            if (!runExTool(this->toolpath+"gffread", annovar.getParamList()))
+            {
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Gff to gtf OK.\n");
+            qApp->processEvents();
+
+            // gtfToGenePred
+            QString refGeneFile = gffFileAbPath+"/"+gffFileBaseName+"_refGene.txt";
+            if (!annovar.gtfToGenePred(gtfFile, refGeneFile))
+            {
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Gtf to genePred, \n");
+            qApp->processEvents();
+            if (!runExTool(this->toolpath+"gtfToGenePred", annovar.getParamList()))
+            {
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Gtf to genePred OK.\n");
+            qApp->processEvents();
+
+            // retrieve_seq_from_fasta
+            QString outFastaFile = gffFileAbPath + "/" + gffFileBaseName + "_refGeneMrna.fa";
+            if (!annovar.retrieveSeqFromFasta(refGeneFile, fastaFile, outFastaFile))
+            {
+                throw -1;
+            }
+
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Retrieve seq from fasta,\n");
+            qApp->processEvents();
+
+            if (!runExTool(this->scriptpath+"annovar/retrieve_seq_from_fasta",
+                           annovar.getParamList()))
+            {
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Retrieve seq from fasta OK.\n");
+            qApp->processEvents();
+
+            // annotation
+            QString out = this->workDirectory->getOutputDirectory();
+            QString name = this->workDirectory->getProjectName();
+            QString outFile = out + "/" + name + "_" + gffFileBaseName;
+            QString avinput = ui->avinFileLineEdit->text();
+            QString refGeneDir = gffFileAbPath;
+            QString refGenePrefix = gffFileBaseName;
+
+            // table_annovar
+    //        if (!annovar.tableAnnovar(avinput, refGeneDir, refGenePrefix, outFile))
+    //        {
+    //            throw -1;
+    //        }
+    //        this->process->start(this->scriptpath+"annovar/table_annovar", annovar.getParamList());
+
+            // annotate_variation
+            if (!annovar.annotateVariation(avinput, refGeneDir, refGenePrefix, outFile))
+            {
+                throw -1;
+            }
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Annotation,\n");
+            qApp->processEvents();
+
+            if (!runExTool(this->scriptpath+"annovar/annotate_variation",
+                           annovar.getParamList()))
+            {
+                throw -1;
+            }
+
+            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+            this->runningMsgWidget->appendText("Annotation OK.\n");
+            qApp->processEvents();
+
+            ui->varFuncFileLineEdit->setText(outFile+".variant_functino");
+        });
+        while(!fu.isFinished())
         {
-            throw -1;
+            qApp->processEvents(QEventLoop::AllEvents, 200);
         }
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Gff to gtf OK.\n");
-        qApp->processEvents();
-
-        // gtfToGenePred
-        QString refGeneFile = gffFileAbPath+"/"+gffFileBaseName+"_refGene.txt";
-        if (!annovar.gtfToGenePred(gtfFile, refGeneFile))
-        {
-            throw -1;
-        }
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Gtf to genePred, \n");
-        qApp->processEvents();
-        if (!runExTool(this->toolpath+"gtfToGenePred", annovar.getParamList()))
-        {
-            throw -1;
-        }
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Gtf to genePred OK.\n");
-        qApp->processEvents();
-
-        // retrieve_seq_from_fasta
-        QString outFastaFile = gffFileAbPath + "/" + gffFileBaseName + "_refGeneMrna.fa";
-        if (!annovar.retrieveSeqFromFasta(refGeneFile, fastaFile, outFastaFile))
-        {
-            throw -1;
-        }
-
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Retrieve seq from fasta,\n");
-        qApp->processEvents();
-
-        if (!runExTool(this->scriptpath+"annovar/retrieve_seq_from_fasta",
-                       annovar.getParamList()))
-        {
-            throw -1;
-        }
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Retrieve seq from fasta OK.\n");
-        qApp->processEvents();
-
-        // annotation
-        QString out = this->workDirectory->getOutputDirectory();
-        QString name = this->workDirectory->getProjectName();
-        QString outFile = out + "/" + name + "_" + gffFileBaseName;
-        QString avinput = ui->avinFileLineEdit->text();
-        QString refGeneDir = gffFileAbPath;
-        QString refGenePrefix = gffFileBaseName;
-
-        // table_annovar
-//        if (!annovar.tableAnnovar(avinput, refGeneDir, refGenePrefix, outFile))
-//        {
-//            throw -1;
-//        }
-//        this->process->start(this->scriptpath+"annovar/table_annovar", annovar.getParamList());
-
-        // annotate_variation
-        if (!annovar.annotateVariation(avinput, refGeneDir, refGenePrefix, outFile))
-        {
-            throw -1;
-        }
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Annotation,\n");
-        qApp->processEvents();
-
-        if (!runExTool(this->scriptpath+"annovar/annotate_variation",
-                       annovar.getParamList()))
-        {
-            throw -1;
-        }
-
-        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-        this->runningMsgWidget->appendText("Annotation OK.\n");
-        qApp->processEvents();
-
-        ui->varFuncFileLineEdit->setText(outFile+".variant_functino");
-
 
     } catch(...)
     {
         this->resetWindow();
     }
+
     this->resetWindow();
+    this->runningFlag = false;
 }
 
 void MainWindow::on_fastaFileBrowButton_clicked()
@@ -2612,6 +2707,7 @@ void MainWindow::on_exVarFuncFileBrowButton_clicked()
  */
 void MainWindow::on_funcAnnoRunPushButton_clicked()
 {
+    this->runningFlag = true;
     ui->funcAnnoRunPushButton->setEnabled(false);
     qApp->processEvents();
 
@@ -2656,38 +2752,53 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         this->runningMsgWidget->show();
         QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
         {   // Run functional annotation in another thread;
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Complete exonic SNP infomation,");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Complete exonic SNP infomation,");
+//            qApp->processEvents();
+
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nComplete exonic SNP infomation,");
+            QThread::msleep(10);
             if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
             {
                 throw -1;
             }
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("OK\n");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("OK\n");
+//            qApp->processEvents();
 
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Complete non-exonic SNP infomation,");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Complete non-exonic SNP infomation,");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nOK\n" +
+                                            QDateTime::currentDateTime().toString() +
+                                            "\nComplete non-exonic SNP infomation,");
+            QThread::msleep(10);
             if (!funcAnnotator.complNonExoSnpInfo(exonicPosFile, snpPosFile, varFuncFile, nonExonicPosFile))
             {
                 throw -1;
             }
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("OK\n");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("OK\n");
+//            qApp->processEvents();
 
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Complete functional annotation infomation,");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Complete functional annotation infomation,");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nComplete functional annotation infomation,");
+            QThread::msleep(10);
             if (!funcAnnotator.complFuncAnnoInfo(exonicPosFile, nonExonicPosFile, baseFile, funcAnnoResult))
             {
                 throw -1;
             }
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Functional annotation OK\n");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Functional annotation OK\n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nFunctional annotation OK\n");
+            QThread::msleep(10);
         });
         while (!fu.isFinished())
         {
@@ -2700,6 +2811,7 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
 
     ui->funcAnnoRunPushButton->setEnabled(true);
     qApp->processEvents();
+    this->runningFlag = false;
 }
 
 /**
@@ -2708,11 +2820,12 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
  */
 void MainWindow::on_funcAnnoStepPushButton_clicked()
 {
-    try {
-        ui->funcAnnoStepPushButton->setEnabled(false);
-        qApp->processEvents();
+    this->runningFlag = true;
+    ui->funcAnnoStepPushButton->setEnabled(false);
+    qApp->processEvents();
 
-        QString mapFile = this->fileReader->getMapFile();
+    QString mapFile = this->fileReader->getMapFile();
+    try {
         if (mapFile.isNull())
         {
             QMessageBox::information(nullptr, "Error", "A map file is necessary.");
@@ -2748,26 +2861,36 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
 
         QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
         {
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Filter SNP above threshold,");
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Filter SNP above threshold,");
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nFilter SNP above threshold,");
+            QThread::msleep(10);
             if (!funcAnnotator.filterSNP(pvalFile, thBase, thExpo, sigSnpFile))
             {
                 throw -1;
             }
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("OK\n");
-            qApp->processEvents();
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("Extract position of SNP,");
-            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("OK\n");
+//            qApp->processEvents();
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("Extract position of SNP,");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nOK\n" +
+                                            QDateTime::currentDateTime().toString() +
+                                            "\nExtract position of SNP,");
+            QThread::msleep(10);
             if (!funcAnnotator.extractPos(sigSnpFile, mapFile, sigSnpPosFile))
             {
                 throw -1;
             }
-            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-            this->runningMsgWidget->appendText("OK\n");
-            qApp->processEvents();
-
+//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//            this->runningMsgWidget->appendText("OK\n");
+//            qApp->processEvents();
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                            "\nOK\n");
+            QThread::msleep(10);
             ui->snpPosLineEdit->setText(sigSnpPosFile);
             ui->funcAnnoRunPushButton->setEnabled(true);
             qApp->processEvents();
@@ -2776,12 +2899,12 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
         {
             qApp->processEvents(QEventLoop::ExcludeUserInputEvents, 200);
         }
-
     } catch (...) {
         this->resetWindow();
     }
 
     this->resetWindow();
+    this->runningFlag = false;
 }
 
 void MainWindow::on_annoPvalBrowButton_clicked()
@@ -2843,6 +2966,11 @@ void MainWindow::on_eigenvecFileBrowButton_clicked()
 
 void MainWindow::on_pcaPlotPushButton_clicked()
 {
+    if (this->runningFlag)
+    {
+        return;
+    }
+    this->runningFlag = true;
     QString eigenvalFile = ui->eigenvalueLineEdit->text();
     QString eigenvecFile = ui->eigenvectorLineEdit->text();
     QString outFile = this->workDirectory->getOutputDirectory() + "/" +
@@ -2858,32 +2986,48 @@ void MainWindow::on_pcaPlotPushButton_clicked()
         return;
     }
 
-    QStringList param;
-    param.clear();
-    param.append(this->scriptpath+"pca/pca_plot.R");    // Can choose pca_plot.R or pca_ggplot.R
-    param.append(eigenvalFile);
-    param.append(eigenvecFile);
-    param.append(outFile);
-
-    // R in environment path is necessary.
-    if (!runExTool("Rscript", param))
+    QFuture<void> fu = QtConcurrent::run([&]()
     {
-        return;
+//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//        this->runningMsgWidget->appendText("Plot PCA, \n");
+        emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                        "\nPlot PCA, \n");
+        QThread::msleep(10);
+        QStringList param;
+        param.clear();
+        param.append(this->scriptpath+"pca/pca_plot.R");    // Can choose pca_plot.R or pca_ggplot.R
+        param.append(eigenvalFile);
+        param.append(eigenvecFile);
+        param.append(outFile);
+
+        // R in environment path is necessary.
+        if (!runExTool("Rscript", param))
+        {
+            return;
+        }
+        this->runningMsgWidget->show();
+
+//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
+//        this->runningMsgWidget->appendText("OK, \n");
+//        this->runningMsgWidget->appendText(outFile);
+        emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                        "\nOK,\n" + outFile);
+        QThread::msleep(10);
+        // Show plot
+        if (this->runningFlag)
+        {
+            this->graphViewer->setGraph(QStringList() << outFile);
+            this->graphViewer->show();
+        }
+    });
+    while (!fu.isFinished())
+    {
+        qApp->processEvents(QEventLoop::AllEvents, 200);
     }
-    this->runningMsgWidget->show();
-    this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-    this->runningMsgWidget->appendText("Plot PCA, \n");
 
-
-    this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-    this->runningMsgWidget->appendText("OK, \n");
-    this->runningMsgWidget->appendText(outFile);
-
-    // Show plot
-    this->graphViewer->setGraph(QStringList() << outFile);
-    this->graphViewer->show();
     ui->pcaPlotPushButton->setEnabled(true);
     qApp->processEvents();
+    this->runningFlag = false;
 }
 
 /**
