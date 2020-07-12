@@ -56,7 +56,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <property name="iconSize">
      <size>
@@ -795,9 +795,9 @@ border-radius:5px;//这个是改变成圆角边框;
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>110</y>
+        <y>130</y>
         <width>381</width>
-        <height>151</height>
+        <height>191</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -810,7 +810,7 @@ border-radius:5px;//这个是改变成圆角边框;
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>30</y>
+         <y>80</y>
          <width>331</width>
          <height>91</height>
         </rect>
@@ -946,28 +946,12 @@ border-radius:5px;//这个是改变成圆角边框;
         </item>
        </layout>
       </widget>
-     </widget>
-     <widget class="QFrame" name="frame_7">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>300</y>
-        <width>381</width>
-        <height>131</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
       <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>20</y>
-         <width>311</width>
+         <y>30</y>
+         <width>331</width>
          <height>24</height>
         </rect>
        </property>
@@ -1011,13 +995,29 @@ border-radius:5px;//这个是改变成圆角边框;
         </item>
        </layout>
       </widget>
+     </widget>
+     <widget class="QFrame" name="frame_7">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>350</y>
+        <width>381</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
       <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>60</y>
-         <width>311</width>
-         <height>51</height>
+         <y>10</y>
+         <width>331</width>
+         <height>31</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_18">
@@ -1065,7 +1065,7 @@ border-radius:5px;//这个是改变成圆角边框;
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>40</y>
+        <y>50</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -2605,9 +2605,9 @@ border-radius:5px;//这个是改变成圆角边框;
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>10</x>
       <y>20</y>
-      <width>91</width>
+      <width>151</width>
       <height>505</height>
      </rect>
     </property>
