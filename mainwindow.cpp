@@ -720,7 +720,10 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
             return false;
         }
 
-        ui->qqmanGwasResultLineEdit->setText(correctedFile);
+        if (checkoutExistence(correctedFile))
+        {
+            ui->qqmanGwasResultLineEdit->setText(correctedFile);
+        }
     }
     else if (model == "LMM")
     {
@@ -910,11 +913,17 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
             return false;
         }
 
-        ui->qqmanGwasResultLineEdit->setText(correctedFile);
+        if (checkoutExistence(correctedFile))
+        {
+            ui->qqmanGwasResultLineEdit->setText(correctedFile);
+        }
     }
     else
     {
-        ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
+        if (checkoutExistence(out+"/"+name+"_"+pheFileBaseName+".ps"))
+        {
+            ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
+        }
     }
 
     QFile file;
@@ -1034,7 +1043,10 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
         return false;
     }
 
-    ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
+    if (runningFlag && checkoutExistence(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower()))
+    {
+        ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
+    }
 
 
     QFile file;
@@ -1490,8 +1502,8 @@ void MainWindow::on_drawManPushButton_clicked()
     {
         qApp->processEvents(QEventLoop::AllEvents, 200);
     }
-    this->runningFlag = false;
     this->resetWindow();
+    this->runningFlag = false;
 }
 
 void MainWindow::on_drawQQPushButton_clicked()
@@ -1594,8 +1606,8 @@ void MainWindow::on_drawQQPushButton_clicked()
         qApp->processEvents(QEventLoop::AllEvents, 200);
     }
 
-    this->runningFlag = false;
     this->resetWindow();
+    this->runningFlag = false;
 }
 
 /**
@@ -1638,7 +1650,7 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
     }
     // Show plot
 
-    if (this->runningFlag)
+    if (this->runningFlag && checkoutExistence(out[0]))
     {
         this->graphViewer->setGraph(out);
         this->graphViewer->show();
@@ -1678,7 +1690,7 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
 
     }
     // Show plot
-    if (this->runningFlag)
+    if (this->runningFlag && checkoutExistence(out[0]))
     {
         this->graphViewer->setGraph(out);
         this->graphViewer->show();
@@ -2074,7 +2086,6 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 plink.splitBinaryFile(genoFileAbPath+"/"+genoFileBaseName, keepFile, genoFileAbPath+"/"+keepFileBaseName);
             }
 
-
             if (!this->runExTool(this->toolpath+"plink", plink.getParamList()))
             {
                 throw -1;
@@ -2083,7 +2094,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
 //            this->runningMsgWidget->appendText(keepFileBaseName+".ped and "+keepFileBaseName+".map OK.\n");
 //            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                "\nkeepFileBaseName" + ".ped and " + keepFileBaseName + ".map OK.\n");
+                "\n"+ keepFileBaseName + ".ped and " + keepFileBaseName + ".map OK.\n");
             QThread::msleep(10);
             QFile file;
             file.remove(keepFile);
@@ -2150,7 +2161,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
 //                this->runningMsgWidget->appendText("LD OK. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
 //                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                    "LD OK. (FID: " +
+                    "\nLD OK. (FID: " +
                     keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
                 QThread::msleep(10);
             }
@@ -2160,7 +2171,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
 //                this->runningMsgWidget->appendText("LD ERROR. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
 //                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                    "LD ERROR. (FID: " +
+                    "\nLD ERROR. (FID: " +
                     keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
                 QThread::msleep(10);
                 isLD_OK = false;
@@ -2302,11 +2313,10 @@ void MainWindow::runPopLDdecaySingle(void)
                 return;
             };
 
-            if (!this->runningFlag)
+            if (this->runningFlag && checkoutExistence(out+"/"+name+".stat.gz"))
             {
-                return;
+                ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
             }
-            ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
 //            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
 //            this->runningMsgWidget->appendText("LD OK.\n"+out+"/"+name+".stat.gz" + "\n");
 //            qApp->processEvents();
@@ -2337,19 +2347,22 @@ void MainWindow::on_ldPlotPushButton_clicked()
         return;
     }
     this->runningFlag = true;
+    ui->ldPlotPushButton->setEnabled(false);
+    qApp->processEvents();
     QString ldResultFile = ui->ldResultLineEdit->text();
     if (ldResultFile.isNull() || ldResultFile.isEmpty())
     {
         return;
     }
     try {
-        ui->ldPlotPushButton->setEnabled(false);
-        qApp->processEvents();
         QFuture<void> fu = QtConcurrent::run([&]()
         {
             QString out = this->workDirectory->getOutputDirectory();
             QString name = this->workDirectory->getProjectName();
             PopLDdecay popLDdecay;
+            this->runningMsgWidget->show();
+            emit runningMsgWidgetAppendText("LD plot, " + ldResultFile);
+            QThread::msleep(10);
             if (popLDdecay.plotLD(ldResultFile, out+"/"+name+"_ld"))
             {
                 if (!runExTool(this->scriptpath+"poplddecay/Plot_OnePop",
@@ -2358,8 +2371,10 @@ void MainWindow::on_ldPlotPushButton_clicked()
                     return;
                 };
                 QStringList graphList(out+"/"+name+"_ld.png");
-                if (this->runningFlag)
+                if (this->runningFlag && checkoutExistence(graphList[0]))
                 {
+                    emit runningMsgWidgetAppendText("LD plot OK.\n" + out+"/"+name+"_ld.png");
+                    QThread::msleep(10);
                     this->graphViewer->setGraph(graphList);
                     this->graphViewer->show();
                 }
@@ -2373,7 +2388,8 @@ void MainWindow::on_ldPlotPushButton_clicked()
         this->resetWindow();
     }
 
-    this->resetWindow();
+    ui->ldPlotPushButton->setEnabled(true);
+    qApp->processEvents();
     this->runningFlag = false;
 }
 
@@ -2588,7 +2604,10 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nAnnotation OK.\n");
             QThread::msleep(10);
-            ui->varFuncFileLineEdit->setText(outFile+".variant_functino");
+            if (runningFlag && checkoutExistence(outFile+".variant_functino"))
+            {
+                ui->varFuncFileLineEdit->setText(outFile+".variant_functino");
+            }
         });
         while(!fu.isFinished())
         {
@@ -2925,7 +2944,10 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nOK\n");
             QThread::msleep(10);
-            ui->snpPosLineEdit->setText(sigSnpPosFile);
+            if (runningFlag && checkoutExistence(sigSnpFile))
+            {
+                ui->snpPosLineEdit->setText(sigSnpPosFile);
+            }
             ui->funcAnnoRunPushButton->setEnabled(true);
             qApp->processEvents();
         });
@@ -3048,7 +3070,7 @@ void MainWindow::on_pcaPlotPushButton_clicked()
                                         "\nOK,\n" + outFile);
         QThread::msleep(10);
         // Show plot
-        if (this->runningFlag)
+        if (this->runningFlag && checkoutExistence(outFile))
         {
             this->graphViewer->setGraph(QStringList() << outFile);
             this->graphViewer->show();
