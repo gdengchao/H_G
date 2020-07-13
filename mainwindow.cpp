@@ -40,7 +40,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Default output directory setting
     workDirectory->setProjectName("pro1");
+#ifdef QT_NO_DEBUG
+    workDirectory->setOutputDirectory("/home");
+#else
     workDirectory->setOutputDirectory("/home/dengchao/Desktop/test");
+#endif
     ui->projectNameLineEdit->setText(workDirectory->getProjectName());
     ui->outdirLineEdit->setText(workDirectory->getOutputDirectory()+"/"+workDirectory->getProjectName());
 
@@ -1203,15 +1207,6 @@ void MainWindow::resetWindow()
     ui->funcAnnoStepPushButton->setEnabled(true);
 }
 
-void MainWindow::on_projectNameLineEdit_textChanged(const QString &text)
-{   // When edit finished and the current text is empty, set a default name.
-    this->workDirectory->setProjectName(text);
-    if (!ui->outdirLineEdit->text().isEmpty())
-    {   // If a out directory is selected, display the out directory + the project name.
-        ui->outdirLineEdit->setText(this->workDirectory->getOutputDirectory()+"/"+text);
-    }
-}
-
 /**
  * @brief MainWindow::on_toolComboBox_currentTextChanged
  *      Select a new tool and get supported model of tool.
@@ -1363,33 +1358,17 @@ QString MainWindow::refreshMessage(QString curText, QString newText)
         newText = "\n"+gemmaMsg.cap(1);
     }
 
-//    if (curText[curText.size()-1] == '%' && newText[newText.size()-1] == '%')
-//    {   // Refresh percent.
-//        QString::iterator iter = newText.end(); // After the last char.
-//        QString newPercent = "%";
-//        iter--;iter--;  // Pointer to the last number.
-//        // Get the last percent in newText when there multi percent in the same line.
-//        while ((*iter).isNumber())
-//        {
-//            newPercent = *iter + newPercent;
-//            iter--;
-//        }
-
-//        // Remove the percent in curText.
-
-//        while(curText[curText.size()-1] == '%')
-//        {
-//            curText.remove(curText.size()-1, 1);
-//            iter = curText.end();
-//            iter--; iter--;
-//            while ((*iter).isNumber())
-//            {
-//                curText.remove(curText.size()-1, 1);
-//            }
-//        }
-//    }
-
     return curText + newText;
+}
+
+
+void MainWindow::on_projectNameLineEdit_textChanged(const QString &text)
+{   // When edit finished and the current text is empty, set a default name.
+    this->workDirectory->setProjectName(text);
+    if (!ui->outdirLineEdit->text().isEmpty())
+    {   // If a out directory is selected, display the out directory + the project name.
+        ui->outdirLineEdit->setText(this->workDirectory->getOutputDirectory()+"/"+text);
+    }
 }
 
 void MainWindow::on_projectNameLineEdit_editingFinished()
@@ -1397,6 +1376,15 @@ void MainWindow::on_projectNameLineEdit_editingFinished()
     if (ui->projectNameLineEdit->text().isEmpty())
     {
         ui->projectNameLineEdit->setText("pro1");
+    }
+}
+
+void MainWindow::on_outdirLineEdit_editingFinished()
+{
+    if (ui->outdirLineEdit->text().isEmpty())
+    {
+        ui->outdirLineEdit->setText(this->workDirectory->getOutputDirectory() + "/" +
+                                    this->workDirectory->getProjectName());
     }
 }
 
@@ -1418,39 +1406,27 @@ void MainWindow::on_drawManPushButton_clicked()
             QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
             if (gwasResulFile.isEmpty())
             {   // Gwas result file is necessary.
-                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-                this->runningMsgWidget->appendText("A GWAS result file is necessary.");
-                qApp->processEvents();
+                emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
+                                                "\nA GWAS result file is necessary.\n");
                 throw -1;
             }
 
             this->runningMsgWidget->show();
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Make qqman input file, ");
-//            qApp->processEvents();
-
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                      "\nMake qqman input file, ");
+                                      "\nMake qqman input file, \n");
             QThread::msleep(10);
             // Transform gwas result file type to input file type of qqman.
             QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
             QStringList outList;
             if (qqmanFile.isEmpty())
             {   // makeQQManInputFile error.
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                          "\nMake qqman input file ERROR.");
+                                          "\nMake qqman input file ERROR.\n");
                 QThread::msleep(10);
                 throw -1;
             }
-
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Make qqman input file OK. ");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                      "\nMake qqman input file OK.");
+                                      "\nMake qqman input file OK.\n");
             QThread::msleep(10);
 
             for (auto item:qqmanFile)
@@ -1459,30 +1435,21 @@ void MainWindow::on_drawManPushButton_clicked()
                                +"_"+item.split(".")[item.split(".").length()-1]+"_man.png");
             }
 
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Draw manhattan plot, ");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                      "\nDraw manhattan plot, ");
+                                      "\nDraw manhattan plot, \n");
             QThread::msleep(10);
             if (!this->drawManhattan(qqmanFile, outList))
             {   // drawManhattan error
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("Draw manhattan plot ERROR. ");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                          "\nDraw manhattan plot ERROR.");
+                                          "\nDraw manhattan plot ERROR.\n");
                 QThread::msleep(10);
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Draw manhattan plot OK.");
-//            this->runningMsgWidget->appendText("\nmanhattan plot: \n" + outList.join("\n"));
-//            qApp->processEvents();
+
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                       "\nDraw manhattan plot OK." +
                                       "\nmanhattan plot: \n" +
-                                      outList.join("\n"));
+                                      outList.join("\n")+"\n");
             QThread::msleep(10);
 
             QFile file;
@@ -1521,21 +1488,15 @@ void MainWindow::on_drawQQPushButton_clicked()
             QString gwasResulFile = ui->qqmanGwasResultLineEdit->text();
             if (gwasResulFile.isEmpty())
             {   // Gwas result file is necessary.
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("A GWAS result file is necessary.");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                          "\nA GWAS result file is necessary.");
+                                          "\nA GWAS result file is necessary.\n");
                 QThread::msleep(10);
                 throw -1;
             }
 
             this->runningMsgWidget->show();
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Make qqman input file, ");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nMake qqman input file, ");
+                                            "\nMake qqman input file, \n");
             QThread::msleep(10);
             // Transform gwasResultFile to input file type of qqman.
             QStringList qqmanFile = makeQQManInputFile(gwasResulFile); //   path/name.gemma_wald
@@ -1543,20 +1504,13 @@ void MainWindow::on_drawQQPushButton_clicked()
 
             if (qqmanFile.isEmpty())
             {
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("Make qqman input file ERROR. ");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                                "\nMake qqman input file ERROR. ");
+                                                "\nMake qqman input file ERROR. \n");
                 QThread::msleep(10);
                 throw -1;
             }
-
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Make qqman input file OK. ");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nMake qqman input file OK. ");
+                                            "\nMake qqman input file OK. \n");
             QThread::msleep(10);
             for (auto item:qqmanFile)
             {   // Multiple result, multiple output plot.
@@ -1564,29 +1518,20 @@ void MainWindow::on_drawQQPushButton_clicked()
                                +"_"+item.split(".")[item.split(".").length()-1]+"_qq.png");
             }
 
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Draw QQ plot, ");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nDraw QQ plot, ");
+                                            "\nDraw QQ plot, \n");
             QThread::msleep(10);
             if (!this->drawQQplot(qqmanFile, outList))
             {
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("Draw QQ plot ERROR. ");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                                "\nDraw QQ plot ERROR. ");
+                                                "\nDraw QQ plot ERROR. \n");
                 QThread::msleep(10);
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Draw QQ OK. ");
-//            this->runningMsgWidget->appendText("\nQQ plot: \n" + outList.join("\n"));
-//            qApp->processEvents();
+
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nDraw QQ plot OK. " +
-                                            "\nQQ plot: \n" + outList.join("\n"));
+                                            "\nQQ plot: \n" + outList.join("\n") + "\n");
             QThread::msleep(10);
             QFile file;
             for (auto item:qqmanFile)
@@ -2028,9 +1973,6 @@ void MainWindow::runPopLDdecaybyFamily(void)
         if (isVcfFile(genotype)){} // Transform "vcf" to "transpose"
 
         // Make .keep file.
-//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//        this->runningMsgWidget->appendText("Make .keep file, \n");
-//        qApp->processEvents();
         emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                         "\nMake .keep file, \n");
         QThread::msleep(10);
@@ -2049,9 +1991,6 @@ void MainWindow::runPopLDdecaybyFamily(void)
             keepFileList = popLDdecay.makeKeepFile(map);
         }
 
-//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//        this->runningMsgWidget->appendText(".keep file OK.\n");
-//        qApp->processEvents();
         emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                         "\n.keep file OK.\n");
         QThread::msleep(10);
@@ -2062,9 +2001,6 @@ void MainWindow::runPopLDdecaybyFamily(void)
             QString keepFileBaseName = keepFileInfo.baseName();
             QString keepFileAbPath = keepFileInfo.absolutePath();
 
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Make "+keepFileBaseName+".ped"+" and "+keepFileBaseName+".map, \n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                     "\nMake "+keepFileBaseName+".ped"+" and "+keepFileBaseName+".map, \n");
             QThread::msleep(10);
@@ -2090,20 +2026,14 @@ void MainWindow::runPopLDdecaybyFamily(void)
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText(keepFileBaseName+".ped and "+keepFileBaseName+".map OK.\n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                 "\n"+ keepFileBaseName + ".ped and " + keepFileBaseName + ".map OK.\n");
             QThread::msleep(10);
             QFile file;
             file.remove(keepFile);
 
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype.\n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nMake "+keepFileBaseName+".genotype.\n");
+                                            "\nMake "+keepFileBaseName+".genotype,\n");
             QThread::msleep(10);
             // Make .genotype file.
             if (popLDdecay.makeGenotype(genoFileAbPath+"/"+keepFileBaseName+".ped",
@@ -2116,18 +2046,12 @@ void MainWindow::runPopLDdecaybyFamily(void)
                     throw -1;
                 }
 
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText(keepFileBaseName+".genotype OK.\n");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                                 + "\n" + keepFileBaseName+".genotype OK.\n");
                 QThread::msleep(10);
             }
             else
             {
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("Make "+keepFileBaseName+".genotype ERROR.\n");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nMake "+keepFileBaseName+".genotype ERROR.\n");
                 QThread::msleep(10);
@@ -2145,9 +2069,6 @@ void MainWindow::runPopLDdecaybyFamily(void)
             if (popLDdecay.runLD(genoFileAbPath+"/"+keepFileBaseName+".genotype",
                                  out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]))
             {
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("Run LD,\n");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                                 "\nRun LD,\n");
                 QThread::msleep(10);
@@ -2157,9 +2078,6 @@ void MainWindow::runPopLDdecaybyFamily(void)
                 }
 
                 ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("LD OK. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                     "\nLD OK. (FID: " +
                     keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
@@ -2167,9 +2085,6 @@ void MainWindow::runPopLDdecaybyFamily(void)
             }
             else
             {
-//                this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//                this->runningMsgWidget->appendText("LD ERROR. (FID: " + keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
-//                qApp->processEvents();
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                     "\nLD ERROR. (FID: " +
                     keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
@@ -2182,9 +2097,6 @@ void MainWindow::runPopLDdecaybyFamily(void)
 
         if (isLD_OK)
         {
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("LD by family done. \n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                 "\nLD by family done. \n");
             QThread::msleep(10);
@@ -2257,11 +2169,8 @@ void MainWindow::runPopLDdecaySingle(void)
             plinkFile = genoFileAbPath + "/" + genoFileBaseName;
         }
 
-//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//        this->runningMsgWidget->appendText("Make" + plinkFile + ".genotype.\n");
-//        qApp->processEvents();
         emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                       "\nMake" + plinkFile + ".genotype.\n");
+                                       "\nMake " + plinkFile + ".genotype,\n");
         QThread::msleep(10);
         PopLDdecay popLDdecay;
         if (popLDdecay.makeGenotype(plinkFile+".ped", plinkFile+".map", plinkFile+".genotype"))
@@ -2272,18 +2181,13 @@ void MainWindow::runPopLDdecaySingle(void)
                 return;
             }
 
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText(plinkFile + ".genotype OK.\n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             + "\n" + plinkFile + ".genotype OK.\n");
             QThread::msleep(10);
         }
         else
         {
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText(plinkFile + ".genotype ERROR.\n");
-//            qApp->processEvents();
+
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             + "\n" + plinkFile + ".genotype ERROR.\n");
             QThread::msleep(10);
@@ -2299,11 +2203,8 @@ void MainWindow::runPopLDdecaySingle(void)
         file.remove(plinkFile+".nosex");
         file.remove(plinkFile+".log");
 
-//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//        this->runningMsgWidget->appendText("Run LD, \n");
-//        qApp->processEvents();
         emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                        + "\nRun LD");
+                                        + "\nRun LD,\n");
         QThread::msleep(10);
         if (popLDdecay.runLD(plinkFile+".genotype", out+"/"+name))
         {
@@ -2317,18 +2218,13 @@ void MainWindow::runPopLDdecaySingle(void)
             {
                 ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("LD OK.\n"+out+"/"+name+".stat.gz" + "\n");
-//            qApp->processEvents();
+
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             + "\nLD OK.\n");
             QThread::msleep(10);
         }
         else
         {
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("LD ERROR.\n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             + "\nLD ERROR.\n");
             QThread::msleep(10);
@@ -2361,7 +2257,7 @@ void MainWindow::on_ldPlotPushButton_clicked()
             QString name = this->workDirectory->getProjectName();
             PopLDdecay popLDdecay;
             this->runningMsgWidget->show();
-            emit runningMsgWidgetAppendText("LD plot, " + ldResultFile);
+            emit runningMsgWidgetAppendText("LD plot, \n" + ldResultFile + "\n");
             QThread::msleep(10);
             if (popLDdecay.plotLD(ldResultFile, out+"/"+name+"_ld"))
             {
@@ -2373,7 +2269,7 @@ void MainWindow::on_ldPlotPushButton_clicked()
                 QStringList graphList(out+"/"+name+"_ld.png");
                 if (this->runningFlag && checkoutExistence(graphList[0]))
                 {
-                    emit runningMsgWidgetAppendText("LD plot OK.\n" + out+"/"+name+"_ld.png");
+                    emit runningMsgWidgetAppendText("LD plot OK.\n\n" + out+"/"+name+"_ld.png\n");
                     QThread::msleep(10);
                     this->graphViewer->setGraph(graphList);
                     this->graphViewer->show();
@@ -2503,8 +2399,6 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Gff to gtf, \n");
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                               "\nGff to gtf, \n");
             QThread::msleep(10);
@@ -2512,9 +2406,6 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Gff to gtf OK.\n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nsGff to gtf OK.\n");
             QThread::msleep(10);
@@ -2524,9 +2415,6 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Gtf to genePred, \n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nGtf to genePred, \n");
             QThread::msleep(10);
@@ -2534,9 +2422,6 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Gtf to genePred OK.\n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nGtf to genePred OK.\n");
             QThread::msleep(10);
@@ -2547,9 +2432,6 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
                 throw -1;
             }
 
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Retrieve seq from fasta,\n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nRetrieve seq from fasta,\n");
             QThread::msleep(10);
@@ -2559,9 +2441,7 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Retrieve seq from fasta OK.\n");
-//            qApp->processEvents();
+
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "Retrieve seq from fasta OK.\n");
             QThread::msleep(10);
@@ -2585,9 +2465,7 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Annotation,\n");
-//            qApp->processEvents();
+
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nAnnotation,\n");
             QThread::msleep(10);
@@ -2598,9 +2476,6 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
                 throw -1;
             }
 
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Annotation OK.\n");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nAnnotation OK.\n");
             QThread::msleep(10);
@@ -2805,52 +2680,35 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         this->runningMsgWidget->show();
         QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
         {   // Run functional annotation in another thread;
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Complete exonic SNP infomation,");
-//            qApp->processEvents();
-
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nComplete exonic SNP infomation,");
+                                            "\nComplete exonic SNP infomation,\n");
             QThread::msleep(10);
             if (!funcAnnotator.complExoSnpInfo(snpPosFile, exVarFuncFile, exonicPosFile))
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("OK\n");
-//            qApp->processEvents();
 
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Complete non-exonic SNP infomation,");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nOK\n" +
+                                            "\nOK\n\n" +
                                             QDateTime::currentDateTime().toString() +
-                                            "\nComplete non-exonic SNP infomation,");
+                                            "\nComplete non-exonic SNP infomation,\n");
             QThread::msleep(10);
             if (!funcAnnotator.complNonExoSnpInfo(exonicPosFile, snpPosFile, varFuncFile, nonExonicPosFile))
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("OK\n");
-//            qApp->processEvents();
 
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Complete functional annotation infomation,");
-//            qApp->processEvents();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nComplete functional annotation infomation,");
+                                            "\nComplete functional annotation infomation,\n");
             QThread::msleep(10);
             if (!funcAnnotator.complFuncAnnoInfo(exonicPosFile, nonExonicPosFile, baseFile, funcAnnoResult))
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Functional annotation OK\n");
-//            qApp->processEvents();
+
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nFunctional annotation OK\n");
+                                            "\nFunctional annotation OK\n"+
+                                            "\n" + funcAnnoResult + "\n");
             QThread::msleep(10);
         });
         while (!fu.isFinished())
@@ -2879,9 +2737,9 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
 
     QString mapFile = this->fileReader->getMapFile();
     try {
-        if (mapFile.isNull())
+        if (mapFile.isNull() || mapFile.split(".").back() != "map")
         {
-            QMessageBox::information(nullptr, "Error", "A map file is necessary.");
+            QMessageBox::information(nullptr, "Error", "A .map file is necessary.");
             throw -1;
         }
 
@@ -2914,33 +2772,24 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
 
         QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
         {
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Filter SNP above threshold,");
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nFilter SNP above threshold,");
+                                            "\nFilter SNP above threshold,\n");
             QThread::msleep(10);
             if (!funcAnnotator.filterSNP(pvalFile, thBase, thExpo, sigSnpFile))
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("OK\n");
-//            qApp->processEvents();
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("Extract position of SNP,");
-//            qApp->processEvents();
+
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nOK\n" +
                                             QDateTime::currentDateTime().toString() +
-                                            "\nExtract position of SNP,");
+                                            "\nExtract position of SNP,\n");
             QThread::msleep(10);
             if (!funcAnnotator.extractPos(sigSnpFile, mapFile, sigSnpPosFile))
             {
                 throw -1;
             }
-//            this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//            this->runningMsgWidget->appendText("OK\n");
-//            qApp->processEvents();
+
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nOK\n");
             QThread::msleep(10);
@@ -3044,8 +2893,6 @@ void MainWindow::on_pcaPlotPushButton_clicked()
 
     QFuture<void> fu = QtConcurrent::run([&]()
     {
-//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//        this->runningMsgWidget->appendText("Plot PCA, \n");
         emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                         "\nPlot PCA, \n");
         QThread::msleep(10);
@@ -3063,11 +2910,8 @@ void MainWindow::on_pcaPlotPushButton_clicked()
         }
         this->runningMsgWidget->show();
 
-//        this->runningMsgWidget->appendText(QDateTime::currentDateTime().toString());
-//        this->runningMsgWidget->appendText("OK, \n");
-//        this->runningMsgWidget->appendText(outFile);
         emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                        "\nOK,\n" + outFile);
+                                        "\nOK,\n" + outFile + "\n");
         QThread::msleep(10);
         // Show plot
         if (this->runningFlag && checkoutExistence(outFile))
@@ -3171,3 +3015,4 @@ void MainWindow::on_errMessageReady(const QString text)
     this->runningMsgWidget->repaint();
     qApp->processEvents();
 }
+

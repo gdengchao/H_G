@@ -123,6 +123,8 @@ private slots:
     void on_outMessageReady(QString text);
     void on_errMessageReady(QString text);
 
+    void on_outdirLineEdit_editingFinished();
+
 private:
     Ui::MainWindow *ui;
     volatile bool runningFlag = false;   // A flag t judge there running project.
@@ -130,10 +132,14 @@ private:
     void closeEvent(QCloseEvent *event) override;
 //    bool eventFilter(QObject *obj, QEvent *ev) override;
     //  Tool and script path;
+
+#ifdef QT_NO_DEBUG
+    QString toolpath = "tools/";    // Realease
+    QString scriptpath = "script/";
+#else
     QString toolpath = "/home/dengchao/Documents/code/H_G/tools/";
     QString scriptpath = "/home/dengchao/Documents/code/H_G/script/";
-//    QString toolpath = "tools/";  // Realease
-//    QString scriptpath = "script/";
+#endif
 
     // Basic association parameters.
     FileReader *fileReader;             // Read file, and save the directory.
