@@ -56,7 +56,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="iconSize">
      <size>
@@ -1095,7 +1095,7 @@ border-radius:5px;//这个是改变成圆角边框;
            </font>
           </property>
           <property name="text">
-           <string>Fasta </string>
+           <string>Base </string>
           </property>
          </widget>
         </item>
@@ -1504,7 +1504,7 @@ border-radius:5px;//这个是改变成圆角边框;
            </font>
           </property>
           <property name="text">
-           <string>base</string>
+           <string>Base</string>
           </property>
          </widget>
         </item>
@@ -1594,7 +1594,7 @@ border-radius:5px;//这个是改变成圆角边框;
            </font>
           </property>
           <property name="text">
-           <string>var_func</string>
+           <string>Var_func</string>
           </property>
          </widget>
         </item>
@@ -1684,7 +1684,7 @@ border-radius:5px;//这个是改变成圆角边框;
            </font>
           </property>
           <property name="text">
-           <string>ex_var_func</string>
+           <string>Ex_var_func</string>
           </property>
          </widget>
         </item>

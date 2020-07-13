@@ -22,6 +22,10 @@ RunningMsgWidget::~RunningMsgWidget()
  */
 void RunningMsgWidget::setText(QString text)
 {
+    if (!this->isVisible())
+    {
+        this->show();
+    }
     ui->textBrowser->setText(text);
     ui->textBrowser->moveCursor(QTextCursor::End);  // Move cursor to end.
 }
@@ -33,12 +37,20 @@ void RunningMsgWidget::setText(QString text)
  */
 void RunningMsgWidget::appendText(QString text)
 {
+    if (!this->isVisible())
+    {
+        this->show();
+    }
     ui->textBrowser->append(text);
     ui->textBrowser->moveCursor(QTextCursor::End);
 }
 
 void RunningMsgWidget::clearText(void)
 {
+    if (this->isVisible())
+    {
+        this->hide();
+    }
     ui->textBrowser->clear();
 }
 

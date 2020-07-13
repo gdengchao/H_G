@@ -53,11 +53,16 @@ MainWindow::MainWindow(QWidget *parent)
     ldByFamGroupButton->addButton(ui->noLDByFamRadioButton);
     ldByFamGroupButton->setExclusive(true);
 
-    // connect QProcess->start(tool) and runningMsgWidget.
-//    connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
-//    connect(process, SIGNAL(readyReadStandardError()), this, SLOT(on_readerror()));
     connect(runningMsgWidget, SIGNAL(closeSignal()), this, SLOT(on_closeRunningWidget()));
-    connect(this, SIGNAL(runningMsgWidgetAppendText(QString)), this->runningMsgWidget, SLOT(on_appendText(QString)));
+    // Multi thread to modify ui.
+    connect(this, SIGNAL(runningMsgWidgetAppendText(QString)),
+            this->runningMsgWidget, SLOT(on_appendText(QString)));
+    connect(this, SIGNAL(setLineEditTextSig(QLineEdit*, QString)),
+            this, SLOT(on_setLineEditText(QLineEdit*, QString)));
+    connect(this, SIGNAL(setButtonEnabledSig(QAbstractButton *, bool)),
+            this, SLOT(on_setButtonEnabled(QAbstractButton *, bool)));
+    connect(this, SIGNAL(setGraphViewerGraphSig(QStringList)),
+            this, SLOT(on_setGraphViewerGraph(QStringList)));
     // connect MToolButton->rightClick
     connect(ui->pheFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_pheFileToolButton_closeFileSig()));
     connect(ui->genoFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_genoFileToolButton_closeFileSig()));
@@ -400,7 +405,6 @@ void MainWindow::on_runGwasButton_clicked()
 
     ui->runGwasButton->setDisabled(true);
     this->runningMsgWidget->clearText();
-    this->runningMsgWidget->show();
 
     QFileInfo pheFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
@@ -726,7 +730,9 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
         if (checkoutExistence(correctedFile))
         {
-            ui->qqmanGwasResultLineEdit->setText(correctedFile);
+//            ui->qqmanGwasResultLineEdit->setText(correctedFile);
+            emit setLineEditTextSig(ui->qqmanGwasResultLineEdit, correctedFile);
+            QThread::msleep(10);
         }
     }
     else if (model == "LMM")
@@ -738,8 +744,11 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
             return false;
         }
 
-        ui->qqmanGwasResultLineEdit->setText(out+"/output"
-            +(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName+".assoc.txt");
+//        ui->qqmanGwasResultLineEdit->setText(out+"/output"
+//            +(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName+".assoc.txt");
+        emit setLineEditTextSig(ui->qqmanGwasResultLineEdit, out+"/output"
+                 +(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName+".assoc.txt");
+        QThread::msleep(10);
     }
 
     return true;
@@ -919,14 +928,17 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
 
         if (checkoutExistence(correctedFile))
         {
-            ui->qqmanGwasResultLineEdit->setText(correctedFile);
+//            ui->qqmanGwasResultLineEdit->setText(correctedFile);
+            emit setLineEditTextSig(ui->qqmanGwasResultLineEdit, correctedFile);
+            QThread::msleep(10);
         }
     }
     else
     {
         if (checkoutExistence(out+"/"+name+"_"+pheFileBaseName+".ps"))
         {
-            ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
+//            ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
+            emit setLineEditTextSig(ui->qqmanGwasResultLineEdit, out+"/"+name+"_"+pheFileBaseName+".ps");
         }
     }
 
@@ -993,8 +1005,8 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
         QString linkageFilteredFilePrefix = genoFileAbPath + "/" + genoFileBaseName + "_ldfl";
         QString winSize, stepLen, r2Threshold;
         this->qualityControl->getLinkageFilterType(winSize, stepLen, r2Threshold);
+        emit runningMsgWidgetAppendText("Linkage filter,\n");
 
-        this->runningMsgWidget->appendText("LinkageFilter");
         plink.linkageFilter(genotype, map, winSize, stepLen, r2Threshold, linkageFilteredFilePrefix);
         if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
@@ -1011,13 +1023,14 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
         plink.extractBySnpNameFile(genotype, map, filteredSnpIDFile, linkageFilteredFilePrefix);
 
-       this->runningMsgWidget->appendText("extractBySnpName");
+        emit runningMsgWidgetAppendText("Extract by SNP name\n");
+
         if (!runExTool(this->toolpath+"plink", plink.getParamList()))
         {
             return false;
         }
 
-        this->runningMsgWidget->appendText("OK");
+        emit runningMsgWidgetAppendText("OK\n");
 
         genotype = linkageFilteredFilePrefix + ".ped";
         map = linkageFilteredFilePrefix + ".map";
@@ -1049,7 +1062,9 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
     if (runningFlag && checkoutExistence(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower()))
     {
-        ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
+//        ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
+        emit setLineEditTextSig(ui->qqmanGwasResultLineEdit,
+                                out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower());
     }
 
 
@@ -1059,43 +1074,6 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
     return true;
 }
-
-/**
- * @brief MainWindow::on_readoutput
- *      Read data from standard ouput stream, generated from tool which is running, to show in RunningMsgWidget
- */
-//void MainWindow::on_readoutput()
-//{
-//    QString text = QString::fromLocal8Bit(this->process->readAllStandardOutput().data());
-//    this->runningMsgWidget->setText(this->refreshMessage(this->runningMsgWidget->getText(), text));
-//    this->runningMsgWidget->repaint();
-//    qApp->processEvents();
-//    QThread::msleep(10);
-//}
-
-/**
- * @brief MainWindow::on_readerror
- *      Read data from standard error stream, generated from tool which is running, to show in RunningMsgWidget
- */
-//void MainWindow::on_readerror()
-//{
-//    QString tool = ui->toolComboBox->currentText();
-////    if (tool == "emmax" || tool == "gemma")
-////    {   // Emmax let messages print to stand error.
-////        this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-////        this->runningMsgWidget->repaint();
-////        qApp->processEvents();
-////    }
-////    else
-////    {
-////        QMessageBox::information(nullptr, "Error", QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-////        this->runningMsgWidget->close();
-////    }
-//    this->runningMsgWidget->appendText(QString::fromLocal8Bit(this->process->readAllStandardError().data()));
-//    this->runningMsgWidget->repaint();
-//    qApp->processEvents();
-//    QThread::msleep(10);
-//}
 
 /**
  * @brief MainWindow::on_closeRunningWidget
@@ -1109,8 +1087,6 @@ void MainWindow::on_closeRunningWidget()
 
     if (this->runningFlag)
     {
-//        QMessageBox::information(this, "INFO","A project is working",
-//            QMessageBox::Ok, QMessageBox::Ok);
         // Juage there are any tools running now.
         QMessageBox::StandardButton ret = QMessageBox::information(this, "WARNING",
            "The project may be terminated if close the widget!   ",
@@ -1411,7 +1387,6 @@ void MainWindow::on_drawManPushButton_clicked()
                 throw -1;
             }
 
-            this->runningMsgWidget->show();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                       "\nMake qqman input file, \n");
             QThread::msleep(10);
@@ -1477,6 +1452,7 @@ void MainWindow::on_drawQQPushButton_clicked()
 {
     if (this->runningFlag)
     {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
     this->runningFlag = true;
@@ -1494,7 +1470,6 @@ void MainWindow::on_drawQQPushButton_clicked()
                 throw -1;
             }
 
-            this->runningMsgWidget->show();
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nMake qqman input file, \n");
             QThread::msleep(10);
@@ -1597,8 +1572,8 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
 
     if (this->runningFlag && checkoutExistence(out[0]))
     {
-        this->graphViewer->setGraph(out);
-        this->graphViewer->show();
+        emit setGraphViewerGraphSig(out);
+        QThread::msleep(10);
     }
 
     return true;
@@ -1637,8 +1612,8 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
     // Show plot
     if (this->runningFlag && checkoutExistence(out[0]))
     {
-        this->graphViewer->setGraph(out);
-        this->graphViewer->show();
+        emit setGraphViewerGraphSig(out);
+        QThread::msleep(10);
     }
     return true;
 }
@@ -1790,6 +1765,7 @@ void MainWindow::on_pcaRunPushButton_clicked()
 {
     if (this->runningFlag)
     {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
     this->runningFlag = true;
@@ -1801,8 +1777,6 @@ void MainWindow::on_pcaRunPushButton_clicked()
 
     ui->pcaRunPushButton->setEnabled(false);
     qApp->processEvents();
-
-    this->runningMsgWidget->show();
 
     try {
         QFuture<void> fu = QtConcurrent::run([&]()
@@ -1901,8 +1875,10 @@ void MainWindow::on_pcaRunPushButton_clicked()
             file.remove(binaryFile+".grm.id");
             file.remove(binaryFile+".grm.N.bin");
 
-            ui->eigenvalueLineEdit->setText(out+"/"+genoFileBaseName+".eigenval");
-            ui->eigenvectorLineEdit->setText(out+"/"+genoFileBaseName+".eigenvec");
+//            ui->eigenvalueLineEdit->setText(out+"/"+genoFileBaseName+".eigenval");
+            emit setLineEditTextSig(ui->eigenvalueLineEdit, out+"/"+genoFileBaseName+".eigenval");
+//            ui->eigenvectorLineEdit->setText(out+"/"+genoFileBaseName+".eigenvec");
+            emit setLineEditTextSig(ui->eigenvectorLineEdit, out+"/"+genoFileBaseName+".eigenvec");
         });
         while (!fu.isFinished())
         {
@@ -1921,6 +1897,7 @@ void MainWindow::on_ldRunPushButton_clicked()
 {
     if (this->runningFlag)
     {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
     this->runningFlag = true;
@@ -1966,7 +1943,7 @@ void MainWindow::runPopLDdecaybyFamily(void)
         QString genoFileBaseName = genoFileInfo.baseName();
         QString genoFileAbPath = genoFileInfo.absolutePath();
         QStringList keepFileList;
-        this->runningMsgWidget->show();
+
 
         Plink plink;
         PopLDdecay popLDdecay;
@@ -2077,7 +2054,10 @@ void MainWindow::runPopLDdecaybyFamily(void)
                     throw -1;
                 }
 
-                ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
+//                ui->ldResultLineEdit->setText(out+"/"+name+"_"+keepFileBaseName.split("_")[keepFileBaseName.split("_").length()-1]+".stat.gz");
+                emit setLineEditTextSig(ui->ldResultLineEdit,
+                    out+"/"+name+"_"+keepFileBaseName.split("_").back()+".stat.gz");
+                QThread::msleep(10);
                 emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                     "\nLD OK. (FID: " +
                     keepFileBaseName.split("_")[keepFileBaseName.split("_").length() - 1] + ")\n");
@@ -2119,9 +2099,7 @@ void MainWindow::runPopLDdecaySingle(void)
         //  binaryFile: Set a default path. Binary geno file with paht without suffix.
         QString plinkFile = genoFileAbPath+"/"+genoFileBaseName+"_tmp";
 
-        this->runningMsgWidget->show();
         bool transformFileFlag = false;
-        this->runningMsgWidget->show();
 
         // Need binary files.  Every temp file and a "_tmp" after baseName, and will be deleted after gwas.
         Plink plink;
@@ -2216,7 +2194,9 @@ void MainWindow::runPopLDdecaySingle(void)
 
             if (this->runningFlag && checkoutExistence(out+"/"+name+".stat.gz"))
             {
-                ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
+//                ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
+                emit setLineEditTextSig(ui->ldResultLineEdit, out+"/"+name+".stat.gz");
+                QThread::msleep(10);
             }
 
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
@@ -2240,6 +2220,7 @@ void MainWindow::on_ldPlotPushButton_clicked()
 {
     if (this->runningFlag)
     {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
     this->runningFlag = true;
@@ -2256,7 +2237,6 @@ void MainWindow::on_ldPlotPushButton_clicked()
             QString out = this->workDirectory->getOutputDirectory();
             QString name = this->workDirectory->getProjectName();
             PopLDdecay popLDdecay;
-            this->runningMsgWidget->show();
             emit runningMsgWidgetAppendText("LD plot, \n" + ldResultFile + "\n");
             QThread::msleep(10);
             if (popLDdecay.plotLD(ldResultFile, out+"/"+name+"_ld"))
@@ -2270,9 +2250,8 @@ void MainWindow::on_ldPlotPushButton_clicked()
                 if (this->runningFlag && checkoutExistence(graphList[0]))
                 {
                     emit runningMsgWidgetAppendText("LD plot OK.\n\n" + out+"/"+name+"_ld.png\n");
+                    emit setGraphViewerGraphSig(graphList);
                     QThread::msleep(10);
-                    this->graphViewer->setGraph(graphList);
-                    this->graphViewer->show();
                 }
             }
         });
@@ -2378,10 +2357,8 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
 
     try
     {
-
         QFuture<void> fu = QtConcurrent::run([&]()
         {
-            this->runningMsgWidget->show();
             ui->strucAnnoRunPushButton->setEnabled(false);
             qApp->processEvents();
 
@@ -2477,11 +2454,12 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
             }
 
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nAnnotation OK.\n");
+                                            "\nStructural annotation OK.\n");
             QThread::msleep(10);
             if (runningFlag && checkoutExistence(outFile+".variant_functino"))
             {
-                ui->varFuncFileLineEdit->setText(outFile+".variant_functino");
+//                ui->varFuncFileLineEdit->setText(outFile+".variant_functino");
+                emit setLineEditTextSig(ui->varFuncFileLineEdit, outFile+".variant_functino");
             }
         });
         while(!fu.isFinished())
@@ -2565,7 +2543,7 @@ void MainWindow::on_snpPosBrowButton_clicked()
  */
 void MainWindow::on_baseFileBrowButton_clicked()
 {
-    QFileDialog *fileDialog = new QFileDialog(this, "Open GWAS result file", this->workDirectory->getOutputDirectory(),
+    QFileDialog *fileDialog = new QFileDialog(this, "Open annotation base file", this->workDirectory->getOutputDirectory(),
                                               "base(all(*)");
     fileDialog->setViewMode(QFileDialog::Detail);
 
@@ -2677,7 +2655,6 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
         QString funcAnnoResult = out + "/" + name +"_func_anno";
         FuncAnnotator funcAnnotator;
 
-        this->runningMsgWidget->show();
         QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
         {   // Run functional annotation in another thread;
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
@@ -2767,9 +2744,6 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
         QString sigSnpPosFile = sigSnpFile + "_pos";        // to save extracted position of SNP after filter.
 
         FuncAnnotator funcAnnotator;
-
-        this->runningMsgWidget->show();
-
         QFuture<void> fu = QtConcurrent::run(QThreadPool::globalInstance(), [&]()
         {
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
@@ -2781,8 +2755,9 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
             }
 
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nOK\n" +
-                                            QDateTime::currentDateTime().toString() +
+                                            "\nFilter SNP above threshold OK\n");
+            QThread::msleep(10);
+            emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                             "\nExtract position of SNP,\n");
             QThread::msleep(10);
             if (!funcAnnotator.extractPos(sigSnpFile, mapFile, sigSnpPosFile))
@@ -2791,11 +2766,13 @@ void MainWindow::on_funcAnnoStepPushButton_clicked()
             }
 
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "\nOK\n");
+                                            "\nExtract position of SNP OK\n");
             QThread::msleep(10);
             if (runningFlag && checkoutExistence(sigSnpFile))
             {
-                ui->snpPosLineEdit->setText(sigSnpPosFile);
+//                ui->snpPosLineEdit->setText(sigSnpPosFile);
+                emit setLineEditTextSig(ui->snpPosLineEdit, sigSnpPosFile);
+                QThread::msleep(10);
             }
             ui->funcAnnoRunPushButton->setEnabled(true);
             qApp->processEvents();
@@ -2873,6 +2850,7 @@ void MainWindow::on_pcaPlotPushButton_clicked()
 {
     if (this->runningFlag)
     {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
     this->runningFlag = true;
@@ -2908,16 +2886,14 @@ void MainWindow::on_pcaPlotPushButton_clicked()
         {
             return;
         }
-        this->runningMsgWidget->show();
-
         emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
                                         "\nOK,\n" + outFile + "\n");
         QThread::msleep(10);
         // Show plot
         if (this->runningFlag && checkoutExistence(outFile))
         {
-            this->graphViewer->setGraph(QStringList() << outFile);
-            this->graphViewer->show();
+            emit setGraphViewerGraphSig(QStringList() << outFile);
+            QThread::msleep(10);
         }
     });
     while (!fu.isFinished())
@@ -3004,15 +2980,45 @@ bool MainWindow::checkoutExistence(QString filePath)
 
 void MainWindow::on_outMessageReady(const QString text)
 {
-    this->runningMsgWidget->setText(this->refreshMessage(this->runningMsgWidget->getText(), text));
-    this->runningMsgWidget->repaint();
-    qApp->processEvents();
+    if (this->runningFlag)
+    {
+        this->runningMsgWidget->setText(this->refreshMessage(this->runningMsgWidget->getText(), text));
+        this->runningMsgWidget->repaint();
+        qApp->processEvents();
+    }
 }
 
 void MainWindow::on_errMessageReady(const QString text)
 {
-    this->runningMsgWidget->appendText(text);
-    this->runningMsgWidget->repaint();
-    qApp->processEvents();
+    if (this->runningFlag)
+    {
+        this->runningMsgWidget->appendText(text);
+        this->runningMsgWidget->repaint();
+        qApp->processEvents();
+    }
 }
 
+// Mutilple thread slot function.
+void MainWindow::on_setLineEditText(QLineEdit *lineEdit, QString text)
+{
+    if (this->runningFlag)
+    {
+        lineEdit->setText(text);
+    }
+}
+
+// Mutilple thread slot function.
+void MainWindow::on_setButtonEnabled(QAbstractButton *button, bool boolean)
+{
+    button->setEnabled(boolean);
+}
+
+// Mutilple thread slot function.
+void MainWindow::on_setGraphViewerGraph(QStringList plot)
+{
+    if (this->runningFlag)
+    {
+        this->graphViewer->setGraph(plot);
+        this->graphViewer->show();
+    }
+}

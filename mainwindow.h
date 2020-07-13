@@ -51,6 +51,9 @@ public:
 signals:
     void terminateProcess();
     void runningMsgWidgetAppendText(QString text);
+    void setLineEditTextSig(QLineEdit *, QString);
+    void setButtonEnabledSig(QAbstractButton *, bool);
+    void setGraphViewerGraphSig(QStringList plot);
 
 private slots:
     // for FileReader
@@ -69,6 +72,7 @@ private slots:
     void on_outdirBrowButton_clicked();
     void on_projectNameLineEdit_textChanged(const QString &text);
     void on_projectNameLineEdit_editingFinished();
+    void on_outdirLineEdit_editingFinished();
     // for PhenoSelector
     void on_excludeAllPhenoButton_clicked();
     void on_selectAllPhenoButton_clicked();
@@ -76,14 +80,12 @@ private slots:
     void on_excludePhenoButton_clicked();
     // for run pushButton
     void on_runGwasButton_clicked();
-    // for running Message
-//    void on_readoutput();
-//    void on_readerror();
+    // Close running widget
     void on_closeRunningWidget();
     // For tool and model selector
-    void on_toolComboBox_currentTextChanged(const QString &tool);
+    void on_toolComboBox_currentTextChanged(const QString &tool);   
     // Detail params.
-    void on_detailPushButton_clicked();
+    void on_detailPushButton_clicked();   
     // Plot QQ_Manhattan
     void on_drawManPushButton_clicked();
     void on_drawQQPushButton_clicked();
@@ -92,14 +94,14 @@ private slots:
     // Linkage disequilibrium
     void on_ldRunPushButton_clicked();
     void on_ldPlotPushButton_clicked();
-    void on_ldReultBrowButton_clicked();
+    void on_ldReultBrowButton_clicked(); 
     // Graph viewer
     void graphViewer_clicked_slot();    // on_*** is implicit slot function
     // Structural annotation
     void on_gffFileBrowButton_clicked();
     void on_strucAnnoRunPushButton_clicked();
     void on_fastaFileBrowButton_clicked();
-    void on_avinFileBrowButton_clicked();
+    void on_avinFileBrowButton_clicked();   
     // Functional annotation
     void on_snpPosBrowButton_clicked();
     void on_baseFileBrowButton_clicked();
@@ -108,31 +110,25 @@ private slots:
     void on_funcAnnoRunPushButton_clicked();
     void on_funcAnnoStepPushButton_clicked();
     void on_annoPvalBrowButton_clicked();
-
     // PCA
     void on_eigenvalFileBrowButton_clicked();
     void on_eigenvecFileBrowButton_clicked();
     void on_pcaPlotPushButton_clicked();
-
     // Quality control
     void on_qualCtrlDetailPushButton_clicked();
-    // Checkout file existence.
-    bool checkoutExistence(QString filePath);
-
     // For my Process
     void on_outMessageReady(QString text);
     void on_errMessageReady(QString text);
-
-    void on_outdirLineEdit_editingFinished();
+    // To set LineEdit text in another thread
+    void on_setLineEditText(QLineEdit *lineEdit, QString text);
+    void on_setButtonEnabled(QAbstractButton *Button, bool boolean);
+    void on_setGraphViewerGraph(QStringList plot);
 
 private:
     Ui::MainWindow *ui;
     volatile bool runningFlag = false;   // A flag t judge there running project.
-//    QThread workThread;
     void closeEvent(QCloseEvent *event) override;
-//    bool eventFilter(QObject *obj, QEvent *ev) override;
     //  Tool and script path;
-
 #ifdef QT_NO_DEBUG
     QString toolpath = "tools/";    // Realease
     QString scriptpath = "script/";
@@ -147,7 +143,6 @@ private:
     PhenoSelector *phenoSelector;       // Select objective phenotype to analysis.
     // for display running information.
     RunningMsgWidget *runningMsgWidget;
-//    QProcess *process;
     // To set detail paramters
     GemmaParamWidget *gemmaParamWidget;
     EmmaxParamWidget *emmaxParamWidget;
@@ -179,5 +174,7 @@ private:
     void runPopLDdecaySingle(void);
     void runPopLDdecaybyFamily(void);
     bool runExTool(QString tool, QStringList param);
+    // Checkout file existence.
+    bool checkoutExistence(QString filePath);
 };
 #endif // MAINWINDOW_H
