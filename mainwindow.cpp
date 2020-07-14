@@ -404,7 +404,7 @@ void MainWindow::on_runGwasButton_clicked()
     }
 
     ui->runGwasButton->setDisabled(true);
-    this->runningMsgWidget->clearText();
+//    this->runningMsgWidget->clearText();
 
     QFileInfo pheFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
@@ -730,17 +730,16 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
         if (checkoutExistence(correctedFile))
         {
-//            ui->qqmanGwasResultLineEdit->setText(correctedFile);
             emit setLineEditTextSig(ui->qqmanGwasResultLineEdit, correctedFile);
             QThread::msleep(10);
         }
     }
     else if (model == "LMM")
     {
-        if (!this->checkoutExistence(out+"/output"
+        if (this->runningFlag && !this->checkoutExistence(out+"/output"
             +(i==0?"":QString::number(i))+"/"+name+"_"+pheFileBaseName+".assoc.txt"))
         {
-            QMessageBox::information(this, "Error", "Gemma GWAS error.");
+            QMessageBox::information(nullptr, "Error", "Gemma GWAS error.");
             return false;
         }
 
@@ -776,7 +775,6 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     QString maf = ui->mafRadioButton->isChecked()? ui->mafDoubleSpinBox->text():nullptr;
     QString mind = ui->mindRadioButton->isChecked()? ui->mindDoubleSpinBox->text():nullptr;
     QString geno = ui->genoRadioButton->isChecked()? ui->genoDoubleSpinBox->text():nullptr;
-    //UserOS *userOS = new UserOS;
 
     // Genotype file info.
     QFileInfo genoFileInfo = QFileInfo(genotype);
@@ -935,11 +933,14 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     }
     else
     {
-        if (checkoutExistence(out+"/"+name+"_"+pheFileBaseName+".ps"))
+        if (this->runningFlag && !checkoutExistence(out+"/"+name+"_"+pheFileBaseName+".ps"))
         {
-//            ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
-            emit setLineEditTextSig(ui->qqmanGwasResultLineEdit, out+"/"+name+"_"+pheFileBaseName+".ps");
+            QMessageBox::information(nullptr, "Error", "Emmax GWAS error.");
+            return false;
         }
+//            ui->qqmanGwasResultLineEdit->setText(out+"/"+name+"_"+pheFileBaseName+".ps");
+        emit setLineEditTextSig(ui->qqmanGwasResultLineEdit, out+"/"+name+"_"+pheFileBaseName+".ps");
+        QThread::msleep(10);
     }
 
     QFile file;
@@ -1054,9 +1055,9 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
         return false;
     }
 
-    if (!this->checkoutExistence(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower()))
+    if (this->runningFlag && !this->checkoutExistence(out+"/"+name+"_"+pheFileBaseName+".assoc."+model.toLower()))
     {
-        QMessageBox::information(this, "Error", "Plink GWAS error.");
+        QMessageBox::information(nullptr, "Error", "Plink GWAS error.");
         return false;
     }
 
@@ -1108,26 +1109,6 @@ void MainWindow::on_closeRunningWidget()
         this->runningMsgWidget->hide();
     }
 }
-
-//void MainWindow::on_mafSlider_valueChanged(int value)
-//{
-//    ui->mafDoubleSpinBox->setValue(value/100.0);
-//}
-
-//void MainWindow::on_mafDoubleSpinBox_editingFinished()
-//{
-//    ui->mafSlider->setValue(int(ui->mafDoubleSpinBox->value() * 100));
-//}
-
-//void MainWindow::on_msDoubleSpinBox_editingFinished()
-//{
-//    ui->msSlider->setValue(int(ui->msDoubleSpinBox->value() * 100));
-//}
-
-//void MainWindow::on_msSlider_valueChanged(int value)
-//{
-//    ui->msDoubleSpinBox->setValue(value/100.0);
-//}
 
 /**
  * @brief MainWindow::isVcfFile
