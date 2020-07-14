@@ -107,10 +107,11 @@ bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString min
         this->paramlist.append(geno);
     }
 
-    this->paramlist.append("--recode12");
+    this->paramlist.append("--recode");
+    this->paramlist.append("12");
+    this->paramlist.append("transpose");
     this->paramlist.append("--output-missing-genotype");
     this->paramlist.append("0");
-    this->paramlist.append("--transpose");
     this->paramlist.append("--out");
     this->paramlist.append(out);
 
@@ -148,10 +149,11 @@ bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QStri
         this->paramlist.append(geno);
     }
 
-    this->paramlist.append("--recode12");
+    this->paramlist.append("--recode");
+    this->paramlist.append("12");
+    this->paramlist.append("transpose");
     this->paramlist.append("--output-missing-genotype");
     this->paramlist.append("0");
-    this->paramlist.append("--transpose");
     this->paramlist.append("--out");
     this->paramlist.append(out);
 
@@ -308,10 +310,11 @@ bool Plink::binary2transpose(QString binaryFile, QString out, QString maf, QStri
         this->paramlist.append(geno);
     }
 
-    this->paramlist.append("--recode12");
+    this->paramlist.append("--recode");
+    this->paramlist.append("12");
+    this->paramlist.append("transpose");
     this->paramlist.append("--output-missing-genotype");
     this->paramlist.append("0");
-    this->paramlist.append("--transpose");
     this->paramlist.append("--out");
     this->paramlist.append(out);
 
@@ -683,10 +686,11 @@ void Plink::filterTransposeFile(QString genotype, QString map, QString maf, QStr
         this->paramlist.append(geno);
     }
 
-    this->paramlist.append("--recode12");
+    this->paramlist.append("--recode");
+    this->paramlist.append("12");
+    this->paramlist.append("transpose");
     this->paramlist.append("--output-missing-genotype");
     this->paramlist.append("0");
-    this->paramlist.append("--transpose");
     this->paramlist.append("--out");
     this->paramlist.append(out);
 }
@@ -720,10 +724,12 @@ void Plink::filterData(QString genotype, QString map, QString maf, QString mind,
 
     if (genoFileSuffix == "bed")
     {
-        this->filterBinaryFile(genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno, out);    this->paramlist.append("--recode12");
+        this->filterBinaryFile(genoFileAbPath+"/"+genoFileBaseName, maf, mind, geno, out);
         this->paramlist.append("--output-missing-genotype");
         this->paramlist.append("0");
-        this->paramlist.append("--transpose");
+        this->paramlist.append("--recode");
+        this->paramlist.append("12");
+        this->paramlist.append("transpose");
         this->paramlist.append("--out");
         this->paramlist.append(out);
     }
