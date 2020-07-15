@@ -2328,6 +2328,11 @@ void MainWindow::on_gffFileBrowButton_clicked()
 
 void MainWindow::on_strucAnnoRunPushButton_clicked()
 {
+    if (this->runningFlag)
+    {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
+        return;
+    }
     this->runningFlag = true;
     QString gffFile = ui->gffFileLineEdit->text();
     QString fastaFile = ui->fastaFileLineEdit->text();
@@ -2594,6 +2599,11 @@ void MainWindow::on_exVarFuncFileBrowButton_clicked()
  */
 void MainWindow::on_funcAnnoRunPushButton_clicked()
 {
+    if (this->runningFlag)
+    {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
+        return;
+    }
     this->runningFlag = true;
     ui->funcAnnoRunPushButton->setEnabled(false);
     qApp->processEvents();
@@ -2689,6 +2699,11 @@ void MainWindow::on_funcAnnoRunPushButton_clicked()
  */
 void MainWindow::on_funcAnnoStepPushButton_clicked()
 {
+    if (this->runningFlag)
+    {
+        QMessageBox::information(nullptr, "Error", "A project is running now.");
+        return;
+    }
     this->runningFlag = true;
     ui->funcAnnoStepPushButton->setEnabled(false);
     qApp->processEvents();
