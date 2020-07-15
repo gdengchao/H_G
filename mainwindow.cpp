@@ -19,12 +19,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->selectedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->excludedPhenoListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
+    ui->tabWidget->setCurrentIndex(0);
     // Recommend maf and  ms
     ui->mafDoubleSpinBox->setValue(0.05);
     ui->mindDoubleSpinBox->setValue(0.2);
     ui->genoDoubleSpinBox->setValue(0);
-//    ui->mafSlider->setValue(5);
-//    ui->msSlider->setValue(10);
 
     // Initiate variables.
     fileReader = new FileReader;
