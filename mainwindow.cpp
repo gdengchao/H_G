@@ -570,7 +570,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         if (!this->checkoutExistence(genotype) ||
             !this->checkoutExistence(map))
         {
-            QMessageBox::information(nullptr, "Error", "Extaract snp after linkage filter error.");
+            QMessageBox::information(this, "Error", "Extaract snp after linkage filter error.");
             return false;
         }
     }
@@ -724,7 +724,7 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
 
         if (!this->checkoutExistence(correctedFile))
         {
-            QMessageBox::information(nullptr, "Error", "Gemma corrected error.");
+            QMessageBox::information(this, "Error", "Gemma corrected error.");
             return false;
         }
 
@@ -920,7 +920,7 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
 
         if (!this->checkoutExistence(correctedFile))
         {
-            QMessageBox::information(nullptr, "Error", "Gemma corrected error.");
+            QMessageBox::information(this, "Error", "Gemma corrected error.");
             return false;
         }
 
@@ -1018,7 +1018,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
         if (!this->checkoutExistence(filteredSnpIDFile))
         {
-            QMessageBox::information(nullptr, "Error", "Linkage filter error.");
+            QMessageBox::information(this, "Error", "Linkage filter error.");
             return false;
         }
 
@@ -1039,7 +1039,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
         if (!this->checkoutExistence(genotype) || !this->checkoutExistence(map))
         {
-            QMessageBox::information(nullptr, "Error", "Extract snp after linkage filter error.");
+            QMessageBox::information(this, "Error", "Extract snp after linkage filter error.");
             return false;
         }
     }
