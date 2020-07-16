@@ -1561,6 +1561,11 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
         param.clear();
         param.append(this->scriptpath+"qqman/plot.R");
         param.append("manhattan");
+#ifdef QT_NO_DEBUG
+        param.append("debugno");    // Help to set path of manhattan.R and qq.R
+#else
+        param.append(this->scriptpath+"qqman/manhattan.R");
+#endif
         param.append(data[i]);
         param.append(out[i]);
         param.append(QString::number(gwBase)+'e'+QString::number(gwExpo));
@@ -1604,6 +1609,11 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
         param.clear();
         param.append(this->scriptpath+"qqman/plot.R");
         param.append("qqplot");
+#ifdef QT_NO_DEBUG
+        param.append("debugno");    // Help to set path of manhattan.R and qq.R
+#else
+        param.append(this->scriptpath + "qqman/qq.R");
+#endif
         param.append(data[i]);
         param.append(out[i]);
         // R in environment path is necessary.

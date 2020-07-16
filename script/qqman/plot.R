@@ -9,10 +9,11 @@ getDataFromSciNotation <- function(scinota = "1E2")
 
 drawManhattan <- function(args)
 {
-    inData = args[1]
-    out =args[2]
-    gwline = args[3]
-    sgline = args[4]
+    debug = args[1]     # "debugno" or the path of manghattan.R
+    inData = args[2]
+    out =args[3]
+    gwline = args[4]
+    sgline = args[5]
     
     genomewide = -log10(getDataFromSciNotation(gwline))
     suggest = -log10(getDataFromSciNotation(sgline))
@@ -24,20 +25,26 @@ drawManhattan <- function(args)
     
     newData<-na.omit(data)
     
-    ### NOTICE the path of manhattan.R  
-    source("/home/dengchao/Documents/code/H_G/script/qqman/manhattan.R") #/home/chao/Documents/code/H_G/script/qqman/manhattan.R
+    if (debug == "debugno")
+    {
+        # Release path.
+        path = paste0(getwd(), "/script/qqman/manhattan.R")
+        source(path)
+    }
+    else
+    {
+        source(debug)
+    }
 
-    # Release path.
-#	path = paste0(getwd(), "/script/qqman/manhattan.R")
-#	source(path)
 	manhattan(newData, output = out, suggestiveline = suggest, genomewideline = genomewide)
     write(out);
 }
 
 drawQQplot <- function(args)
 {
-    inData = args[1]
-    out=args[2]
+    debug = args[1]     # "debugno" or the path of qq.R
+    inData = args[2]
+    out=args[3]
     
 #   write(inData, stdout())
 #    write(output, stdout())
@@ -47,10 +54,16 @@ drawQQplot <- function(args)
     
     newData<-na.omit(data)
     
-    ### NOTICE the path of manhattan.R
-    source("/home/dengchao/Documents/code/H_G/script/qqman/qq.R")
-#	path = paste0(getwd(), "/script/qqman/qq.R")
-#	source(path)
+    if (debug == "debugno")
+    {
+        # Release path.
+        path = paste0(getwd(), "/script/qqman/qq.R")
+        source(path)
+    }
+    else
+    {
+        source(debug)
+    }
 	qq(newData, out)
     write(out);
 }
