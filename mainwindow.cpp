@@ -380,7 +380,6 @@ void MainWindow::on_runGwasButton_clicked()
         QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
-    this->runningFlag = true;
 
     QString tool = ui->toolComboBox->currentText();
     QString phenotype = this->fileReader->getPhenotypeFile();
@@ -402,8 +401,9 @@ void MainWindow::on_runGwasButton_clicked()
         return;
     }
 
+    this->runningFlag = true;
     ui->runGwasButton->setDisabled(true);
-//    this->runningMsgWidget->clearText();
+    qApp->processEvents();
 
     QFileInfo pheFileInfo(phenotype);
     QString pheFileBaseName = pheFileInfo.baseName();
@@ -565,6 +565,14 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         genotype = linkageFilteredFilePrefix + ".ped";
         map = linkageFilteredFilePrefix + ".map";
         genoFileName = genoFileBaseName + "_ldfl";
+
+        if (checkoutExistence(linkageFilteredFilePrefix+".log") ||
+                checkoutExistence(linkageFilteredFilePrefix + ".nosex"))
+        {
+            QFile file;
+            file.remove(linkageFilteredFilePrefix+".log");
+            file.remove(linkageFilteredFilePrefix+".nosex");
+        }
 
         if (!this->checkoutExistence(genotype) ||
             !this->checkoutExistence(map))
@@ -819,6 +827,14 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
         genotype = linkageFilteredFilePrefix + ".ped";
         map = linkageFilteredFilePrefix + ".map";
         genoFileName = genoFileBaseName + "_ldfl";
+
+        if (checkoutExistence(linkageFilteredFilePrefix+".log") ||
+                checkoutExistence(linkageFilteredFilePrefix + ".nosex"))
+        {
+            QFile file;
+            file.remove(linkageFilteredFilePrefix+".log");
+            file.remove(linkageFilteredFilePrefix+".nosex");
+        }
     }
 
     if (isVcfFile(genotype)) // Transform "vcf" to "transpose"
@@ -1035,6 +1051,14 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
         genotype = linkageFilteredFilePrefix + ".ped";
         map = linkageFilteredFilePrefix + ".map";
         genoFileName = genoFileName + "_ldfl";
+
+        if (checkoutExistence(linkageFilteredFilePrefix+".log") ||
+                checkoutExistence(linkageFilteredFilePrefix + ".nosex"))
+        {
+            QFile file;
+            file.remove(linkageFilteredFilePrefix+".log");
+            file.remove(linkageFilteredFilePrefix+".nosex");
+        }
 
         if (!this->checkoutExistence(genotype) || !this->checkoutExistence(map))
         {
@@ -1748,13 +1772,13 @@ void MainWindow::on_pcaRunPushButton_clicked()
         QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
-    this->runningFlag = true;
     if (this->fileReader->getGenotypeFile().isNull() || this->fileReader->getGenotypeFile().isEmpty())
     {
         QMessageBox::information(nullptr, "Error", "A genotype file is necessary!   ");
         return;
     }
 
+    this->runningFlag = true;
     ui->pcaRunPushButton->setEnabled(false);
     qApp->processEvents();
 
@@ -1880,7 +1904,6 @@ void MainWindow::on_ldRunPushButton_clicked()
         QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
-    this->runningFlag = true;
 
     if (this->fileReader->getGenotypeFile().isNull() || this->fileReader->getGenotypeFile().isEmpty())
     {
@@ -1888,6 +1911,7 @@ void MainWindow::on_ldRunPushButton_clicked()
         return;
     }
 
+    this->runningFlag = true;
     ui->ldRunPushButton->setEnabled(false);
     qApp->processEvents();
 
@@ -2203,14 +2227,14 @@ void MainWindow::on_ldPlotPushButton_clicked()
         QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
-    this->runningFlag = true;
-    ui->ldPlotPushButton->setEnabled(false);
-    qApp->processEvents();
     QString ldResultFile = ui->ldResultLineEdit->text();
     if (ldResultFile.isNull() || ldResultFile.isEmpty())
     {
         return;
     }
+    this->runningFlag = true;
+    ui->ldPlotPushButton->setEnabled(false);
+    qApp->processEvents();
     try {
         QFuture<void> fu = QtConcurrent::run([&]()
         {
@@ -2848,14 +2872,11 @@ void MainWindow::on_pcaPlotPushButton_clicked()
         QMessageBox::information(nullptr, "Error", "A project is running now.");
         return;
     }
-    this->runningFlag = true;
     QString eigenvalFile = ui->eigenvalueLineEdit->text();
     QString eigenvecFile = ui->eigenvectorLineEdit->text();
     QString outFile = this->workDirectory->getOutputDirectory() + "/" +
                       this->workDirectory->getProjectName() + "_pca.png";
 
-    ui->pcaPlotPushButton->setEnabled(false);
-    qApp->processEvents();
     if (eigenvalFile.isEmpty() ||
         eigenvecFile.isEmpty() ||
         outFile.isEmpty())
@@ -2863,6 +2884,10 @@ void MainWindow::on_pcaPlotPushButton_clicked()
         this->resetWindow();
         return;
     }
+
+    this->runningFlag = true;
+    ui->pcaPlotPushButton->setEnabled(false);
+    qApp->processEvents();
 
     QFuture<void> fu = QtConcurrent::run([&]()
     {
