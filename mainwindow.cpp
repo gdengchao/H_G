@@ -62,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(on_setButtonEnabled(QAbstractButton *, bool)));
     connect(this, SIGNAL(setGraphViewerGraphSig(QStringList)),
             this, SLOT(on_setGraphViewerGraph(QStringList)));
+    connect(this, SIGNAL(resetWindowSig()), this, SLOT(on_resetWindowSig()));
     // connect MToolButton->rightClick
     connect(ui->pheFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_pheFileToolButton_closeFileSig()));
     connect(ui->genoFileToolButton, SIGNAL(closeFileSig()), this, SLOT(on_genoFileToolButton_closeFileSig()));
@@ -418,7 +419,8 @@ void MainWindow::on_runGwasButton_clicked()
             {
                 if (!this->callEmmaxGwas(phenotype, genotype, map, covar, kinship, out, name))
                 {
-                    this->resetWindow();
+                    emit resetWindowSig();
+                    QThread::msleep(10);
                     return;
                 }
             }
@@ -427,7 +429,8 @@ void MainWindow::on_runGwasButton_clicked()
             {
                 if (!this->callGemmaGwas(phenotype, genotype, map, covar, kinship, out, name))
                 {
-                    this->resetWindow();
+                    emit resetWindowSig();
+                    QThread::msleep(10);
                     return;
                 }
             }
@@ -436,7 +439,8 @@ void MainWindow::on_runGwasButton_clicked()
             {
                 if (!this->callPlinkGwas(phenotype, genotype, map, covar, kinship, out, name))
                 {
-                    this->resetWindow();
+                    emit resetWindowSig();
+                    QThread::msleep(10);
                     return;
                 }
             }
@@ -449,7 +453,8 @@ void MainWindow::on_runGwasButton_clicked()
 
                 if (!this->makePheFile(phenotype, item->text()))
                 {
-                    this->resetWindow();
+                    emit resetWindowSig();
+                    QThread::msleep(10);
                     return;
                 }
                 QString madedPheFile = pheFileAbPath + "/" + item->text() + ".phe";
@@ -457,7 +462,8 @@ void MainWindow::on_runGwasButton_clicked()
                 {
                     if (!this->callEmmaxGwas(madedPheFile, genotype, map, covar, kinship, out, name))
                     {
-                        this->resetWindow();
+                        emit resetWindowSig();
+                        QThread::msleep(10);
 
                         return;
                     }
@@ -467,7 +473,8 @@ void MainWindow::on_runGwasButton_clicked()
                 {
                     if (!this->callGemmaGwas(madedPheFile, genotype, map, covar, kinship, out, name))
                     {
-                        this->resetWindow();
+                        emit resetWindowSig();
+                        QThread::msleep(10);
                         return;
                     }
                 }
@@ -476,7 +483,8 @@ void MainWindow::on_runGwasButton_clicked()
                 {
                     if (!this->callPlinkGwas(madedPheFile, genotype, map, covar, kinship, out, name))
                     {
-                        this->resetWindow();
+                        emit resetWindowSig();
+                        QThread::msleep(10);
                         return;
                     }
                 }
@@ -485,7 +493,8 @@ void MainWindow::on_runGwasButton_clicked()
     });
     while (!fu.isFinished())
     {
-        qApp->processEvents(QEventLoop::AllEvents, 200);
+        qApp->processEvents(QEventLoop::AllEvents, 50);
+        QThread::msleep(10);
     }
 
     this->resetWindow();
@@ -530,7 +539,6 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     // Necessary to transform file ?
     bool transformFileFlag = false;
     bool filterDataFlag = false;
-
 
     // Need binary files.  Every temp file and a "_tmp" after baseName, and will be deleted after gwas.
     Plink plink;
@@ -586,7 +594,8 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     {
         if(!plink.vcf2binary(genotype, binaryFile, maf, mind, geno))
         {
-            this->resetWindow();
+            emit resetWindowSig();
+            QThread::msleep(10);
             return false;
         }
 
@@ -600,7 +609,8 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         }
         if (!plink.plink2binary(genotype, map, binaryFile, maf, mind, geno))
         {
-            this->resetWindow();
+            emit resetWindowSig();
+            QThread::msleep(10);
             return false;
         }
 
@@ -615,7 +625,8 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
         }
         if (!plink.transpose2binary(genotype, map, binaryFile, maf, mind, geno))
         {
-            this->resetWindow();
+            emit resetWindowSig();
+            QThread::msleep(10);
             return false;
         }
         transformFileFlag = true;
@@ -648,7 +659,8 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     {
          if (!gemma.makeKinship(binaryFile, genoFileBaseName+"_tmp", moreParam))
          {
-             this->resetWindow();
+             emit resetWindowSig();
+             QThread::msleep(10);
              return false;  // Make kinship failed.
          }
          if (!runExTool(this->toolpath+"gemma", gemma.getParamList()))
@@ -670,7 +682,8 @@ bool MainWindow::callGemmaGwas(QString phenotype, QString genotype, QString map,
     if (!gemma.runGWAS(genoFileAbPath+"/"+genoFileBaseName+"_tmp", phenotype, covar, kinship,
                       name+"_"+pheFileBaseName, model, moreParam))
     {
-        this->resetWindow();
+        emit resetWindowSig();
+        QThread::msleep(10);
         return false;
     }
     if (!runExTool(this->toolpath+"gemma", gemma.getParamList()))
@@ -891,7 +904,8 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     {
          if (!emmax.makeKinship(transposeFile, moreParam))
          {
-             this->resetWindow();
+             emit resetWindowSig();
+             QThread::msleep(10);
              return false;  // Make kinship failed.
          }
          if (!runExTool(this->toolpath+"emmax-kin", emmax.getParamList()))
@@ -912,7 +926,8 @@ bool MainWindow::callEmmaxGwas(QString phenotype, QString genotype, QString map,
     if (!emmax.runGWAS(transposeFile, phenotype, covar, kinship,
                       out+"/"+name+"_"+pheFileBaseName, moreParam))
     {
-        this->resetWindow();
+        emit resetWindowSig();
+        QThread::msleep(10);
         return false;
     }
     if (!runExTool(this->toolpath+"emmax", emmax.getParamList()))
@@ -1062,7 +1077,7 @@ bool MainWindow::callPlinkGwas(QString phenotype, QString genotype, QString map,
 
         if (!this->checkoutExistence(genotype) || !this->checkoutExistence(map))
         {
-            QMessageBox::information(this, "Error", "Extract snp after linkage filter error.");
+            QMessageBox::information(nullptr, "Error", "Extract snp after linkage filter error.");
             return false;
         }
     }
@@ -1166,15 +1181,6 @@ bool MainWindow::isVcfFile(QString file) // Just consider filename.
  */
 void MainWindow::resetWindow()
 {
-//    if (this->process->isOpen())
-//    {
-//        this->process->close();
-//    }
-//    if (this->process)
-//    {
-//        this->process->terminate();
-//        this->process->waitForFinished(-1);
-//    }
     ui->runGwasButton->setEnabled(true);
     ui->ldRunPushButton->setEnabled(true);
     ui->ldPlotPushButton->setEnabled(true);
@@ -1441,7 +1447,8 @@ void MainWindow::on_drawManPushButton_clicked()
                 file.remove(item);
             }
         } catch (...) {
-            this->resetWindow();    // reset MainWindow
+            emit resetWindowSig();
+            QThread::msleep(10);    // reset MainWindow
         }
     });
     while (!fu.isFinished())
@@ -1522,7 +1529,8 @@ void MainWindow::on_drawQQPushButton_clicked()
                 file.remove(item);
             }
         } catch (int) {
-           this->resetWindow();
+            emit resetWindowSig();
+            QThread::msleep(10);
         }
     });
     while (!fu.isFinished())
@@ -1558,6 +1566,7 @@ bool MainWindow::drawManhattan(QStringList data, QStringList out)
 
     for (int i = 0; i < data.size() && runningFlag; i++)
     {
+        // The sequence of param is not changeable
         param.clear();
         param.append(this->scriptpath+"qqman/plot.R");
         param.append("manhattan");
@@ -1606,6 +1615,7 @@ bool MainWindow::drawQQplot(QStringList data, QStringList out)
 
     for (int i = 0; i < data.size(); i++)
     {
+        // The sequence of param is not changeable
         param.clear();
         param.append(this->scriptpath+"qqman/plot.R");
         param.append("qqplot");
@@ -1900,7 +1910,8 @@ void MainWindow::on_pcaRunPushButton_clicked()
         }
 
     } catch (...) {
-        this->resetWindow();
+        emit resetWindowSig();
+        QThread::msleep(10);
     }
 
     this->resetWindow();
@@ -2439,7 +2450,7 @@ void MainWindow::on_strucAnnoRunPushButton_clicked()
             }
 
             emit runningMsgWidgetAppendText(QDateTime::currentDateTime().toString() +
-                                            "Retrieve seq from fasta OK.\n");
+                                            "\nRetrieve seq from fasta OK.\n");
             QThread::msleep(10);
             // annotation
             QString out = this->workDirectory->getOutputDirectory();
@@ -2905,6 +2916,7 @@ void MainWindow::on_pcaPlotPushButton_clicked()
                                         "\nPlot PCA, \n");
         QThread::msleep(10);
         QStringList param;
+        // The sequence of param is not changeable
         param.clear();
         param.append(this->scriptpath+"pca/pca_plot.R");    // Can choose pca_plot.R or pca_ggplot.R
         param.append(eigenvalFile);
@@ -2950,7 +2962,7 @@ bool MainWindow::pValCorrect(QString pvalFile, bool header, QString correctType,
     }
 
     QStringList param;
-
+    // The sequence of param is not changeable
     param.clear();
     param.append(this->scriptpath+"qqman/correction.R");
     param.append(pvalFile);
@@ -2985,6 +2997,8 @@ bool MainWindow::runExTool(QString tool, QStringList param)
     if (!proc->waitForStarted())
     {
         QMessageBox::information(nullptr, "Error", "Can't open " + tool);
+        delete proc;
+        proc = nullptr;
         return false;
     }
     proc->waitForFinished(-1);
@@ -3051,4 +3065,9 @@ void MainWindow::on_setGraphViewerGraph(QStringList plot)
         this->graphViewer->setGraph(plot);
         this->graphViewer->show();
     }
+}
+
+void MainWindow::on_resetWindowSig()
+{
+    this->resetWindow();
 }

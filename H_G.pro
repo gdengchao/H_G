@@ -77,3 +77,6 @@ RESOURCES += \
     res.qrc
 
 QMAKE_LFLAGS += -no-pie
+
+RC_FILE  += \
+    logo.rc

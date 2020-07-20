@@ -54,6 +54,7 @@ signals:
     void setLineEditTextSig(QLineEdit *, QString);
     void setButtonEnabledSig(QAbstractButton *, bool);
     void setGraphViewerGraphSig(QStringList plot);
+    void resetWindowSig();
 
 private slots:
     // for FileReader
@@ -123,6 +124,8 @@ private slots:
     void on_setLineEditText(QLineEdit *lineEdit, QString text);
     void on_setButtonEnabled(QAbstractButton *Button, bool boolean);
     void on_setGraphViewerGraph(QStringList plot);
+    // Reset Windw SLOT
+    void on_resetWindowSig();
 
 private:
     Ui::MainWindow *ui;
