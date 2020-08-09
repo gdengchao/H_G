@@ -86,7 +86,7 @@ bool Plink::vcf2transpose(QString vcfFile, QString out, QString maf, QString min
         return false;
     }
 
-    // plink --vcf [--maf maf] [--mind mind] [--geno geno] --recode12 --ouput-missing-genotype 0 --transpose --out out
+    // plink --vcf [--maf maf] [--mind mind] [--geno geno] --recode 12 --ouput-missing-genotype 0 --transpose --out out
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--vcf");
     this->paramlist.append(vcfFile);
@@ -125,7 +125,7 @@ bool Plink::plink2transpose(QString pedFile, QString mapFile, QString out, QStri
         return false;
     }
 
-    // plink --ped pedFile --map mapFile [--maf maf] [--mind mind] [--geno geno] --recode12 --transpose --out out
+    // plink --ped pedFile --map mapFile [--maf maf] [--mind mind] [--geno geno] --recode 12 transpose --out out
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--ped");
     this->paramlist.append(pedFile);
@@ -289,7 +289,7 @@ bool Plink::binary2transpose(QString binaryFile, QString out, QString maf, QStri
         return false;
     }
 
-    // plink --bfile binaryFile [--maf maf] [--geno ms] --recode12 --transpose --out out
+    // plink --bfile binaryFile [--maf maf] [--geno ms] --recode 12 transpose --out out
     this->paramlist.clear();            // Clear paramlist before set parameter.
     this->paramlist.append("--bfile");
     this->paramlist.append(binaryFile);
