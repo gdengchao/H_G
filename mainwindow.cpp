@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Default output directory setting
     workDirectory->setProjectName("pro1");
 #ifdef QT_NO_DEBUG
-    workDirectory->setOutputDirectory("/home");
+    workDirectory->setOutputDirectory(QDir::currentPath());
 #else
     workDirectory->setOutputDirectory("/home/dengchao/Desktop/test");
 #endif
@@ -2217,7 +2217,7 @@ void MainWindow::runPopLDdecaySingle(void)
                 return;
             };
 
-            if (this->runningFlag && checkoutExistence(out+"/"+name+".stat.gz"))
+            if (checkoutExistence(out+"/"+name+".stat.gz"))
             {
 //                ui->ldResultLineEdit->setText(out+"/"+name+".stat.gz");
                 emit setLineEditTextSig(ui->ldResultLineEdit, out+"/"+name+".stat.gz");
