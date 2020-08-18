@@ -36,8 +36,8 @@ drawManhattan <- function(args)
         source(debug)
     }
 
-	manhattan(newData, output = out, suggestiveline = suggest, genomewideline = genomewide)
-    write(out);
+	manhattan(newData, output = out, suggestiveline = suggest, genomewideline = genomewide, col = unique(newData$CHR))
+    write(out)
 }
 
 drawQQplot <- function(args)
